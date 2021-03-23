@@ -1,0 +1,13 @@
+[data]
+500 = Victory for His Highness!
+501 = Submit to my will!
+502 = The power of the Valkyria is to be feared!
+503 = Lay down your weapon and surrender!
+510 = Don't underestimate the power of the Valkyria.
+511 = The result was pre-ordained!
+512 = Hmph... How foolish.
+513 = I'll never lose to the likes of you!
+520 = Stand! Our battle is not yet over.
+521 = Enemy vanquished.
+530 = That's impossible!
+531 = Ugh... So close!

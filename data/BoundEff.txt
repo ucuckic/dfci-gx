@@ -1,0 +1,139 @@
+
+//-----------------------------------------------------------------------------
+// Desc: やられ効果エフェクト定義
+//-----------------------------------------------------------------------------
+
+Chara_BoundEff_Table <- 
+{
+	//NotUse = 0, // これがあるとやられテーブルを使用しない
+	Status = [],
+};
+
+Chara_BoundEff_Table.Status.resize( 16 );
+local st = Chara_BoundEff_Table.Status;
+
+st[0] = // 通常、変更しない
+{
+	times = 0, // 持続時間
+	effinterval = 0, // 発生間隔
+	effname = "", // 表示させるパターンの名前
+	effpos = -1, // 表示させるパターンの番号（名前より優先）
+
+	colortype = 0, // 1-点滅  2-補間点滅
+	colorinterval = 0, // 点滅間隔
+	color = [ 0xFFFFFFFF ], // 色テーブル8個まで
+};
+
+st[1] = // もえ
+{
+	times = 60,
+	effinterval = 3,
+	effname = "",
+	effpos = 195,
+
+	colortype = 2,
+	colorinterval = 6,
+	color = [ 0xFFFF9090, 0xFF800000, 0xFFFF3030, 0xFF400000 ],
+};
+
+st[2] = // 凍結
+{
+	times = 90,
+	effinterval = 16,
+	effname = "",
+	effpos = 630,
+
+	colortype = 2,
+	colorinterval = 6,
+	color = [ 0xFF9090FF, 0xFF2020FF, 0xFF9090FF, 0xFF20209F ],
+};
+
+
+st[3] = // 感電
+{
+	times = 90,
+	effinterval = 2,
+	effname = "",
+	effpos = -1,
+
+	colortype = 2,
+	colorinterval = 2,
+	color = [ 0xFFFFFF00, 0xFF606060, 0xFF7F7F00, 0xFF202020 ],
+};
+
+st[4] = // 乱心
+{
+	times = 90,
+	effinterval = 2,
+	effname = "",
+	effpos = -1,
+
+	colortype = 2,
+	colorinterval = 2,
+	color = [ 0xFFFFFF00, 0xFF606060, 0xFF7F7F00, 0xFF202020 ],
+};
+
+
+
+st[5] = // ハイド状態異常やられ(赤い煙が散る)
+{
+	times = 60,
+	effinterval = 6,
+	effname = "",
+	effpos = 600,
+
+	colortype = 2,
+	colorinterval = 6,
+	color = [ 0xFFFF9090, 0xFF800000, 0xFFFF3030, 0xFF400000 ],
+};
+
+st[6] = // オリエ状態異常やられ(光が横に広がり線になる)
+{
+	times = 60,
+	effinterval = 6,
+	effname = "",
+	effpos = 605,
+
+	colortype = 2,
+	colorinterval = 6,
+	color = [ 0xFFFFFF90, 0xFF808000, 0xFFFFFF30, 0xFF404000 ],
+};
+
+st[7] = // バティスタ状態異常やられ(電撃が出る)
+{
+	times = 60,
+	effinterval = 6,
+	effname = "",
+	effpos = 610,
+
+	colortype = 2,
+	colorinterval = 6,
+	color = [ 0xFF90CCFF, 0xFF004080, 0xFF30CCFF, 0xFF002040 ],
+};
+
+st[8] = // ゴルドー状態異常やられ(青い煙が散る)
+{
+	times = 60,
+	effinterval = 6,
+	effname = "",
+	effpos = 615,
+
+	colortype = 2,
+	colorinterval = 6,
+	color = [ 0xFF9090FF, 0xFF000080, 0xFF3030FF, 0xFF000040 ],
+};
+
+st[9] = // 爆発やられ（燃えより激しい）
+{
+	times = 60,
+	effinterval = 3,
+	effname = "",
+	effpos = 205,
+
+	colortype = 2,
+	colorinterval = 6,
+	color = [ 0xFFFF9090, 0xFF800000, 0xFFFF3030, 0xFF400000 ],
+};
+
+
+print( "\n>> Load BoundEff.txt" );

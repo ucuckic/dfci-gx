@@ -1,0 +1,11 @@
+[data]
+500 = This is what I've been waiting for!
+501 = The time has come. Let's go!
+502 = Alright, bring it on!
+510 = You're ten years too early!
+511 = You're twenty years too early!
+513 = Come on, come on, come on!
+520 = Come at me with all you've got!
+521 = We're not finished yet. Get up!
+530 = What is it that I lack?
+531 = I have failed...

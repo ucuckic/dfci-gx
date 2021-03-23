@@ -1,0 +1,10 @@
+[System]
+ProjectName=csel_Hiw
+[DataFile]
+FileNum= 1
+File00=csel_Hiw.HA6
+[BmpcutFile]
+FileNum= 1
+File00=csel_Hiw.cg
+[PAniFile]
+FileNum= 0

@@ -1,0 +1,683 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+local pat_num_BenGrp_A = BMvEff.GetPatternNum( { datatype=0, pat="BenGrp_A" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BenGrp_B = BMvEff.GetPatternNum( { datatype=0, pat="BenGrp_B" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BenGrp_C = BMvEff.GetPatternNum( { datatype=0, pat="BenGrp_C" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BenGetEff_Blue = BMvEff.GetPatternNum( { datatype=0, pat="BenGetEff_Blue" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BenGetEff_Green = BMvEff.GetPatternNum( { datatype=0, pat="BenGetEff_Green" } ); // パターン文字列のパターン番号を事前取得
+
+local pat_num_BenGetEff_Bad = BMvEff.GetPatternNum( { datatype=0, pat="BenGetEff_Bad" } ); // パターン文字列のパターン番号を事前取得
+
+local item_param = 
+[
+	// Type:0
+	{
+		item_pat=pat_num_BenGrp_A, // 大河に渡した弁当 ゲージが増える
+		voice=[170],
+		get =
+		[
+			{ sp = 10000, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 0, mess="大河弁当_1" }, 
+			{ sp =  2500, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 0, mess="大河弁当_2" }, 
+		],
+		enemy_get =
+		[
+			{ sp =  8000, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 0, mess="大河弁当_敵1" }, 
+			{ sp =  1000, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 0, mess="大河弁当_敵2" }, 
+			// { sp =  1000, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 0, mess="大河弁当_敵3↓↓" }, 
+			// { sp =  1000, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 0, mess="大河弁当_敵4↓↓↓" }, 
+		],
+	},
+	// Type:1
+	{
+		item_pat=pat_num_BenGrp_B, // 竜児の弁当 体力が増える
+		voice=[171,172],
+		get =
+		[
+			{ sp = 0, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 1000, mess="竜児弁当_1" }, 
+			{ sp = 0, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 250, mess="竜児弁当_2" }, 
+		],
+		enemy_get =
+		[
+			{ sp = 0, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 800, mess="竜児弁当_敵1" }, 
+			{ sp = 0, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 100, mess="竜児弁当_敵2" }, 
+			// { sp = 0, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 200, mess="竜児弁当_敵3↓↓" }, 
+			// { sp = 0, se=18, eff_pat = pat_num_BenGetEff_Green, color=0x00D030, hp = 200, mess="竜児弁当_敵4↓↓↓" }, 
+		],
+	},
+	// Type:2
+	{
+		item_pat=pat_num_BenGrp_C, // 重箱 ゲージと体力が増える マイナス効果がすごくでかい
+		voice=[173],
+		get =
+		[
+			{ sp = 20000, se=18, eff_pat = pat_num_BenGetEff_Blue, color=0x00D0D0, hp = 1500, mess="重箱_1", stup=1 }, 
+			{ sp = 5000, se=18, eff_pat = pat_num_BenGetEff_Blue, color=0x00D0D0, hp = 500, mess="重箱_2", stup=1 }, 
+		],
+		enemy_get =
+		[
+			{ sp = 16000, se=18, eff_pat = pat_num_BenGetEff_Blue, color=0x00D0D0, hp = 1200, mess="重箱_敵1" }, 
+			{ sp =  2000, se=18, eff_pat = pat_num_BenGetEff_Blue, color=0x00D0D0, hp = 200, mess="重箱_敵3" }, 
+			// { sp =  2500, se=18, eff_pat = pat_num_BenGetEff_Blue, color=0x00D0D0, hp = 300, mess="重箱_敵3↓↓" }, 
+			// { sp =  2500, se=18, eff_pat = pat_num_BenGetEff_Blue, color=0x00D0D0, hp = 300, mess="重箱_敵3↓↓↓" }, 
+		],
+	},
+];
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00, item_param )
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		Battle_Std.SetXPos_BackCorner( 200 ); // 背後の画面端から出現
+		
+		local type = BMvTbl.GetPP(0)%item_param.len(); // 何個目の弁当か取得
+		_dp("\n 弁当PAT:"+item_param[type].item_pat+" Type:"+type+" 総計:"+BMvTbl.GetPP(0) );
+		
+		BMvTbl.SetLP(2, type ); // タイプ記憶
+	}
+	function FrameUpdate_After() : (item_param)
+	{
+		local type = BMvTbl.GetLP(2); // 弁当のタイプ取得
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50: // 弁当ゴソゴソ開始
+			BSound.SE_Play( { type=_SeType_Player, num=item_param[type].voice } );
+			break;
+		case 80: // 弁当作成
+			BMvEff.CreateObject( { mvname="Mv_BentouWait", start_pat=item_param[type].item_pat } ); // Pat変更で消える
+			break;
+		case 100: // 弁当飛ばす
+			local eff = BMvEff.CreateObject( { start_pat=80, mvname="Mv_Bentou", x=110<<7, y=-350<<7 } ); // Pat変更で消える 329
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags =  _ObjFlags_NoGround | _ObjFlags_EraseParentPatChange } );
+				
+				local grp = BMvEff.CreateObject( { start_pat=item_param[type].item_pat } );
+				if( grp.push() )
+				{
+					BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_ParentMove } );
+					BMvTbl.JumpFrameID( 100 ); // 点滅アニメの方にする
+					grp.pop();
+				}	
+		
+				BMvTbl.SetLP(2,type); // 取得時のエフェクト番号記憶
+				eff.pop();
+			}
+			BMvTbl.AddPP(0,1); // 弁当投げた回数を加算
+			break;
+		}
+		// 弁当が終了したらサポートをFinalizeする
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.FrameID == 900 ) // 弁当終了待ち部分
+		{
+			if( BMvTbl.GetPP(5) <= 0 ) // 弁当がある間は1になっている
+			{
+				BMvTbl.SetFinalize( 0 );
+			}
+		}
+	}
+}
+
+// 弁当取得回数を加算
+local add_BentouGetCount = function( _plside )
+{
+	local support = BMvCore.GetPlayerCharaData(); // サポオブジェクトのプレイヤーなのでサポートキャラ
+	if( support.push() )
+	{
+		local count = BMvTbl.GetLP(_plside );
+		BMvTbl.AddLP( _plside, 1 );
+		_dp("\n"+(_plside+1)+"P側の弁当取得回数 -> "+count);
+		support.pop();
+		
+		return count;
+	}
+	return 0;
+}
+
+local add_BentouGetCountPlayerPP = function()
+{
+	local count = BMvTbl.GetPP( def_PP_TksItemCount );
+	if( count < 99 ) // 最大９９個
+	{
+		BMvTbl.AddPP( def_PP_TksItemCount, 1 );
+	}
+	_dp("\n 弁当取得回数 -> "+count);
+	
+	return count;
+}
+
+
+
+local pat_num_bentou = BMvEff.GetPatternNum( { datatype=0, pat="bentou" } ); // パターン文字列のパターン番号を事前取得
+
+
+t.Mv_BentouWait <-
+{
+	function Init() : (pat_num_bentou)
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_ParentMove } );
+	}
+	function FrameUpdate()
+	{
+		// 親の特殊判定の座標にくっつく
+		local player = BMvCore.GetParentCharaData();
+		if( player.push() )
+		{
+			local rc = BMvEff.GetHanteiRect ( { check=[ _Hantei_Etc, 4 ], flags=_HanteiFlag_NoMukiChange | _HanteiFlag_Tool } );
+			player.pop();
+			
+			if( rc.sx != _Hantei_Error ) // 存在するか
+			{
+				// 特殊判定の座標に移動？
+				BMvTbl.SetPosition( { x=rc.sx, y=rc.sy, flags=_Position_CaptureShift|_Position_ChangeMuki } );
+			}
+			else
+			{
+				BMvTbl.SetFinalize(0); // 特殊判定ないなら消えるよ
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+// 弁当取得回数は1Pと2Pでそれぞれ別にカウントされる
+t.Mv_Bentou <-
+{
+	function Init()
+	{
+		BMvTbl.SetLP(0,1); // 弁当の壁反射回数
+		// BMvTbl.SetLP(2,0); // 弁当タイプ受け皿
+		BMvTbl.SetPP(5,1); // 親がチェックする 0:弁当ない 1:弁当ある
+	}
+	function FrameUpdate() : (add_BentouGetCountPlayerPP, item_param)
+	{
+		if( BMvTbl.GetLP(0) > 0 ) // まだ反射回数が残ってる
+		{
+			// 画面外で逆を向く（ラウンド終了時のみ見た目の端でチェック）
+			if( Battle_Std.CheckFromtCornerDistance_with_RoundEnd( 0 ) )
+			{
+				BMvTbl.AddLP(0,-1); // 残り反射回数を減らす
+				local vec = BMvTbl.GetVector( 0 );
+				BMvTbl.SetMuki( _Direction_Reverse );
+				BMvTbl.SetVector( { x=vec.x } ); // ベクトルを逆にする
+			}
+		}
+		else
+		{
+			// 画面外まで進んだら消える（ラウンド終了時のみ見た目の端でチェック）
+			if( Battle_Std.CheckFromtCornerDistance_with_RoundEnd( -200 ) )
+			{
+				BMvTbl.SetFinalize( 0 );
+			}
+		}
+
+		// 特殊判定５と触れたら拾える
+		// ２キャラ同時に重なっていたら両者拾えるようにした
+        local hanteiobj = BMvEff.CCheckRect();
+		
+        hanteiobj.SetPlayer();
+        hanteiobj.SetSrc( [ _Hantei_Etc, 4, 1 ] ); //自分の情報設定
+        hanteiobj.SetDst( [ _Hantei_Kasanari, 0, 1 ] ); //相手の情報設定
+        hanteiobj.SetFlags( _HC_FavourPc|_HC_EnemyPc|_HC_WithoutNoHanteiFlagObj ); //検索条件設定
+
+		local item_get = 0;
+        while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
+        {
+			local getter = hanteiobj.GetCharaData(); // 見つかったオブジェクト取得
+			if( getter.push() )
+			{
+				local playerside = BMvTbl.GetPlayerSide(); // 1Pか2Pか 0or1
+				local isRecovery = Battle_Std.MoveCode.CheckFlag( def_MC_Recovery ); // 行動コード(受け身)
+				
+				// local count = BMvTbl.GetPP( def_PP_TksItemCount ); // 回数？
+				local count = ( !isRecovery )? add_BentouGetCountPlayerPP() : 0; // 何回取ったか取得
+				
+				getter.pop();
+				
+				if( !isRecovery ) // 取得成功時
+				{
+					
+					local type = BMvTbl.GetLP(2);
+					
+					local itemside = BMvTbl.GetPlayerSide(); // 弁当が1Pのか2Pのか 0or1
+					
+					// メインキャラのコンボとして計算する用にメインキャラをとっておく
+					local main = BMvCore.GetMainCharaData();
+					
+					if( getter.push() )
+					{
+						local item_get = (playerside == itemside)? item_param[type].get : item_param[type].enemy_get;
+
+						local usecount = count;
+						if( usecount>=item_get.len() ) usecount = item_get.len()-1; // 最大値
+
+						local getst = item_get[usecount];
+						
+						// 回復効果は弁当食べた回数で変更
+						local deb_mess = ( "mess" in getst )? getst.mess : ""; // MEMO:デバッグ表示
+						_dp("\n 総取得数:"+count+" 配列使用値:"+usecount+" Type:"+type+" 種類:"+deb_mess+" HP:"+getst.hp+" SP:"+getst.sp );
+						
+						if( getst.sp != 0 )
+						{
+							BMvEff.SetSpGauge( { value = getst.sp, correct=1 } ); // SP増加
+						}
+						
+						if( getst.hp > 0 )
+						{
+							BMvEff.SetHpGauge( { value = getst.hp, valuetype=2 } ); // 白のみ増加
+						}
+						else if( getst.hp < 0 ) // ダメージ
+						{
+							if( main.isdone() )
+							{
+								_dp("\n ★メインキャラ取得");
+								BMvEff.SetHpGauge( { value = getst.hp, valuetype=1, attacker=main } ); // 白残して実のみ減少
+							}
+						}
+						
+						// 取るとステータスアップのポテンシャル発動
+						if( "stup" in getst )
+						{
+							tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_StatusUp ); // ポテンシャル発揮
+						}
+						
+						// 回復ＳＥ
+						BSound.SE_Play( { type=_SeType_Normal, num=getst.se } );
+
+						// 回復演出
+						BMvEff.SetCharaFlash( { color = getst.color, type = 0, time = 30 } );
+
+						local getpos = BMvTbl.GetPosition( 0 );
+						
+						getter.pop();
+						
+						// 取得時のエフェクト表示
+						local eff = BMvEff.CreateObject( { start_pat=getst.eff_pat } );
+						if( eff.push() )
+						{
+							BMvTbl.SetPosition( { x=getpos.x } ); // Y座標は弁当の位置にしておく
+							BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+							eff.pop();
+						}
+					}
+					item_get = 1; // 拾ったことを記憶して自分は消える
+					
+					
+				} // 成功時
+			}
+        }		
+		if( item_get )
+		{
+			// 拾ったら消える
+			BMvTbl.SetFinalize( 0 );
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvTbl.SetPP(5,0); // 弁当終了
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); // 落下ベクトルあるので念のため
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); // 落下ベクトルあるので念のため
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup10_Atk = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Atk" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup10_Atk2 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Atk2" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <-
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 );
+		Battle_Std.SetXPos_BackCorner( 300 ); // 背後の端から出現
+		Battle_Std.AddXPos_NearEnemy( 0, 300 ); // 近すぎると当たらないので補正をかける
+		
+		BMvTbl.SetLP(4,0); // 自分の攻撃判定が相手にヒットorガードした過去がある
+		BMvTbl.SetLP(5,0); // 攻撃開始したかどうか
+		BMvTbl.SetLP(6,0); // 重なりを復活させたかどうか 0:重なりなし 1:重なりあり
+		BMvTbl.SetLP(7,0); // 非表示になったかどうか
+		BMvTbl.SetLP(8,0); // 画面外まで進んで向き反転したかどうか
+
+		// 基本的に重なりはなし
+		BMvEff.SetExist( { level = _Exist_NoKasanariHantei , mode=_ExistMode_Add } );
+
+		local eff = BMvEff.CreateObject( { mvname="Mv_TksSousai" } );
+	}
+	function FrameUpdate_After() : (pat_num_Sup10_Atk)
+	{
+		if( BMvTbl.GetLP(5) == 1 && BMvTbl.GetLP(4) == 1 ) // 攻撃開始中＆りゅーじの攻撃がヒットorガードの過去がある
+		{
+			// 重なり判定つきで押すので、演出系がバグりやすい
+			// 相手がBound中（やられorガード）のみ重なり判定を有効にする
+			
+			local main_isCLAMove = 0;
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				main_isCLAMove = Battle_Std.MoveCode.CheckFlag( def_MC_Skill ) && Battle_Std.MvAction.CheckFlag( def_MC_SPAction );
+				
+				main.pop();
+			}
+			
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				local bs = BtlMvStd.GetBoundStatus();
+				enemy.pop();
+				
+				// やられ中かつ自分がクライマックスアーツ中以外なら有効
+				local erable_kasanari = (bs.isBound && !main_isCLAMove);
+				
+				if( BMvTbl.GetLP(6) == 1 ) // 重なりを復活させてる
+				{
+					if( !erable_kasanari ) // 重なり有効だめそう
+					{
+						BMvEff.SetExist( { level = _Exist_NoKasanariHantei , mode=_ExistMode_Add } );
+						BMvTbl.SetLP(6,0); // 重なりを消した
+					}
+				}
+				else // 重なりを消している（初期状態）
+				{
+					if( erable_kasanari ) // 重なり有効そう
+					{
+						BMvEff.SetExist( { level = _Exist_NoKasanariHantei , mode=_ExistMode_Erase } );
+						BMvTbl.SetLP(6,1); // 重なりを戻した
+					}
+				}				
+			}
+		}
+		else // 最初の移動中
+		{
+			if( BMvTbl.GetLP(8) == 0 ) // まだ画面外まで進んで向き反転していない
+			{
+				// 画面外まで行っていたら逆を向く（ラウンド終了時のみ見た目の端でチェック）
+				if( Battle_Std.CheckFromtCornerDistance_with_RoundEnd( -300 ) )
+				{
+					BMvTbl.SetPattern( pat_num_Sup10_Atk ); // 攻撃判定つきに変える
+					BMvTbl.SetMuki( _Direction_Reverse ); // 反転
+					BMvTbl.AddLP(8,1); // 反転したことを記憶して何度も往復させない
+				}
+			}
+		}
+
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // 突進開始
+			BSound.SE_Play( { type=_SeType_Player, num=[180,181] } );
+			break;
+		case 500: // 攻撃判定つき突進開始 ※pat_num_Sup10_Atkの最初
+			if( BMvTbl.GetLP(7) == 0 ) BSound.SE_Play( { type=_SeType_Player, num=[182,183] } );
+			BMvTbl.SetLP(5,1); // 攻撃開始
+			break;
+		case 550: // 相殺成功時の攻撃判定つき突進開始 ※pat_num_Sup10_Atk2の最初
+			if( BMvTbl.GetLP(7) == 0 ) BSound.SE_Play( { type=_SeType_Player, num=[190] } );
+			BMvTbl.SetLP(5,1); // 攻撃開始
+			break;
+		case 900:
+		case -900:
+			// 画面外まで進んだらファイナライズ（ラウンド終了時のみ見た目の端でチェック）
+			if( Battle_Std.CheckFromtCornerDistance_with_RoundEnd( -100 ) )
+			{
+				BMvTbl.SetFinalize( 0 );
+			}
+			break;
+		}
+		
+		// 超法規的措置
+		// 大河63214B+Cの竜児表示タイミングでは非表示にする
+		if( BMvTbl.GetLP(7) == 0 )
+		{
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				local main_mvs = BMvTbl.GetMvStatus();
+				local main_mvname = BMvTbl.GetMvName();
+				main.pop();
+				
+				if( main_mvs.CharaNo == Def_ChrNo_Tgr && main_mvname == "Mv_Skill_63214SP_Hit" && main_mvs.Param1 == 100 )
+				{
+					BMvTbl.SetLP(7,1); // 非表示にしたのを記憶して何度も処理しない
+					_dp("\n 竜児がダブりかねないので非表示にします");
+					
+					/*
+					BMvEff.SetObjectFlags( { flags=_ObjFlags_NoRender } ); // 描画しなくする
+					// 消えたらボイスをとめる
+					BSound.SE_Stop( { type=_SeType_Player, category=1 } );
+					*/
+					
+					BMvTbl.SetFinalize( 0 ); //もうこれでいいのでは
+				}
+			}
+		}
+	}
+	function HitInterrupt_After()
+	{
+		if( BMvTbl.GetLP(4) == 0 )
+		{
+			if( Battle_Std.CheckHitTiming() )
+			{
+				_dp("\n りゅーじの攻撃がヒットorガードした");
+				BMvTbl.SetLP(4,1); // ヒットorガードしたのを記憶
+			}
+		}
+	}
+}
+
+local pat_num_TksSousai = BMvEff.GetPatternNum( { datatype=0, pat="TksSousai" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_TksSousai <- 
+{
+	function Init() : (pat_num_TksSousai)
+	{
+		BMvTbl.SetPattern( pat_num_TksSousai );
+		
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_ParentMove } );
+		BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } );
+		
+		BMvTbl.SetLP(0,0); // 相殺でとった回数
+		BMvTbl.SetLP(1,0); // 前回相殺でとってエフェクトを呼んだときのMvCount
+		// BMvTbl.SetLP(9,0); // 相殺関係で使用
+		
+		Battle_Std.Sousai.Init_BallTarget();
+	}
+	function FrameUpdate()
+	{
+		Battle_Std.Sousai.FrameUpdate_BallTarget();
+		
+		// 親のParam1が100の時だけ継続
+		local oya = BMvCore.GetParentCharaData();
+		if( oya.push() )
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			
+			oya.pop();
+			if( mvs.Param1 != 100 )
+			{
+				BMvTbl.SetFinalize(0); // 消える
+			}
+		}
+	}
+	function HitInterrupt() : (pat_num_Sup10_Atk2)
+	{
+		local mvhs = Battle_Std.Sousai.HitInterrupt( { noeffect=1, nosound=1, hitstop=0 } );
+		if( mvhs ) // 有効なら0以外
+		{
+			if( mvhs.isFirstUpdate )
+			{	
+				Battle_Std.SupSt_AddFlag( def_PP_Success ); // 成功技とする
+				
+				local oya = BMvCore.GetParentCharaData();
+				if( oya.push() )
+				{
+					local mvs = BMvTbl.GetMvStatus();
+					if( mvs.DataPattern == pat_num_Sup10_Atk2 )
+					{
+						BMvTbl.CalcHitValue(-10000);  // クリア
+						BMvTbl.CalcHitValue(1);  // そのあと１加算
+					}
+					else
+					{
+						BMvTbl.SetPattern( pat_num_Sup10_Atk2 );
+					}
+					BMvTbl.SetFinalizeCode(0);
+					
+					oya.pop();
+				}
+				
+				local mvs = BMvTbl.GetMvStatus();
+				local count = BMvTbl.AddLP(0,1); // よんだ回数記憶
+				local mvcount = mvs.MvCount;
+				local last_mvcount = BMvTbl.GetLP(1); // 前回消えてもいいエフェクトを呼んだMvCount(0もある)
+				// 初回or前回エフェクトから少し経過してないとエフェクトは呼ばない
+				local is_CallEffectTiming = ( count == 1 || (mvcount - last_mvcount > 10) );
+				
+				// _dp("\n mvcount - last_mvcount:"+ (mvcount - last_mvcount) );
+				if( is_CallEffectTiming )
+				{
+					// local eff = BMvEff.CreateObject( { datatype=1, start_pat=734, y=-200<<7 } );
+					local eff = BMvEff.CreateObject( { start_pat=120, y=-200<<7 } );
+					if( eff.push() )
+					{
+						BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll } );
+						eff.pop();
+					}
+					
+					
+					BMvTbl.SetLP(1,mvcount); // エフェクトを呼んだMvCountを記憶
+				}
+			}		
+		}	
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } ); // やられ音声		
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); // 落下ベクトルあるので念のため
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } ); // 撤退音声		
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); // 落下ベクトルあるので念のため
+	}
+}
+
+
+
+TKS_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Tks_s );
+
+_dp(" -> Load OK");

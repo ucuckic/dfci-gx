@@ -1,0 +1,564 @@
+//コマンドテーブル skillは格ゲーコマンド表記
+btl_debPrint2("\n[Krt_0_cmd.txt]");
+
+local check_AddSkill = function( _skillnum=0 )
+{
+	if( tDDC.Kirifuda_CheckTime() == 0 ) return 0;
+	local flag = BMvTbl.GetPP( def_PP_Krt_AddSkill );
+	if( flag&(1<<_skillnum) )
+	{
+		// _dp("\n フラグたってるのでダメ");
+		return 0;
+	}
+	// 必殺ＣがＨＩＴ時の時のみ出せる
+	if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+	
+	return 1;
+}
+
+local check_SousaiAddSkill = function( _skillnum=0 )
+{
+	if( tDDC.Kirifuda_CheckTime() == 0 ) return 0;
+	local flag = BMvTbl.GetPP( def_PP_Krt_AddSkill );
+	if( flag&(1<<_skillnum) )
+	{
+		// _dp("\n フラグたってるのでダメ");
+		return 0;
+	}
+	// 必殺ＣがＨＩＴorＤａｍａｇｅの時のみ出せる
+	if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit && BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Damage ) return 0;
+	
+	return 1;
+}
+
+local t =
+{
+	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+
+	Skill_236A = {},
+	Skill_236B = {},
+	Skill_236C = {},
+	Skill_236EX = {},
+	
+	Skill_236_AddA =
+	{
+		num = def_CN_Skill_AddCommand1_BSS, command = 
+		[
+		// "0404A@N,255@",
+		"0606A@N,255@",
+		// "46A",
+		// "64A",
+		],
+		function CmdBeforeFunc()
+		{
+			// 必殺ＣがＨＩＴ時の時のみ出せる
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			if( !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_CharaFlag3 ) ) return 0;
+			return 1;
+		},		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			// MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236","Mv_Atk_StdA"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddA", },
+	},
+	Skill_236_AddB =
+	{
+		num = def_CN_Skill_AddCommand2_BSS, command = 
+		[
+		// "0404B@N,255@",
+		"0606B@N,255@",
+		// "46B",
+		// "64B",
+		],
+		function CmdBeforeFunc()
+		{
+			// 必殺ＣがＨＩＴ時の時のみ出せる
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			if( !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_CharaFlag3 ) ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			// MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddB", },
+	},
+	Skill_236_AddC =
+	{
+		num = def_CN_Skill_AddCommand3_BSS, command = 
+		[
+		// "0404C@N,255@",
+		"0606C@N,255@",
+		// "46C",
+		// "64C",
+		],
+		function CmdBeforeFunc()
+		{
+			// 必殺ＣがＨＩＴ時の時のみ出せる
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			if( !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_CharaFlag3 ) ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			// MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddC", },
+	},	
+	
+	// 追加コマンドとして色々キャンセルを追加する
+	// 二刀の時は色々できちゃうんだ
+	Skill_Add236 =
+	{
+		num = def_CN_Skill_AddCommand4, command = 
+		[
+		">+A",">+B",">+C"
+		],
+		function CmdBeforeFunc() : (check_AddSkill)
+		{
+			if( check_AddSkill( 0 ) == 0 ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add214","Mv_Skill_AddJ236"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_Add236", },
+	},	
+	Skill_Add214 =
+	{
+		num = def_CN_Skill_AddCommand5, command = 
+		[
+		"<+A","<+B","<+C"
+		],
+		function CmdBeforeFunc() : (check_AddSkill)
+		{
+			if( check_AddSkill( 1 ) == 0 ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add236","Mv_Skill_AddJ236"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_Add214", },
+	},
+	Skill_AddJ236 =
+	{
+		num = def_CN_Skill_AddCommand6, command = 
+		[
+		"^+A","^+B","^+C"
+		],
+		function CmdBeforeFunc() : (check_AddSkill)
+		{
+			if( check_AddSkill( 2 ) == 0 ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_Add236","Mv_Skill_Add214"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_AddJ236", },
+	},	
+	// ガチャプレイにやさしい配置へ
+	Skill_Add236Easy =
+	{
+		num = def_CN_Skill_AddCommand7, command = 
+		[
+		"A","B","C"
+		],
+		function CmdBeforeFunc() : (check_AddSkill)
+		{
+			if( check_AddSkill( 0 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( mvs.Param2 != 100 ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add214","Mv_Skill_AddJ236"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_Add236", },
+	},	
+	Skill_Add214Easy =
+	{
+		num = def_CN_Skill_AddCommand8, command = 
+		[
+		"A","B","C"
+		],
+		function CmdBeforeFunc() : (check_AddSkill)
+		{
+			if( check_AddSkill( 1 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( mvs.Param2 != 100 ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add236","Mv_Skill_AddJ236"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_Add214", },
+	},
+	
+	Skill_AddJ236Easy =
+	{
+		num = def_CN_Skill_AddCommand9, command = 
+		[
+		"A","B","C"
+		],
+		function CmdBeforeFunc() : (check_AddSkill)
+		{
+			if( check_AddSkill( 2 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( mvs.Param2 != 100 ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_Add236","Mv_Skill_Add214"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_AddJ236", },
+	},		
+	
+	Skill_J236A = {},
+	Skill_J236B = {},
+	Skill_J236C = {},
+	Skill_J236EX = {},
+	
+	Skill_0202A = {},
+	Skill_0202B = {},
+	Skill_0202C = {},
+	Skill_0202EX = {},
+
+	Skill_214A = {},
+	Skill_214B = {},
+	Skill_214C = {},
+	Skill_214EX = {},
+	
+	Skill_214Sousai_Add =
+	{
+		num = def_CN_Skill_AddCommand10, command = 
+		[
+		">"
+		],
+		function CmdBeforeFunc()
+		{
+			// 必殺ＣがＨＩＴ時の時のみ出せる
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+		
+			// 214攻で相殺成功していないとダメ
+			if( BMvTbl.GetLP(2) != 1 ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_214EX","Mv_Skill_Add214"] },
+		},
+		UpdateTable = { name = "Mv_Skill_214Sousai_Add", },
+	},	
+	
+	
+	Skill_Sousai = {},
+	Skill_Sousai2 = {},
+	
+	// ガチャプレイにやさしい配置へ
+	//   A+B → 8+A+B → 2+A+B
+	// 2+A+B → 8+A+B →   A+B
+	
+	// 5+A+Bや8+A+Bからの2+A+B(任意)
+	Skill_SousaiAdd_Sousai2 =
+	{
+		num = def_CN_Skill_AddCommand12, command = 
+		[
+		"v+A","v+B","v+C"
+		],
+		function CmdBeforeFunc() : (check_SousaiAddSkill)
+		{
+			if( check_SousaiAddSkill( 4 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( !(mvs.Param2 & 8) ) return 0; // 8:任意 32:自動
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_Sousai","Mv_Skill_SousaiAddSousai","Mv_Skill_SousaiAddJ236","Mv_Skill_Sousai2AddJ236"] },
+			HitStatus = "Damage",
+		},
+		UpdateTable = { name = "Mv_Skill_SousaiAddSousai2", },
+	},
+	
+	// 2+A+Bや8+A+BからのA+B(任意)
+	Skill_SousaiAdd_Sousai =
+	{
+		num = def_CN_Skill_AddCommand13, command = 
+		[
+		">+A",">+B",">+C"
+		],
+		function CmdBeforeFunc() : (check_SousaiAddSkill)
+		{
+			if( check_SousaiAddSkill( 3 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( !(mvs.Param2 & 8) ) return 0; // 8:任意 32:自動
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_Sousai2","Mv_Skill_SousaiAddSousai2","Mv_Skill_SousaiAddJ236","Mv_Skill_Sousai2AddJ236"] },
+			HitStatus = "Damage",
+		},
+		UpdateTable = { name = "Mv_Skill_SousaiAddSousai", },
+	},	
+	
+	// 5+A+Bや2+A+Bからの8+A+B(任意・横に早い)
+	Skill_SousaiAdd_J236 =
+	{
+		num = def_CN_Skill_AddCommand14, command = 
+		[
+		"^+A","^+B","^+C",
+		],
+		function CmdBeforeFunc() : (check_SousaiAddSkill)
+		{
+			if( check_SousaiAddSkill( 5 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( !(mvs.Param2 & 8) ) return 0; // 8:任意 32:自動
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_Sousai","Mv_Skill_SousaiAddSousai"] }, // 2+A+Bからは出さない
+			HitStatus = "Damage",
+		},
+		UpdateTable = { name = "Mv_Skill_SousaiAddJ236", },
+	},	
+	
+	// 5+A+Bや2+A+Bからの8+A+B(任意・高い)
+	Skill_SousaiAdd_J2362 =
+	{
+		num = def_CN_Skill_AddCommand15, command = 
+		[
+		"^+A","^+B","^+C",
+		],
+		function CmdBeforeFunc() : (check_SousaiAddSkill)
+		{
+			if( check_SousaiAddSkill( 5 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( !(mvs.Param2 & 8) ) return 0; // 8:任意 32:自動
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_Sousai","Mv_Skill_SousaiAddSousai","Mv_Skill_Sousai2","Mv_Skill_SousaiAddSousai2"] },
+			HitStatus = "Damage",
+		},
+		UpdateTable = { name = "Mv_Skill_Sousai2AddJ236", },
+	},	
+	
+	// A+Bからの8+A+B（横に早い）
+	Skill_SousaiAdd_J236Easy =
+	{
+		num = def_CN_Skill_AddCommand16, command = 
+		[
+		"A","B","C"
+		],
+		function CmdBeforeFunc() : (check_SousaiAddSkill)
+		{
+			if( check_SousaiAddSkill( 5 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( !(mvs.Param2 & 32) ) return 0; // 8:任意 32:自動
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_Sousai","Mv_Skill_SousaiAddSousai"] }, // 2+A+Bからは出さない
+			HitStatus = "Damage",
+		},
+		UpdateTable = { name = "Mv_Skill_SousaiAddJ236", },
+	},
+	
+	// 2+A+Bからの8+A+B（高い）
+	Skill_SousaiAdd_J236Easy2 =
+	{
+		num = def_CN_Skill_AddCommand17, command = 
+		[
+		"A","B","C"
+		],
+		function CmdBeforeFunc() : (check_SousaiAddSkill)
+		{
+			if( check_SousaiAddSkill( 5 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( !(mvs.Param2 & 32) ) return 0; // 8:任意 32:自動
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_Sousai","Mv_Skill_SousaiAddSousai","Mv_Skill_Sousai2","Mv_Skill_SousaiAddSousai2"] },
+			HitStatus = "Damage",
+		},
+		UpdateTable = { name = "Mv_Skill_Sousai2AddJ236", },
+	},	
+	
+	// 2+A+B
+	Skill_SousaiAdd_Sousai2Easy =
+	{
+		num = def_CN_Skill_AddCommand18, command = 
+		[
+		"A","B","C"
+		],
+		function CmdBeforeFunc() : (check_SousaiAddSkill)
+		{
+			if( check_SousaiAddSkill( 4 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( !(mvs.Param2 & 32) ) return 0; // 8:任意 32:自動
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_Sousai","Mv_Skill_SousaiAddSousai","Mv_Skill_SousaiAddJ236","Mv_Skill_Sousai2AddJ236"] },
+			HitStatus = "Damage",
+		},
+		UpdateTable = { name = "Mv_Skill_SousaiAddSousai2", },
+	},	
+	
+	// 2+A+B→8+A+BからのA+B
+	Skill_SousaiAdd_SousaiEasy =
+	{
+		num = def_CN_Skill_AddCommand19, command = 
+		[
+		"A","B","C"
+		],
+		function CmdBeforeFunc() : (check_SousaiAddSkill)
+		{
+			if( check_SousaiAddSkill( 3 ) == 0 ) return 0;
+			local mvs = BMvTbl.GetMvStatus();
+			if( !(mvs.Param2 & 32) ) return 0; // 8:任意 32:自動
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_Sousai2","Mv_Skill_SousaiAddSousai2","Mv_Skill_SousaiAddJ236","Mv_Skill_Sousai2AddJ236"] },
+			HitStatus = "Damage",
+		},
+		UpdateTable = { name = "Mv_Skill_SousaiAddSousai", },
+	},
+	
+	Skill_Sousai4 = {},
+	Skill_Sousai4_JAdd = {},
+	Skill_Kirifuda = {},
+	
+	Skill_41236SP = {},
+	Skill_63214SP = {},	
+	
+}
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_StdA",
+		UpdateMoveName="Mv_Atk_StdB",
+	},
+	{
+		CheckMoveName="Mv_Atk_StdB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_StdB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_StdC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 0 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_CroA",
+		UpdateMoveName="Mv_Atk_CroB",
+	},
+	{
+		CheckMoveName="Mv_Atk_CroB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_CroB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_StdC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			Cost = { ComboGauge = 10000 },
+		}
+	},	
+]
+Battle_Std.MakeStdCombo( t, ar, 1 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_AirA",
+		UpdateMoveName="Mv_Atk_AirB",
+	},
+	{
+		CheckMoveName="Mv_Atk_AirB",
+		UpdateMoveName="Mv_Atk_AirC",
+		ResetTmplName="Std_Atk_AirB",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerAir, //スマートステアアナウンスの追加
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 2 );
+
+KRT_CommandTable <- Battle_Std.MakeCommandTable( t );
+
+_dp(" -> Load OK");

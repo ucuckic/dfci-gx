@@ -1,0 +1,623 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		// local rnd = BMvEff.Random_Limit(2); // ランダム
+		local rnd = 0; // 強制
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00a = BMvEff.GetPatternNum( { datatype=0, pat="Sup00a" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00,pat_num_Sup00a)
+	{
+		local isRareMode = (BMvEff.Random_Limit(100)>70)? 1 : 0;
+		if( isRareMode )
+		{
+			BMvTbl.SetPattern( pat_num_Sup00a ); // 表示するパターンを設定
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		}
+
+		BMvTbl.SetPosition( { y=0 } ); // 必ず地面に出る
+		
+		BMvTbl.SetLP(0, isRareMode ); // レアモードなのか記憶
+		
+		Battle_Std.AddXPos_CheckFrontStage( 0, 150 ); // X移動距離, ステージ端とこれ以上近づかない距離
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetFrameIDStatus() )
+		{
+		case 10100:
+			local isRareMode = BMvTbl.GetLP(0);
+			local eff_mvname = (isRareMode)? "Mv_Eff_BaraOyaEX" : "Mv_Eff_BaraOya";
+			local eff = BMvEff.CreateObject( { mvname=eff_mvname } );
+			if( eff.push() )
+			{
+				BMvTbl.SetLP(0, isRareMode); // レアモードなのか記憶
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange } ); // パターン変更で消去で保証を消す
+				eff.pop();
+			}
+			if( isRareMode )
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[173] } );
+			}
+			else
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[170,171,172] } );
+			}
+			break;
+		}
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00a_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00a_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc,pat_num_Sup00a_Esc)
+	{
+		local isRareMode = BMvTbl.GetLP(0);
+		if( isRareMode )
+		{
+			BMvTbl.SetPattern( pat_num_Sup00a_Esc );
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		}
+		BSound.SE_Play( { type=_SeType_Player, num=[130] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc,pat_num_Sup00a_Esc)
+	{
+		local isRareMode = BMvTbl.GetLP(0);
+		if( isRareMode )
+		{
+			BMvTbl.SetPattern( pat_num_Sup00a_Esc );
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		}
+		BSound.SE_Play( { type=_SeType_Player, num=[131] } );
+	}
+}
+
+local pat_num_Eff_BaraTama = BMvEff.GetPatternNum( { datatype=0, pat="Eff_BaraTama" } ); // パターン文字列のパターン番号を事前取得
+
+local call_bara = function( param={} ) : (pat_num_Eff_BaraTama)
+{
+	local isRareMode = BMvTbl.GetLP(0);
+	local eff = BMvEff.CreateObject( { mvname="Mv_Sup00AtkObj", start_pat=pat_num_Eff_BaraTama, x=param.x<<7, y=param.y<<7 } );
+	if( eff.push() )
+	{
+		local arx = [100,120,140,180,200,220];
+		local ary = [100,130,160,220,250,300];
+		local araddy = [30,50,110,180,240,300];
+		local parx = arx[param.num];
+		local pary = ary[param.num];
+		local paraddy = araddy[param.num];
+		BMvTbl.SetVector( { x=1300*parx/100, addx=60*parx/100, y=110*pary/100, addy=-60*paraddy/100, flags=_Vector_Normal } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+		BMvTbl.SetAngle( { angle=BMvEff.Random_Limit(2500) } );
+		
+		local scale = 12000 + BMvEff.Random_Limit(4000);
+		BMvTbl.SetScale( { x=scale, y=scale } );
+		
+		eff.pop();
+	}
+}
+
+t.Mv_Sup00AtkObj <-
+{
+	function Init()
+	{
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=255, flag=_ClearFlag_ChangeMv } ); // 弾無敵にスカる
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+	}
+	function FrameUpdate()
+	{
+		if( Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Sousai_MySubSuccess ) )
+		{
+			BMvTbl.SetFinalize(0); // 相殺したら消える
+		}
+		Battle_Std.CheckSousai(); // def_MC_Sousai と触れたら相殺し合う
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Eff_BaraTamaEX = BMvEff.GetPatternNum( { datatype=0, pat="Eff_BaraTamaEX" } ); // パターン文字列のパターン番号を事前取得
+
+local call_baraEX = function( param={} ) : (pat_num_Eff_BaraTamaEX)
+{
+	local isRareMode = BMvTbl.GetLP(0);
+	local eff = BMvEff.CreateObject( { mvname="Mv_Sup00AtkObj", start_pat=pat_num_Eff_BaraTamaEX, x=param.x<<7, y=param.y<<7 } );
+	if( eff.push() )
+	{
+		local arx = [100,120,140,180,200,220];
+		local ary = [100,130,160,220,250,300];
+		local araddy = [30,50,110,180,240,300];
+		local parx = arx[param.num];
+		local pary = ary[param.num];
+		local paraddy = araddy[param.num];
+		BMvTbl.SetVector( { x=1300*parx/100, addx=60*parx/100, y=110*pary/100, addy=-60*paraddy/100, flags=_Vector_Normal } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+		BMvTbl.SetAngle( { angle=BMvEff.Random_Limit(2500) } );
+		
+		local scale = 12000 + BMvEff.Random_Limit(4000);
+		BMvTbl.SetScale( { x=scale, y=scale } );
+		
+		eff.pop();
+	}
+}
+
+local pat_num_Eff_BaraOya = BMvEff.GetPatternNum( { datatype=0, pat="Eff_BaraOya" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Eff_BaraOya <-
+{
+	function Init() : (pat_num_Eff_BaraOya)
+	{
+		BMvTbl.SetPattern( pat_num_Eff_BaraOya );
+	}
+	function FrameUpdate() : (call_bara)
+	{
+		switch( Battle_Std.GetFrameIDStatus() )
+		{
+		case 10100:
+			call_bara( { num=0, x=  63, y=-42 } );
+			call_bara( { num=1, x= 101, y=-25 } );
+			break;
+		case 10200:
+			call_bara( { num=3, x= 121, y=-85 } );
+			call_bara( { num=2, x=-104, y=-41 } );
+			call_bara( { num=1, x=-136, y=-31 } );
+			break;
+		case 10300:
+			call_bara( { num=2, x= 124, y=-205 } );
+			call_bara( { num=3, x= 154, y=-235 } );
+			call_bara( { num=2, x= 152, y= -35 } );
+			call_bara( { num=1, x=  71, y=-112 } );
+			break;
+		case 10400:
+			call_bara( { num=3, x= 146, y=-139 } );
+			call_bara( { num=3, x=  93, y=-234 } );
+			call_bara( { num=4, x= -29, y= -32 } );
+			call_bara( { num=2, x=-113, y= -63 } );
+			break;
+		}
+	}
+	function Finalize()
+	{	
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Eff_BaraOyaEX = BMvEff.GetPatternNum( { datatype=0, pat="Eff_BaraOyaEX" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Eff_BaraOyaEX <-
+{
+	function Init() : (pat_num_Eff_BaraOyaEX)
+	{
+		BMvTbl.SetPattern( pat_num_Eff_BaraOyaEX );
+	}
+	function FrameUpdate() : (call_baraEX)
+	{
+		switch( Battle_Std.GetFrameIDStatus() )
+		{
+		case 10100:
+			call_baraEX( { num=0, x=  63, y=-42 } );
+			break;
+		case 10120:
+			call_baraEX( { num=1, x= 101, y=-25 } );
+			break;
+		case 10150:
+			call_baraEX( { num=0, x=  63, y=-42 } );
+			call_baraEX( { num=1, x=-136, y=-31 } );
+			break;
+		case 10170:
+			call_baraEX( { num=1, x= 101, y=-25 } );
+			break;
+		case 10200:
+			call_baraEX( { num=3, x= 121, y=-85 } );
+			break;
+		case 10220:
+			call_baraEX( { num=2, x=-104, y=-41 } );
+			call_baraEX( { num=3, x=  93, y=-234 } );
+			break;
+		case 10250:
+			call_baraEX( { num=1, x=-136, y=-31 } );
+			break;
+		case 10270:
+			call_baraEX( { num=2, x=-104, y=-41 } );
+			break;
+		case 10300:
+			call_baraEX( { num=2, x= 124, y=-205 } );
+			call_baraEX( { num=3, x= 154, y=-235 } );
+			break;
+		case 10320:
+			call_baraEX( { num=2, x= 152, y= -35 } );
+			break;
+		case 10350:
+			call_baraEX( { num=1, x=  71, y=-112 } );
+			break;
+		case 10370:
+			call_baraEX( { num=2, x= 152, y= -35 } );
+			call_baraEX( { num=1, x=  71, y=-112 } );
+			break;
+		case 10400:
+			call_baraEX( { num=3, x= 146, y=-139 } );
+			break;
+		case 10420:
+			call_baraEX( { num=2, x=-113, y= -63 } );
+			break;
+		}
+	}
+	function Finalize()
+	{	
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup10a = BMvEff.GetPatternNum( { datatype=0, pat="Sup10a" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <-
+{
+	function Init_After() : (pat_num_Sup10, pat_num_Sup10a)
+	{
+		// local isRareMode = (BMvEff.Random_Limit(100)>80)? 1 : 0;
+		local isRareMode = (BMvEff.Random_Limit(100)>75)? 1 : 0;
+		if( isRareMode )
+		{
+			BMvTbl.SetPattern( pat_num_Sup10a ); // 表示するパターンを設定
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup10 ); // 表示するパターンを設定
+		}
+
+		BMvTbl.SetLP(0, isRareMode ); // レアモードなのか記憶
+	
+		BMvTbl.SetLP(5,0); // 子の魔方陣の終了を受け取る皿
+		
+		Battle_Std.AddXPos_CheckFrontStage( 50, 150 ); // X移動距離, ステージ端とこれ以上近づかない距離
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 40:
+			BSound.SE_Play( { type=_SeType_Player, num=[175] } );
+			break;
+		case 50:
+			break;
+		case 100:
+			local isRareMode = BMvTbl.GetLP(0);
+			if( isRareMode )
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[173] } );
+			}
+			else
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[174] } );
+			}			
+			break;
+		case 200:
+			local isRareMode = BMvTbl.GetLP(0);
+			local eff = BMvEff.CreateObject( { mvname="Mv_MagicSquareDefence" } );
+			if( eff.push() )
+			{
+				BMvTbl.SetLP(2,isRareMode);
+				eff.pop();
+			}
+			break;
+		}
+
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.FrameID != 900 && BMvTbl.GetLP(5)==1 ) // 魔方陣が消えた
+		{
+			BMvTbl.JumpFrameID( 900 );
+		}
+	}
+	function LastUpdate_After()
+	{
+	}
+}
+
+// ターゲットの重なり判定の7/10に座標移動
+local setpos_TargetKasanari = function( _core )
+{
+	if( _core.push() )
+	{
+		local pl_pos = BMvTbl.GetPosition(0);
+		local pl_kasanari = BMvEff.GetHanteiRect ( { check=[ _Hantei_Kasanari, 0 ], flags=0 } );
+		
+		_core.pop();
+		local set_posy = pl_pos.y-(150<<7); // 基本値
+		if( pl_kasanari.sx != _Hantei_Error )
+		{
+			set_posy = pl_kasanari.ey + ( (pl_kasanari.sy - pl_kasanari.ey) * 7 / 10 );
+		}
+		BMvTbl.SetPosition( { x=pl_pos.x, y=set_posy } );
+	}
+}
+
+// ターゲットがやられかどうか取得(これガード含んでいないよ)
+local check_TargetisDamage = function( _core )
+{
+	if( _core.push() )
+	{
+		local bs = BtlMvStd.GetBoundStatus();
+		
+		_core.pop();
+		
+		if( bs.isBound == 1 || bs.isCapture != 0 )
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+local pat_num_def_magsq = BMvEff.GetPatternNum( { datatype=0, pat="def_magsq" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_def_magsq_rare = BMvEff.GetPatternNum( { datatype=0, pat="def_magsq_rare" } ); // パターン文字列のパターン番号を事前取得
+
+local pat_num_magsq_atk = BMvEff.GetPatternNum( { datatype=0, pat="magsq_atk" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_magsq_atk_rare = BMvEff.GetPatternNum( { datatype=0, pat="magsq_atk_rare" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_MagicSquareDefence <-
+{
+	function Init() : (pat_num_def_magsq, pat_num_def_magsq_rare)
+	{
+		local isRareMode = BMvTbl.GetLP(2);
+		local usepat = ( isRareMode )? pat_num_def_magsq_rare : pat_num_def_magsq;
+		BMvTbl.SetPattern( usepat );
+		
+		// 親のパターン変更で消えちゃうように
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange } );
+		
+		Battle_Std.Sousai.Init(); // ヒットフラグを与える相殺
+		
+		BMvTbl.SetLP(0,0); // 相殺でとった回数
+		// BMvTbl.SetLP(2,0); // レアモードかどうか、親からうけとる
+		
+		Battle_Std.BackScreenBlack_Start( 900 ); // 背景を指定レーム黒くする
+		
+		BMvTbl.SetLP(1,0); // 0:相手がやられ中だと継続、そうでないと1へ 1:相手はやられではない通常 2:相手がやられ（終わる）
+	}
+	function FrameUpdate() : (setpos_TargetKasanari, check_TargetisDamage)
+	{
+		local main = BMvCore.GetMainCharaData();
+
+		setpos_TargetKasanari( main );
+		if( check_TargetisDamage( main ) )
+		{
+			BMvTbl.SetFinalize( 0 );
+			return;
+		}
+		
+		// 相手がダメージ状態になったら終了する処理
+		// ダメージ状態から始まるとすぐに帰ってしまうのでそれもチェック
+		local enemyIsDamage = Battle_Std.CheckEnemyisDamage();
+		local enemyDamageStatus = BMvTbl.GetLP(1);
+		switch( enemyDamageStatus )
+		{
+		case 0: // ダメージ状態から始まったらここで待機
+			if( !enemyIsDamage ) // そうでなければ進む
+			{
+				BMvTbl.AddLP(1,1); // 次へ
+			}
+			break;
+		case 1: // 通常時
+			if( enemyIsDamage ) // 相手がダメージ状態になったら終了へ
+			{
+				BMvTbl.SetFinalize( 0 );
+			}
+			break;
+		}
+
+		Battle_Std.Sousai.FrameUpdate();
+		
+		if( Battle_Std.RoundisEnd() )
+		{
+			BMvTbl.SetFinalize( 0 );
+			return;
+		}
+	}
+	function HitInterrupt_After() : (pat_num_magsq_atk, pat_num_magsq_atk_rare)
+	{
+		local mvhs = Battle_Std.Sousai.HitInterrupt( { noeffect=1, hitstop=10 } );
+		if( mvhs ) // 有効なら0以外
+		{
+			if( mvhs.isFirstUpdate )
+			{
+				Battle_Std.SupSt_AddFlag( def_PP_Success );
+				
+				local mvs = BMvTbl.GetMvStatus();
+				local count = BMvTbl.AddLP(0,1); // よんだ回数記憶
+				
+				local isRareMode = BMvTbl.GetLP(2);
+				
+				local usepat = ( isRareMode )? pat_num_magsq_atk_rare : pat_num_magsq_atk;
+				
+				local eff = BMvEff.CreateObject( { start_pat=usepat } );
+				if( eff.push() )
+				{
+					// 向きを相手の方の反対にする
+					// こうすると前入れっぱなしでガードできない
+					BMvTbl.SetMuki( _Direction_Auto );
+					BMvTbl.SetMuki( _Direction_Reverse );
+					
+					eff.pop();
+				}
+				BMvTbl.SetFinalize( 0 );
+			}
+		}
+	}	
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		Battle_Std.BackScreenBlack_End( 10 ); // 背景を指定レームで元に戻す
+		
+		local oya = BMvCore.GetParentCharaData();
+		if( oya.push() )
+		{
+			BMvTbl.SetLP(5,1); // 終了を伝える
+			oya.pop();
+		}		
+	}
+}
+
+
+
+local check_TargetisCapture = function( _core )
+{
+	if( _core.push() )
+	{
+		local bs = BtlMvStd.GetBoundStatus();
+		
+		_core.pop();
+		
+		if( bs.isCapture != 0 )
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+// ターゲットのＳＰゲージを操作
+local set_TargetSpGauge = function( _core, _val )
+{
+	if( _core.push() )
+	{
+		BMvEff.SetSpGauge( { value=_val } );
+		
+		_core.pop();
+	}
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup10a_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10a_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc, pat_num_Sup10a_Esc)
+	{
+		local isRareMode = BMvTbl.GetLP(0);
+		if( isRareMode )
+		{
+			BMvTbl.SetPattern( pat_num_Sup10a_Esc );
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		}
+		
+		// 音声再生
+		BSound.SE_Play( { type=_SeType_Player, num=[130] } ); // やられ音声		
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc, pat_num_Sup10a_Esc)
+	{
+		local isRareMode = BMvTbl.GetLP(0);
+		if( isRareMode )
+		{
+			BMvTbl.SetPattern( pat_num_Sup10a_Esc );
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		}
+
+		// 音声再生
+		BSound.SE_Play( { type=_SeType_Player, num=[131] } ); // 撤退音声		
+	}
+}
+
+KRO_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Kro_s );
+
+_dp(" -> Load OK");

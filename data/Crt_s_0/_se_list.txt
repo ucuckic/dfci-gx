@@ -1,0 +1,72 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Crt_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Crt00_4901", type=0, category=1}; // 準備OKだ！
+// クライマックスブースト発動
+st[81] = { path=1, file="Crt00_7000", type=0, category=1}; // いくぞ！
+// ブラストＯＫ
+st[82] = { path=1, file="Crt00_4900", type=0, category=1}; // 待たせたな！
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Crt00_2100", type=0, category=1}; // ふむ、流石といった所だな！
+st[101] = { path=1, file="Crt00_2101", type=0, category=1}; // やったな、私たちの勝利だ！
+
+// ラウンド敗北	
+st[110] = { path=1, file="Crt00_2200a", type=0, category=1}; // しっかりしろ！駄目そうだったらお前だけでも逃がしてやるから。
+st[111] = { path=1, file="Crt00_2201", type=0, category=1}; // 落ちつけ、まだ次がある。
+
+// 通常攻撃	
+// st[120] = { path=1, file="Crt00_2500", type=0, category=1}; // ふっ！
+// st[121] = { path=1, file="Crt00_2501", type=0, category=1}; // たぁ！
+// st[122] = { path=1, file="Crt00_2502", type=0, category=1}; // はぁっ！
+
+// 撤退	
+st[130] = { path=1, file="Crt00_4000", type=0, category=1}; // なにっ！
+st[131] = { path=1, file="Crt00_4001", type=0, category=1}; // ちょっ…！
+
+// ダメージ	
+st[140] = { path=1, file="Crt00_4500", type=0, category=1}; // 痛っ
+st[141] = { path=1, file="Crt00_4501", type=0, category=1}; // そんなっ
+st[142] = { path=1, file="Crt00_4502", type=0, category=1}; // きゃーっ！
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Crt00_4600", type=0, category=1}; // すまないが、少し時間をくれ！
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Crt00_4900", type=0, category=1}; // 待たせたな！
+st[161] = { path=1, file="Crt00_4901", type=0, category=1}; // 準備OKだ！
+
+// 必殺技１	
+st[170] = { path=1, file="Crt00_7000", type=0, category=1}; // いくぞ！
+st[171] = { path=1, file="Crt00_7001", type=0, category=1}; // そこだ！
+st[172] = { path=1, file="Crt00_7002", type=0, category=1}; // 大丈夫か？
+st[173] = { path=1, file="Crt00_7003", type=0, category=1}; // どうだ！
+
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	待っていたぞ。
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	いつでも呼んでくれ。
+
+// // キャラセレクト画面キャラクター決定
+// 1130	了解した！

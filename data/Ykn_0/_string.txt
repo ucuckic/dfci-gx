@@ -1,0 +1,30 @@
+[data]
+// vsMis00
+100 = Well, Nekomatan's the cutest in the universe!
+
+// vsKur00
+110 = T-That outfit?! How obscene!
+
+// vsKrt00
+120 = Oh no, another creepo.
+
+// withAkj00
+200 = No, Senpai, this is our battle!
+
+500 = My battle begins now!
+501 = Sekkarou!
+502 = It is my duty, after all...
+510 = We won!
+511 = You need to take a hard look at your li-
+512 = I thought you had more backbone.
+513 = The battle is decided.
+
+515 = You saw nothing...
+516 = Eek!
+517 = Kyaa!
+518 = Oh no!
+
+520 = This is our victory.
+521 = Are you mocking me?
+530 = That's not fair...
+531 = No way...

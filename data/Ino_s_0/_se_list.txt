@@ -1,0 +1,75 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Ino_s/"; // 仮
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Ino00_4900", type=0, category=1}; // ひな大丈夫､まかせてー
+// クライマックスブースト発動
+st[81] = { path=1, file="Ino00_7003", type=0, category=1}; // どんとこーい
+// ブラストＯＫ
+st[82] = { path=1, file="Ino00_4901", type=0, category=1}; // おー､いつでもいけるよー
+
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Ino00_2100", type=0, category=1}; // ひな達の勝利ー
+st[101] = { path=1, file="Ino00_2101", type=0, category=1}; // よかったよかったー
+
+// ラウンド敗北	
+st[110] = { path=1, file="Ino00_2200", type=0, category=1}; // まだ、次があるぞ～
+st[111] = { path=1, file="Ino00_2201", type=0, category=1}; // まだまだーひなも頑張るー
+
+// 通常攻撃	
+// st[120] = { path=1, file="Ino00_2500", type=0, category=1}; // てい
+// st[121] = { path=1, file="Ino00_2501", type=0, category=1}; // とぉー
+// st[122] = { path=1, file="Ino00_2502", type=0, category=1}; // それー
+
+// 撤退	
+st[130] = { path=1, file="Ino00_4000", type=0, category=1}; // おぉー
+st[131] = { path=1, file="Ino00_4001", type=0, category=1}; // 撤退､撤退ー
+
+// ダメージ	
+st[140] = { path=1, file="Ino00_4500", type=0, category=1}; // あっ
+st[141] = { path=1, file="Ino00_4501", type=0, category=1}; // おー？
+st[142] = { path=1, file="Ino00_4502", type=0, category=1}; // ぶー
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Ino00_4600", type=0, category=1}; // ひな､少しやすむー
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Ino00_4900", type=0, category=1}; // ひな大丈夫､まかせてー
+st[161] = { path=1, file="Ino00_4901", type=0, category=1}; // おー､いつでもいけるよー
+
+// 必殺技１	
+// st[170] = { path=1, file="Ino00_7000", type=0, category=1}; // いくぞー　おーっ
+st[171] = { path=1, file="Ino00_7001", type=0, category=1}; // 行かせないぞー
+// st[172] = { path=1, file="Ino00_7002", type=0, category=1}; // 覚悟ー
+st[173] = { path=1, file="Ino00_7003", type=0, category=1}; // どんとこーい
+
+
+
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	おー、ひなの出番？
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	にゃんにゃー、にゃにゃにゃにゃにゃーん
+
+// キャラセレクト画面キャラクター決定
+// 1130	がんばるぞー

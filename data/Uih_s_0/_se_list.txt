@@ -1,0 +1,85 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Uih_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(400); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Uih00_4900", type=0, category=1}; // 今度こそ…！
+// クライマックスブースト発動
+st[81] = { path=1, file="Uih00_7102", type=0, category=1}; // もう大丈夫ですよ…！
+// ブラストＯＫ
+st[82] = { path=1, file="Uih00_4901", type=0, category=1}; // お待たせしました！
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Uih00_2100", type=0, category=1}; // やった、やりましたよー
+st[101] = { path=1, file="Uih00_2101", type=0, category=1}; // えへへ、勝ちましたね
+
+// ラウンド敗北	
+st[110] = { path=1, file="Uih00_2200", type=0, category=1}; // あわわ、大丈夫ですか！？
+st[111] = { path=1, file="Uih00_2201", type=0, category=1}; // こんなの無理ですよぅー
+
+// 通常攻撃	
+// st[120] = { path=1, file="Uih00_2500", type=0, category=1}; // えい
+// st[121] = { path=1, file="Uih00_2501", type=0, category=1}; // やあ
+// st[122] = { path=1, file="Uih00_2502", type=0, category=1}; // はい
+
+// 撤退	
+// st[130] = { path=1, file="Uih00_4000", type=0, category=1}; // あわわわわ
+// st[131] = { path=1, file="Uih00_4001", type=0, category=1}; // すみませーん
+
+// ダメージ	
+st[140] = { path=1, file="Uih00_4500", type=0, category=1}; // きゃっ
+st[141] = { path=1, file="Uih00_4501", type=0, category=1}; // いだっ
+st[142] = { path=1, file="Uih00_4502", type=0, category=1}; // そんな
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Uih00_4600", type=0, category=1}; // ふぇぇ～ん
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Uih00_4900", type=0, category=1}; // 今度こそ…！
+st[161] = { path=1, file="Uih00_4901", type=0, category=1}; // お待たせしました！
+
+// 必殺技１	
+st[170] = { path=1, file="Uih00_7000_b"  , type=0, category=1}; // ふふふ、えへへへへ
+st[171] = { path=1, file="Uih00_7001_b"  , type=0, category=1}; // なんだかほわほわしてきました
+st[172] = { path=1, file="Uih00_7002_b"  , type=0, category=1}; // ぽけぇ～～
+st[173] = { path=1, file="Uih00_7003_b"  , type=0, category=1}; // 時間が経つのを忘れちゃいますねー
+
+// 必殺技２	
+// st[180] = { path=1, file="Uih00_7100_s0"  , type=0, category=1}; // 少し時間をください…！　見つけました！
+// st[181] = { path=1, file="Uih00_7100_s1"  , type=0, category=1}; // 少し時間をください…！　見つけました！
+st[182] = { path=1, file="Uih00_7101_b_s0"  , type=0, category=1}; // 私に任せてください…！　そこです！
+// st[183] = { path=1, file="Uih00_7101_s1"  , type=0, category=1}; // 私に任せてください…！　そこです！
+st[184] = { path=1, file="Uih00_7102"  , type=0, category=1}; // もう大丈夫ですよ…！
+st[185] = { path=1, file="Uih00_7103_b_s0"  , type=0, category=1}; // 援護は任せてください…！　今です！
+// st[186] = { path=1, file="Uih00_7103_s1"  , type=0, category=1}; // 援護は任せてください…！　今です！
+
+// 必殺技３	
+st[190] = { path=1, file="Uih00_7200_s0"  , type=0, category=1}; // 敵を転ばせてください！　ナイスです！
+st[191] = { path=1, file="Uih00_7200_b_s1"  , type=0, category=1}; // 敵を転ばせてください！　ナイスです！
+st[192] = { path=1, file="Uih00_7201_b_s0"  , type=0, category=1}; // 少し時間を稼いでください！　いい感じです！
+st[193] = { path=1, file="Uih00_7201_s1"  , type=0, category=1}; // 少し時間を稼いでください！　いい感じです！
+st[194] = { path=1, file="Uih00_7202"  , type=0, category=1}; // 攻撃の手を止めないでください！　
+// st[195] = { path=1, file="Uih00_7203_b_s0"  , type=0, category=1}; // 避（よ）け続けてください！　いい感じです！
+// st[196] = { path=1, file="Uih00_7203_b_s1"  , type=0, category=1}; // 避（よ）け続けてください！　いいですね！
+// st[197] = { path=1, file="Uih00_7204_b_s0"  , type=0, category=1}; // 指示に従ってください！
+// st[198] = { path=1, file="Uih00_7204_c_s1"  , type=0, category=1}; // 成功です！
+
+st[200] = { path=1, file="Uih00_7205"  , type=0, category=1}; // 失敗です…
+st[201] = { path=1, file="Uih00_7206"  , type=0, category=1}; // 残念です…

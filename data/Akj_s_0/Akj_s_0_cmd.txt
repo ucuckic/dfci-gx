@@ -1,0 +1,4 @@
+btl_debPrint2("\n[_cmd.txt]");
+AKJ_S_CommandTable <- 0;
+_dp(" -> Load OK");
+

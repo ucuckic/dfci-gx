@@ -1,0 +1,229 @@
+//コマンドテーブル skillは格ゲーコマンド表記
+btl_debPrint2("\n[cmd.txt]");
+
+const CDef_PP_Qen0202_C4Status = 2;
+
+local t =
+{
+	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+
+	Skill_236A = {CmdCheck = { BallLimit = {[def_BLS_Qen_Heivia]=1} }},
+	Skill_236B = {CmdCheck = { BallLimit = {[def_BLS_Qen_Heivia]=1} }},
+	Skill_236C = {CmdCheck = { BallLimit = {[def_BLS_Qen_Heivia]=1} }},
+	Skill_236EX = {},
+	
+	Skill_J236A = {CmdCheck = { BallLimit = {[def_BLS_Qen_Heivia]=1} }},
+	Skill_J236B = {CmdCheck = { BallLimit = {[def_BLS_Qen_Heivia]=1} }},
+	Skill_J236C = {CmdCheck = { BallLimit = {[def_BLS_Qen_Heivia]=1} }},
+	Skill_J236EX = {},
+
+	Skill_214A = { CmdCheck = { BallLimit = {[def_BLS_Qen_HandAxe]=1} } },
+	Skill_214B = { CmdCheck = { BallLimit = {[def_BLS_Qen_HandAxe]=1} } },
+	Skill_214C = { CmdCheck = { BallLimit = {[def_BLS_Qen_HandAxe]=1} } },
+	Skill_214EX = {}, // EXは制限なし
+	
+	Skill_0202A = 
+	{
+		function CmdBeforeFunc()
+		{
+			if( BMvTbl.GetPP(CDef_PP_Qen0202_C4Status) > 0 ) return 0;
+			
+			return 1;
+		},
+	},
+	
+	Skill_0202B = 
+	{
+		function CmdBeforeFunc()
+		{
+			if( BMvTbl.GetPP(CDef_PP_Qen0202_C4Status) > 0 ) return 0;
+			
+			return 1;
+		},
+	},
+	
+	Skill_0202_Detonate = 
+	{
+		num = def_CN_Skill_0202A, name = "Cmd_Skill_0202A", command = ["0202@N,255@A","0202@N,255@B","0202@N,255@C"],
+		CmdBeforeStdFunc = function()
+		{
+			if( Battle_Std.CancelCheck_SpecialSkill()==0 ) return 0;
+			
+			if( BMvTbl.GetPP(CDef_PP_Qen0202_C4Status) > 0 ) return 1;
+			
+			return 0;
+		},
+
+		CmdCheck = { MvCheck={ SkillFail="Mv_Skill_0202A"}, CommandButton = def_PP_CBS_ButtonA },
+		UpdateTable = { name = "Mv_Skill_0202_Detonate", }
+	},
+
+	Skill_0202EXPlus = 
+	{
+		command = "A+B",
+		function CmdBeforeFunc()
+		{
+			// if( Battle_Std.EnemyDamageFlag_Check( def_DF_ChrFlag1ed ) ) return 0; // コンボ中1回のみの技
+			return 1;
+		},
+		CmdCheck = 
+		{
+			MvCheck = { Only = ["Mv_Skill_236EX","Mv_Skill_214EX","Mv_Skill_J236EX"] },
+			// HitStatus = "Damage",
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_0202EX", },
+	
+	},
+
+	// ポテンシャル中の処理
+	Skill_0202EXPlusPot = 
+	{
+		command = "A+B",
+		function CmdBeforeFunc()
+		{
+			// if( Battle_Std.EnemyDamageFlag_Check( def_DF_ChrFlag1ed ) ) return 0; // コンボ中1回のみの技
+			return 1;
+		},
+		CmdCheck = 
+		{
+			MvCheck = { Only = ["Mv_Skill_236EX","Mv_Skill_214EX","Mv_Skill_J236EX"] },
+			// HitStatus = "Damage",
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_0202PotEX", },
+	
+	},	
+	
+	Skill_J0202EXPlus = 
+	{
+		command = "A+B",
+		function CmdBeforeFunc()
+		{
+			// if( Battle_Std.EnemyDamageFlag_Check( def_DF_ChrFlag1ed ) ) return 0; // コンボ中1回のみの技
+			return 1;
+		},
+		CmdCheck = 
+		{
+			MvCheck = { Only = ["Mv_Skill_236EX","Mv_Skill_214EX","Mv_Skill_J236EX"] },
+			// HitStatus = "Damage",
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_J0202EX", },
+	
+	},
+	Skill_J0202EXPlusPot = 
+	{
+		command = "A+B",
+		function CmdBeforeFunc()
+		{
+			// if( Battle_Std.EnemyDamageFlag_Check( def_DF_ChrFlag1ed ) ) return 0; // コンボ中1回のみの技
+			return 1;
+		},
+		CmdCheck = 
+		{
+			MvCheck = { Only = ["Mv_Skill_236EX","Mv_Skill_214EX","Mv_Skill_J236EX"] },
+			// HitStatus = "Damage",
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_J0202PotEX", },
+	
+	},	
+	Skill_Sousai = {},
+	Skill_Sousai2 = {},
+	Skill_Sousai4 = {},
+	Skill_Sousai4_JAdd = {},
+	
+	Skill_Kirifuda = {},
+	
+	Skill_41236SP = {},
+	Skill_63214SP = {},	
+}
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_StdA",
+		UpdateMoveName="Mv_Atk_StdB",
+	},
+	{
+		CheckMoveName="Mv_Atk_StdB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_StdB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_StdC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai_Hit",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			FrameIDCheck = { Only = [350,360] },
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 0 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_CroA",
+		UpdateMoveName="Mv_Atk_CroB",
+	},
+	{
+		CheckMoveName="Mv_Atk_CroB",
+		UpdateMoveName="Mv_Atk_CroC",
+		ResetTmplName="Std_Atk_CroB"
+	},
+	{
+		CheckMoveName="Mv_Atk_CroC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_CroC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai_Hit",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			FrameIDCheck = { Only = [350,360] },
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 1 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_AirA",
+		UpdateMoveName="Mv_Atk_AirB",
+	},
+	{
+		CheckMoveName="Mv_Atk_AirB",
+		UpdateMoveName="Mv_Atk_AirC",
+		ResetTmplName="Std_Atk_AirB",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerAir, //スマートステアアナウンスの追加
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 2 );
+
+QEN_CommandTable <- Battle_Std.MakeCommandTable( t );
+
+_dp(" -> Load OK");

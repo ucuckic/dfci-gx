@@ -1,0 +1,358 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Qen/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(690); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="Baraniumu", type=0, category=4, }; // 拳銃発射音（J236）
+
+// イグニッション選択
+st[80] = { path=1, file="Qen00_6101", type=0, category=1}; // このまま押し通す！
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+st[90] = { path=1, file="Hei00_2060", type=0, category=2}; // お、おおい。あの人ヤバくね？ hei
+st[91] = { path=1, file="Qen00_2061", type=0, category=1}; // お、お、落ち着け！
+st[92] = { path=1, file="Qen00_2062", type=0, category=1}; // 綺麗なお姉さん発見！
+st[93] = { path=1, file="Hei00_2063", type=0, category=2}; // よし！これより作戦行動に入るぜ！！ hei
+st[94] = { path=1, file="Hei00_2064", type=0, category=2}; // こんな子供が戦場に……！？ hei
+st[95] = { path=1, file="Qen00_2065", type=0, category=1}; // クソッ、絶対に守ってみせるぜ！
+
+// 登場シーン
+st[100] = { path=1, file="Qen00_2000", type=0, category=1}; // お前もだろ、ヘイヴィア。
+st[101] = { path=1, file="Qen00_2001", type=0, category=1}; // 気楽すぎるだろ。
+st[102] = { path=1, file="Qen00_2002", type=0, category=1}; // お仕事開始だ。
+
+st[106] = { path=1, file="Hei00_2011", type=0, category=2}; // 爆乳様のリクエストだ、派手に行こうぜ！
+st[105] = { path=1, file="Hei00_2010", type=0, category=2}; // ほらご指名だぜヒーロー
+st[107] = { path=1, file="Hei00_2012", type=0, category=2}; // 後で爆乳に踏んでもらうために頑張ろうぜ。
+
+// かけあいは上の方
+
+// 戦闘勝利・汎用
+st[110] = { path=1, file="Qen00_2100", type=0, category=1}; // よっし、想定通りだ
+st[111] = { path=1, file="Qen00_2101", type=0, category=1}; // ひゃっほーい、やったぜ！
+// 戦闘勝利・辛勝
+st[112] = { path=1, file="Qen00_2102", type=0, category=1}; // （辛勝）ラッキー、運も実力の内っ
+// 戦闘勝利・楽勝
+st[113] = { path=1, file="Qen00_2103", type=0, category=1}; // （楽勝）楽勝だなっ！
+
+// ラウンド勝利
+st[120] = { path=1, file="Qen00_2150", type=0, category=1}; // ふー、なかなか手ごわいなあ
+st[121] = { path=1, file="Qen00_2151", type=0, category=1}; // 簡単には終わらない……か
+
+// タイムアップ判定負け
+st[130] = { path=1, file="Qen00_2200", type=0, category=1}; // だーちくしょう！！
+st[131] = { path=1, file="Qen00_2201", type=0, category=1}; // 嘘だろ、オイ……
+
+// 弱攻撃
+st[140] = { path=1, file="Qen00_2300", type=0, category=1}; // ほ
+st[141] = { path=1, file="Qen00_2301", type=0, category=1}; // は
+st[142] = { path=1, file="Qen00_2302", type=0, category=1}; // ふ
+st[143] = { path=1, file="Qen00_2303", type=0, category=1}; // よ
+// st[144] = { path=1, file="Qen00_2304", type=0, category=1}; // し
+
+// 中攻撃
+st[150] = { path=1, file="Qen00_2400", type=0, category=1}; // えい
+st[151] = { path=1, file="Qen00_2401", type=0, category=1}; // そりゃ
+st[152] = { path=1, file="Qen00_2402", type=0, category=1}; // ふん
+st[153] = { path=1, file="Qen00_2403", type=0, category=1}; // でぇ
+st[154] = { path=1, file="Qen00_2404", type=0, category=1}; // だっ
+// st[155] = { path=1, file="Qen00_2405", type=0, category=1}; // やあ
+st[156] = { path=1, file="Qen00_2406", type=0, category=1}; // とう
+
+// 強攻撃
+st[160] = { path=1, file="Qen00_2500", type=0, category=1}; // とりゃあ
+st[161] = { path=1, file="Qen00_2501", type=0, category=1}; // せい！
+st[162] = { path=1, file="Qen00_2502", type=0, category=1}; // ふんぬー！
+st[163] = { path=1, file="Qen00_2503", type=0, category=1}; // だあ！
+st[164] = { path=1, file="Qen00_2504", type=0, category=1}; // でいや！
+// st[165] = { path=1, file="Qen00_2505", type=0, category=1}; // そらっ！
+st[166] = { path=1, file="Qen00_2506", type=0, category=1}; // 足っ！
+
+// 特殊攻撃
+// st[170] = { path=1, file="Qen00_2600", type=0, category=1}; // どけぇ！
+st[171] = { path=1, file="Qen00_2601", type=0, category=1}; // とおりゃあ！
+// st[172] = { path=1, file="Qen00_2602", type=0, category=1}; // うおおお！
+// st[173] = { path=1, file="Qen00_2603", type=0, category=1}; // えいやああ！
+// st[174] = { path=1, file="Qen00_2604", type=0, category=1}; // 間に合え！
+// st[175] = { path=1, file="Qen00_2605", type=0, category=1}; // どうだ！
+// st[176] = { path=1, file="Qen00_2606", type=0, category=1}; // おおおっ！
+// st[177] = { path=1, file="Qen00_2607", type=0, category=1}; // したぁ！（下）
+
+// 投げ技成功
+st[180] = { path=1, file="Qen00_2700", type=0, category=1}; // 取り付け完了！
+st[181] = { path=1, file="Qen00_2701", type=0, category=1}; // これあげるよ！
+st[182] = { path=1, file="Qen00_2702", type=0, category=1}; // 動かないでねー
+
+// 投げ技失敗
+// st[190] = { path=1, file="Qen00_2800", type=0, category=1}; // おおっと
+// st[191] = { path=1, file="Qen00_2801", type=0, category=1}; // 逃した……
+
+// 敵の投げ技を回避
+st[200] = { path=1, file="Qen00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// あぶないあぶない
+st[201] = { path=1, file="Qen00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// そうはいかないっ
+
+// 挑発アクション
+// st[210] = { path=1, file="Qen00_3100", type=0, category=1}; // 膠着状態かあ
+// st[211] = { path=1, file="Qen00_3101", type=0, category=1}; // さっさと終わらせて帰りたい
+
+// ジャンプ
+// st[220] = { path=1, file="Qen00_3200", type=0, category=1}; // しっ
+// st[221] = { path=1, file="Qen00_3201", type=0, category=1}; // よっ
+// st[222] = { path=1, file="Qen00_3202", type=0, category=1}; // は
+
+// ダッシュ
+st[230] = { path=1, file="Qen00_3300", type=0, category=1}; // 今だっ
+st[231] = { path=1, file="Qen00_3301", type=0, category=1}; // 待て！
+st[232] = { path=1, file="Qen00_3302", type=0, category=1}; // よしっ
+
+// バックステップ
+st[240] = { path=1, file="Qen00_3400", type=0, category=1}; // よっと
+st[241] = { path=1, file="Qen00_3401", type=0, category=1}; // ほっ
+st[242] = { path=1, file="Qen00_3402", type=0, category=1}; // おっつ！（おっと）
+
+// 小攻撃ガード
+st[250] = { path=1, file="Qen00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// む
+st[251] = { path=1, file="Qen00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// く
+st[252] = { path=1, file="Qen00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// ふ
+
+// 中攻撃ガード
+st[260] = { path=1, file="Qen00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// ぬう！
+st[261] = { path=1, file="Qen00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// つ
+st[262] = { path=1, file="Qen00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// ぐッ
+
+// 大攻撃ガード
+st[270] = { path=1, file="Qen00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// が！
+st[271] = { path=1, file="Qen00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// やる！（コイツやるな）
+st[272] = { path=1, file="Qen00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// うおおお！
+
+// 攻撃を見切り余裕でガード
+st[280] = { path=1, file="Qen00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 甘い
+st[281] = { path=1, file="Qen00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 見え見え
+st[282] = { path=1, file="Qen00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// そうかよ
+
+// ガード失敗
+st[290] = { path=1, file="Qen00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// のあっ
+st[291] = { path=1, file="Qen00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// マジかよ！
+st[292] = { path=1, file="Qen00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// げええ！！
+
+// 受け身
+st[300] = { path=1, file="Qen00_4000", type=0, category=1}; // だあくそ！
+st[301] = { path=1, file="Qen00_4001", type=0, category=1}; // ふざけやがって…
+st[302] = { path=1, file="Qen00_4002", type=0, category=1}; // クソッたれ！
+
+// バリア発動
+// st[310] = { path=1, file="Qen00_4100", type=0, category=1}; // おっと
+// st[311] = { path=1, file="Qen00_4101", type=0, category=1}; // 殺気
+// st[312] = { path=1, file="Qen00_4102", type=0, category=1}; // っ来る
+
+// バリアガード成功
+// st[320] = { path=1, file="Qen00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// 駄目だね（そんな攻撃では駄目だ）
+// st[321] = { path=1, file="Qen00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// よっし
+// st[322] = { path=1, file="Qen00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// 楽勝っ
+
+// 小ダメージ
+st[330] = { path=1, file="Qen00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// ぎっ！
+st[331] = { path=1, file="Qen00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// う！
+st[332] = { path=1, file="Qen00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// つっ！
+
+// 中ダメージ
+st[340] = { path=1, file="Qen00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// がぁ！
+st[341] = { path=1, file="Qen00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// げほ！
+st[342] = { path=1, file="Qen00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// ごほっ！
+
+// 大ダメージ
+st[350] = { path=1, file="Qen00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// があっ！
+st[351] = { path=1, file="Qen00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// ぶあっ！
+st[352] = { path=1, file="Qen00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// ってぇえ
+
+// 電撃ダメージ
+// st[360] = { path=1, file="Qen00_4600", type=0, category=1}; // どああああ
+// 麻痺ダメージ
+// st[361] = { path=1, file="Qen00_4601", type=0, category=1}; // 頭が…
+// 特殊ダメージ
+// st[362] = { path=1, file="Qen00_4602", type=0, category=1}; // なんっ…だ！？
+
+// ダウン
+st[370] = { path=1, file="Qen00_4700", type=0, category=1, prio=Def_SEP_KO };	// がァあああああっ！！
+st[371] = { path=1, file="Qen00_4701", type=0, category=1, prio=Def_SEP_KO };	// 嘘だろ！？
+st[372] = { path=1, file="Qen00_4702", type=0, category=1, prio=Def_SEP_KO };	// 死ぬ！！
+
+// ダウン・ノックアウト
+st[380] = { path=1, file="Qen00_4800", type=0, category=1, prio=Def_SEP_KO };	// 畜生っ！！
+st[381] = { path=1, file="Qen00_4801", type=0, category=1, prio=Def_SEP_KO };	// ぐわああああーっ！！
+st[382] = { path=1, file="Qen00_4802", type=0, category=1, prio=Def_SEP_KO };	// ケタが違いすぎる……
+
+// 起きあがり
+st[390] = { path=1, file="Qen00_4900", type=0, category=1}; // えげつねぇ！
+st[391] = { path=1, file="Qen00_4901", type=0, category=1}; // いっててぇ（痛い）
+st[392] = { path=1, file="Qen00_4902", type=0, category=1}; // よっと、
+
+// 起きあがり・瀕死
+// st[400] = { path=1, file="Qen00_5000", type=0, category=1}; // っくっそ
+// st[401] = { path=1, file="Qen00_5001", type=0, category=1}; // クソッたれ！
+// st[402] = { path=1, file="Qen00_5002", type=0, category=1}; // まだだ
+
+// ブラスト
+st[410] = { path=1, file="Qen00_5100", type=0, category=1}; // いっくぜ！
+st[411] = { path=1, file="Qen00_5101", type=0, category=1}; // ひゃっほう、
+st[412] = { path=1, file="Qen00_5102", type=0, category=1}; // やってやるっ！
+
+// コンボブラスト
+st[420] = { path=1, file="Qen00_5200", type=0, category=1}; // まだまだ続くぜ
+st[421] = { path=1, file="Qen00_5201", type=0, category=1}; // 間に合えッッ！
+
+// バウンドブラスト
+st[430] = { path=1, file="Qen00_5300", type=0, category=1}; // ふっざけんなっ！！
+st[431] = { path=1, file="Qen00_5301", type=0, category=1}; // やめろぉおお！！
+st[432] = { path=1, file="Qen00_5302", type=0, category=1}; // させねぇええ！
+
+// 攻撃サポートキャラ呼び出し
+st[440] = { path=1, file="Qen00_5400", type=0, category=1}; // 支援してくれ！
+st[441] = { path=1, file="Qen00_5401", type=0, category=1}; // 任せた！
+st[442] = { path=1, file="Qen00_5402", type=0, category=1}; // 畳み掛ける！
+
+// 補助サポートキャラ呼び出し
+// st[450] = { path=1, file="Qen00_5500", type=0, category=1}; // 援護を頼む
+// st[451] = { path=1, file="Qen00_5501", type=0, category=1}; // フォローしてくれ！
+// st[452] = { path=1, file="Qen00_5502", type=0, category=1}; // 手伝ってくれ！
+
+// 防御サポートキャラ呼び出し
+// st[460] = { path=1, file="Qen00_5600", type=0, category=1}; // 回避する！
+// st[461] = { path=1, file="Qen00_5601", type=0, category=1}; // 隙を作ってくれ！
+// st[462] = { path=1, file="Qen00_5602", type=0, category=1}; // 一旦退く！
+
+// 専用サポートキャラ呼び出し（フローレイティア）
+st[465] = { path=1, file="Qen00_5700", type=0, category=1}; // フローレイティアさん！
+st[466] = { path=1, file="Qen00_5701", type=0, category=1}; // 力を貸してください！
+st[467] = { path=1, file="Qen00_5702", type=0, category=1}; // 今がチャンスです！
+
+// 好調時にポテンシャル発動
+st[470] = { path=1, file="Qen00_6100", type=0, category=9}; // いい流れだ！
+st[471] = { path=1, file="Qen00_6101", type=0, category=9}; // このまま押し通す！
+st[472] = { path=1, file="Qen00_6102", type=0, category=9}; // 狙い通りだ！
+
+// ピンチ時にポテンシャル発動
+st[480] = { path=1, file="Qen00_6200", type=0, category=9}; // 借りを返すぜ！
+st[481] = { path=1, file="Qen00_6201", type=0, category=9}; // やるしかないか！
+st[482] = { path=1, file="Qen00_6202", type=0, category=9}; // これじゃ泥沼だ、
+
+// レアな隠しポテンシャル発動
+// st[490] = { path=1, file="Qen00_6300", type=0, category=9}; // 何でもやってやる！
+// st[491] = { path=1, file="Qen00_6301", type=0, category=9}; // 命乞いの時間だ、
+
+// 激突演出
+// st[500] = { path=1, file="Qen00_6400", type=0, category=9}; // うおおおおおおおおおお！！
+// st[501] = { path=1, file="Qen00_6401", type=0, category=9}; // くそったれえええええええ！！
+// st[502] = { path=1, file="Qen00_6402", type=0, category=9}; // ふっざけんなああああああ！！
+
+// 必殺技１
+st[510] = { path=1, file="Qen00_7000", type=0, category=1}; // 今だヘイヴィア！
+st[511] = { path=1, file="Qen00_7001", type=0, category=1}; // 捕捉した！
+st[512] = { path=1, file="Qen00_7002_b", type=0, category=1}; // 打ち落とせ！
+st[513] = { path=1, file="Qen00_7003_b", type=0, category=1}; // そこだっ！
+
+// 必殺技2
+st[520] = { path=1, file="Qen00_7100", type=0, category=1}; // 食らえっ
+st[521] = { path=1, file="Qen00_7101_b", type=0, category=1}; // でぇーい！
+st[522] = { path=1, file="Qen00_7102_b", type=0, category=1}; // 弾けろ！
+st[523] = { path=1, file="Qen00_7103", type=0, category=1}; // コイツは痛いぜ！！
+
+// 必殺技3
+// st[525] = { path=1, file="Qen00_7200", type=0, category=1}; // よっと　
+st[526] = { path=1, file="Qen00_7201_b", type=0, category=1}; // 仕掛ける……
+st[528] = { path=1, file="Qen00_7202_b", type=0, category=1}; // 行くぞ！
+// st[529] = { path=1, file="Qen00_7203", type=0, category=1}; // 死角を取る！
+
+// 必殺技4
+// st[540] = { path=1, file="Qen00_7300", type=0, category=1}; // 遠慮は要らないよ！
+st[541] = { path=1, file="Qen00_7301_b", type=0, category=1}; // これは痛いぞ？
+// st[542] = { path=1, file="Qen00_7302", type=0, category=1}; // 避けられる？
+st[543] = { path=1, file="Qen00_7303", type=0, category=1}; // ほいっほい
+
+// 必殺技5(ヘイヴィア)
+st[550] = { path=1, file="Hei00_7400", type=0, category=2}; // 任せろヒーロー！！
+st[551] = { path=1, file="Hei00_7401_b", type=0, category=2}; // うおおおおおおおッ！！
+st[552] = { path=1, file="Hei00_7402_b", type=0, category=2}; // 撃て撃て撃て撃て！！
+st[553] = { path=1, file="Hei00_7403", type=0, category=2}; // ファーーーック！！
+
+// 必殺技6(ヘイヴィア)
+st[560] = { path=1, file="Hei00_7500_b", type=0, category=2}; // 吹き飛べ！
+st[561] = { path=1, file="Hei00_7501_b", type=0, category=2}; // オラくらえ！
+st[562] = { path=1, file="Hei00_7502", type=0, category=2}; // 余所見してんなよ！
+st[563] = { path=1, file="Hei00_7503", type=0, category=2}; // 落ちろ！
+
+// 必殺技7(切り札)
+// st[570] = { path=1, file="Qen00_7600_b", type=0, category=1}; // ってうわあああああ！？
+st[571] = { path=1, file="Qen00_7601_b", type=0, category=1}; // うおぉおおっと！？
+// st[572] = { path=1, file="Qen00_7602_b", type=0, category=1}; // 死ぬ死ぬ死ぬー！？
+st[573] = { path=1, file="Qen00_7603_b", type=0, category=1}; // あぶねえええええ！？
+
+// ヘイヴィアやられ
+st[590] = { path=1, file="Hei00_4500", type=0, category=2}; // うっ！
+st[591] = { path=1, file="Hei00_4501", type=0, category=2}; // うおぉっ！
+st[592] = { path=1, file="Hei00_4502", type=0, category=2}; // ぐあぁっ！
+
+// 超必殺技1
+st[600] = { path=1, file="Qen00_8000_s0", type=0, category=1}; // これで終わりだ　当たれ　お姫様！
+// st[601] = { path=1, file="Qen00_8000_s1", type=0, category=1}; // これで終わりだ　当たれ　お姫様！
+st[602] = { path=1, file="Qen00_8000_s2", type=0, category=1}; // これで終わりだ　当たれ　お姫様！
+
+st[605] = { path=1, file="Qen00_8001_s0", type=0, category=1}; // わかってる！　はっ！　山ごとぶち抜いちまえ
+// st[606] = { path=1, file="Qen00_8001_s1", type=0, category=1}; // わかってる！　はっ！　山ごとぶち抜いちまえ
+st[607] = { path=1, file="Qen00_8001_s2", type=0, category=1}; // わかってる！　はっ！　山ごとぶち抜いちまえ
+
+st[610] = { path=1, file="Qen00_8002_s0", type=0, category=1}; // ヘイヴィア！　今っ！　いっけぇえええ！
+// st[611] = { path=1, file="Qen00_8002_s1", type=0, category=1}; // ヘイヴィア！　今っ！　いっけぇえええ！
+st[612] = { path=1, file="Qen00_8002_s2", type=0, category=1}; // ヘイヴィア！　今っ！　いっけぇえええ！
+
+st[615] = { path=1, file="Hei00_8010_s0", type=0, category=2}; // おうよ！　楽しいキャンプファイヤーだ！！
+st[616] = { path=1, file="Hei00_8010_s1", type=0, category=2}; // おうよ！　楽しいキャンプファイヤーだ！！
+st[620] = { path=1, file="Hei00_8011_s0", type=0, category=2}; // クウェンサー！　派手に踊れええ！
+st[621] = { path=1, file="Hei00_8011_s1", type=0, category=2}; // クウェンサー！　派手に踊れええ！
+//st[625] = { path=1, file="Hei00_8012_s0", type=0, category=2}; // まかせろヒーロー！　逃げ場はねぇぜ！
+st[626] = { path=1, file="Hei00_8012_s1", type=0, category=2}; // まかせろヒーロー！　逃げ場はねぇぜ！
+
+st[630] = { path=1, file="Mil00_8020", type=0, category=3}; // やっほー、ぜんだんはっしゃー
+st[631] = { path=1, file="Mil00_8021_b", type=0, category=3}; // こなごなにしてあげる！
+st[632] = { path=1, file="Mil00_8022", type=0, category=3}; // けっちゃくをつける！
+
+// 超必殺技2
+st[640] = { path=1, file="Qen00_8100_s0", type=0, category=1}; // 逃がすか！　終わりだ！　
+st[641] = { path=1, file="Qen00_8100_s1", type=0, category=1}; // 逃がすか！　終わりだ！　
+st[645] = { path=1, file="Qen00_8101_s0", type=0, category=1}; // 覚悟しろよ！　クソッたれ！
+st[646] = { path=1, file="Qen00_8101_s1", type=0, category=1}; // 覚悟しろよ！　クソッたれ！
+st[650] = { path=1, file="Qen00_8102_s0", type=0, category=1}; // 条件はそろった！　チェックメイトだ！　
+st[651] = { path=1, file="Qen00_8102_s1", type=0, category=1}; // 条件はそろった！　チェックメイトだ！　
+
+st[660] = { path=1, file="Hei00_8110", type=0, category=2}; // おらおらおらおらおらおら！
+st[661] = { path=1, file="Hei00_8111", type=0, category=2}; // くそったれええええ！
+st[662] = { path=1, file="Hei00_8112", type=0, category=2}; // おもてなしの時間だくそ野郎！
+
+// EX専用
+st[670] = { path=1, file="Mil00_7002", type=0, category=3}; // 
+st[671] = { path=1, file="Mil00_7003", type=0, category=3}; // 
+st[672] = { path=1, file="Mil00_7101_b", type=0, category=3}; // 
+
+st[680] = { path=1, file="Hei00_7000", type=0, category=2}; // おどりやがれ
+st[681] = { path=1, file="Hei00_7001", type=0, category=2}; // 援護するぜ
+st[682] = { path=1, file="Hei00_7002", type=0, category=2}; // うおおお
+st[683] = { path=1, file="Hei00_7101", type=0, category=2}; // 狙い撃つぜ

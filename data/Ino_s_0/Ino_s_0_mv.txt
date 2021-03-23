@@ -1,0 +1,270 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_sp0_hiteff = BMvEff.GetPatternNum( { datatype=0, pat="sp0_hiteff" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Ino_HitEff = BMvEff.GetPatternNum( { datatype=0, pat="Ino_HitEff" } ); // パターン文字列のパターン番号を事前取得
+
+// 適当にヒットエフェクトを呼ぶ
+local call_InoHitEffect = function() : (pat_num_sp0_hiteff)
+{
+	local enemy = BMvCore.GetEnemyCharaData();
+	if( enemy.push() )
+	{
+		local pos = BMvTbl.GetPosition( 0 );
+		BMvEff.SetCharaFlash( { color = 0xD00030, type = 0, time = 90 } );
+		
+		enemy.pop();
+		
+		// BMvEff.SetStopTime( { time=10 } );
+
+		// 相手とハートの間ぐらいにカメラを寄せるといいのでは
+		// BMvEff.SetStopTime( { time=46 } );
+		// local cpos = BMvTbl.GetPosition( 0 );
+		// BMvEff.SetCamera_Focus( { x=(cpos.x+pos.x)/2, y=0, zoom=1.0, time=[3,28,15], type_in=1, type_out=1 } );
+
+		// てきとう！でも空中で当たらないし大丈夫かな
+		local eff = BMvEff.CreateObject( { start_pat=pat_num_sp0_hiteff } );
+		if( eff.push() )
+		{
+			BMvTbl.SetPosition( { x=pos.x, y=-150<<7 } );
+			eff.pop();
+		}
+		BMvEff.CreateObject( { mvname="Mv_Ino_HitEff" } );
+	}
+}
+
+t.Mv_Ino_HitEff <- 
+{
+	function Init() : (pat_num_Ino_HitEff)
+	{
+		BMvTbl.SetPattern( pat_num_Ino_HitEff );
+		BMvEff.SetObjectFlags( { flags =_ObjFlags_NoGround } );
+	}
+	function FrameUpdate()
+	{
+		Battle_Std.SetPos_MarkingEnemy( 8, -250 );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 ); // 表示するパターンを設定
+
+		Battle_Std.AddXPos_CheckFrontStage( 100, 350 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		
+		BMvTbl.SetLP(0,0); // 攻撃判定生成したかどうか
+		
+		Battle_Std.Sousai.Init_NoHitFlag();
+	}
+	function FrameUpdate_After()
+	{
+		if( BMvTbl.GetLP(0) == 0 ) Battle_Std.Sousai.FrameUpdate_NoHitFlag();
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[171] } );
+			break;
+		}
+		// 操作親を引き寄せる
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.CallCount == 0 )
+		{
+			Battle_Std.PullEnemy_Etc1xKurai( 100 ); // 100F収束
+		}		
+	}
+	function HitInterrupt_After()
+	{
+		local mvhs = Battle_Std.Sousai.HitInterrupt( { noeffect=1, hitstop=8 } );
+		if( mvhs ) // 有効なら0以外
+		{
+			if( mvhs.isFirstUpdate && BMvTbl.GetLP(0) == 0 )
+			{
+				Battle_Std.SupSt_AddFlag( def_PP_Success );
+				// 相手を一定時間硬直させるやられを誘発させる攻撃判定を出す
+				local eff = BMvEff.CreateObject( { mvname="Mv_InoAtemiAtk" } );
+				BMvTbl.SetLP(0,1); // 攻撃判定生成したかどうか
+			}
+			BMvTbl.SetFinalizeCode(0); // 同フレームに殴られていると撤退するので行動上書き
+		}
+	}
+}
+
+local pat_num_sp10_atkeff = BMvEff.GetPatternNum( { datatype=0, pat="sp10_atkeff" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_InoAtemiAtk <-
+{
+	function Init() : (pat_num_sp10_atkeff)
+	{
+		BMvTbl.SetPattern( pat_num_sp10_atkeff );
+	}
+	function HitInterrupt_After() : (call_InoHitEffect)
+	{
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
+		{
+			call_InoHitEffect(); // ガードさせ攻撃ヒットエフェクト
+		}
+	}	
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+
+		Battle_Std.AddXPos_CheckFrontStage( 100, 600 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[173] } );
+			break;
+		}
+		// 操作親を引き寄せる
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.CallCount == 0 )
+		{
+			Battle_Std.PullEnemy_Etc0xKurai( 100 ); // 100F収束
+		}
+	}
+	function HitInterrupt_After() : (call_InoHitEffect)
+	{
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
+		{
+			call_InoHitEffect(); // ガードさせ攻撃ヒットエフェクト
+		}
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+
+INO_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Ino_s );
+
+_dp(" -> Load OK");

@@ -1,0 +1,355 @@
+
+File = // ファイル名３２文字まで、拡張子なし
+IsLoop = // ループする曲かどうか（ループの有無だけが違うBGMは定義してはいけない　※PS3の都合）
+LoopPos = // ループポイント、終端になったら戻る位置
+Volume = // ボリューム、10000で標準。小さくしかできない。一時的に使用したいときだけ変更、できるだけ元素材の音量を調整するように。
+norecording = // PS4 ビデオクリップに音声出力されるかどうか。  1だと録音不可。記述しない or 0だと録音可。
+
+
+//戦闘中キャラクター固有ＢＧＭ
+[BGM_001] 
+File = stage_valkyria // ヴァルキュリアステージ 荒廃と済世
+IsLoop = 1
+LoopPos = 5.63125
+
+[BGM_002] 
+File = stage_Virtua // バーチャステージ
+IsLoop = 1
+LoopPos = 13.72200
+
+[BGM_004]
+File = stage_nights // ナイツステージ Higher Higher
+IsLoop = 1
+LoopPos = 7.20678
+
+[BGM_005]
+File = stage_PSO2 // PSO2ステージ Cyphernetic Tornado
+IsLoop = 1
+LoopPos = 12.80013
+
+
+[BGM_007]
+File = stage_Sonic // ソニックステージ Seaside B-field
+IsLoop = 1
+LoopPos = 5.50713
+
+[BGM_008]
+File = stage_7thdragon // セブンスドラゴン
+IsLoop = 1
+LoopPos = 8.63114
+
+[BGM_009]
+File = stage_Shinobi // 忍ステージ 深淵
+IsLoop = 1
+LoopPos = 13.142
+
+
+[BGM_013]
+File = stage_Virtualon //バーチャロンステージ
+IsLoop = 1
+LoopPos = 26.17032
+
+
+[BGM_014]
+File = stage_bb // ボーダーブレイクステージ
+IsLoop = 1
+LoopPos = 7.13196
+
+
+[BGM_015]
+File = stage_valkyria_night // ヴァルキュリアステージ夜 碧の幻影
+IsLoop = 1
+LoopPos = 17.7985 // 140801マスタリング
+
+[BGM_016]
+File = stage_WLW // ワンダーランドウォーズ
+IsLoop = 1
+LoopPos = 9.96094 // 150930マスタリング
+
+[BGM_017]
+File = stage_seha // セハガール
+IsLoop = 1
+LoopPos = 32.00994 // 150930マスタリング
+
+[BGM_018]
+File = stage_WEE // ワールドエンドエクリプス
+IsLoop = 1
+LoopPos = 48.59230 // 151022マスタリング
+
+[BGM_029]
+File = stage_training // トレモ
+IsLoop = 1
+LoopPos = 21.81800 // 150930マスタリング
+
+// タイトル曲(MUSIC用)
+[BGM_030]
+File = title00_loop //タイトル
+IsLoop = 1
+LoopPos = 9.48607 // マスタリング済
+
+[BGM_031]
+File = title00_cs_loop //タイトルＣＳ
+IsLoop = 1
+LoopPos = 0.0 // 140801マスタリング
+
+[BGM_032]
+File = title01_loop //タイトル
+IsLoop = 1
+LoopPos = 9.61538 // 150930マスタリング
+norecording = 1
+
+//ストーリー関係
+[BGM_050]
+File = bgm_conv1 // ストーリー(通常）
+IsLoop = 1
+LoopPos = 2.15023
+
+[BGM_051]
+File = bgm_conv2 // ストーリー（幸福）
+IsLoop = 1
+LoopPos = 6.86069
+
+[BGM_053]
+File = bgm_conv4 // ストーリー（悲哀）
+IsLoop = 1
+LoopPos = 6.54321
+
+[BGM_054]
+File = bgm_conv5 // ストーリー（ギャグ）
+IsLoop = 1
+LoopPos = 10.21996
+
+[BGM_057]
+File = stage_stagef// 決戦ステージＢＧＭ（会話用）
+IsLoop = 1
+LoopPos = 18.61273
+
+[BGM_058]
+File = bgm_conv6 // ストーリー（日常）
+IsLoop = 1
+LoopPos = 4.40859 // 140801マスタリング
+
+[BGM_059]
+File = seen_enemyselect // アーケードモード相手選択
+IsLoop = 1
+LoopPos = 3.63673 // 150615マスタリング
+
+[BGM_061]
+File = bgm_conv_dotabata
+IsLoop = 1
+LoopPos = 3.89209 // 150930マスタリング
+
+[BGM_070]
+File = sys_allclear// DreamDuelオールクリアジングル
+IsLoop = 0
+LoopPos = 00.00
+
+
+// 決戦ＢＧＭ（ボーカルあり）
+[BGM_071]
+File = music_themesong_loop// ＡＣ曲
+IsLoop = 1
+LoopPos = 00.00
+
+[BGM_072]
+File = music_themesong_cs_loop// ＣＳ曲１
+IsLoop = 1
+LoopPos = 00.00
+
+[BGM_073]
+File = music_themesong_id90_loop// ＣＳ曲２
+IsLoop = 1
+LoopPos = 00.00
+norecording = 1
+
+//シーンＢＧＭ
+[BGM_081]
+File = sys_newchallenger //NewChallenger
+IsLoop = 0
+LoopPos = 0.0
+
+[BGM_082]
+File = sys_continue //コンティニュー
+IsLoop = 0
+LoopPos = 0.0
+
+[BGM_083]
+File = sys_gameover //ゲームオーバー
+IsLoop = 0
+LoopPos = 0.0
+
+[BGM_084]
+File = sys_vsdemo //ＶＳデモ
+IsLoop = 0
+LoopPos = 0.0
+
+[BGM_085]
+File = title01 //タイトル
+IsLoop = 0
+LoopPos = 0.0
+norecording = 1
+
+[BGM_087]
+File = seen_mainmenu // メインメニュー
+IsLoop = 1
+LoopPos = 4.12923 // 150930マスタリング
+
+[BGM_088]
+File = seen_special // スペシャル
+IsLoop = 1
+LoopPos = 3.80859 // 150930マスタリング
+
+[BGM_089]
+File = seen_network // ネットワーク
+IsLoop = 1
+LoopPos = 6.39584 // 140801マスタリング
+
+
+//戦闘中特殊ＢＧＭ(ボーカル無し)
+[BGM_090]
+File = stage_stagef_id// 決戦ステージ
+IsLoop = 1
+LoopPos = 9.61538 // 150930マスタリング
+norecording = 1
+
+[BGM_091]
+File = stage_stagef// 決戦ステージ
+IsLoop = 1
+LoopPos = 18.61273
+
+[BGM_092]
+File = stage_stagef_cs// 決戦ステージ家庭用向け
+IsLoop = 1
+LoopPos = 10.43648
+
+//主題歌(Musicで聞く用)
+[BGM_093]
+File = music_themesong_cs// belief
+IsLoop = 0
+LoopPos = 00.000
+
+[BGM_094]
+File = music_themesong// FIGHTING CLIMAX
+IsLoop = 0
+LoopPos = 00.000
+
+//エンディングＢＧＭ
+
+//シーンＢＧＭ
+[BGM_098]
+File = sys_windemo //勝利デモ
+IsLoop = 1
+LoopPos = 01.846
+
+[BGM_099]
+File = sys_chrselect //キャラクターセレクト
+IsLoop = 1
+LoopPos = 1.94803 // 150615マスタリング
+
+//100以降はやめとく
+
+[BGM_154]
+File = bgm_kof/kof13_takuma // Kyokugen Training! Mountain Seclusion (Theme of Art of Fighting Team)
+IsLoop = 1
+LoopPos = 12.769
+
+[BGM_155]
+File = bgm_kof/kof13_kim // Tame a Bad Boy (Theme of Kim Team)
+IsLoop = 1
+LoopPos = 11.100
+
+[BGM_156]
+File = bgm_kof/kof13_exiori // Arashi no Saxophone 2 (Theme of EX Flame Iori)
+IsLoop = 1
+LoopPos = 11.457
+
+[BGM_157]
+File = bgm_kof/kof13_iori // Stormy Saxophone 5 (Theme of Yagami Team)
+IsLoop = 1
+LoopPos = 12.036
+
+[BGM_158]
+File = bgm_kof/kof13_king // Who is Queen (Theme of Women Team)
+IsLoop = 1
+LoopPos = 12.683
+
+[BGM_159]
+File = bgm_kof/kof13_kdash // KDD-0063 (Theme of K' Team)
+IsLoop = 1
+LoopPos = 19.373
+
+[BGM_160]
+File = bgm_kof/kof13_athena // Purity Soldiers (Theme of Psycho Soldiers Team)
+IsLoop = 1
+LoopPos = 17.331
+
+
+[BGM_199]
+File = sys_based_song2 //キャラクターセレクト
+IsLoop = 1
+LoopPos = 1.94803 // 150615マスタリング
+
+[BGM_200]
+File = bgm_new\as120_asuka // Asuka 120% Burning Remixes 02 - Theme of Asuka (Raito remix)
+IsLoop = 1
+LoopPos = 13.448
+
+[BGM_201]
+File = bgm_new\crank_white_nite // エルトナム
+IsLoop = 1
+LoopPos = 7.290
+
+[BGM_202]
+File = bgm_new\gof2_darling_kiss // Darling... Kiss immediate ～ダキシメテ～ [climax edit] (ねがいステージ)
+IsLoop = 1
+LoopPos = 1.985
+
+[BGM_203]
+File = bgm_new\unseen_uchihas // cav
+IsLoop = 1
+LoopPos = 10.667
+
+[BGM_204]
+File = bgm_new\chr_11Elt_2 // エルトナム
+IsLoop = 1
+LoopPos = 0.120
+
+[BGM_205]
+File = bgm_new\snow_doo_sisters // ravedj
+IsLoop = 1
+LoopPos = 0.712
+
+[BGM_206]
+File = bgm_new\cmv_hyde_halcyon
+IsLoop = 1
+LoopPos = 0.612
+
+[BGM_207]
+File = bgm_new\unib_op
+IsLoop = 1
+LoopPos = 71.271
+
+[BGM_208]
+File = bgm_new\scraper_sky_homiez_high
+IsLoop = 1
+LoopPos = 4.917
+
+
+
+//2hu
+
+
+[BGM_300]
+File = bgm_2hu\155mokou1 // 
+IsLoop = 1
+LoopPos = 10.501655
+
+[BGM_301]
+File = bgm_2hu\155nitori1 // 
+IsLoop = 1
+LoopPos = 1.831701
+
+[BGM_302]
+File = bgm_2hu\155ichirin1 // 
+IsLoop = 1
+LoopPos = 3.600340

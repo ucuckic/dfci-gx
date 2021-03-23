@@ -1,0 +1,422 @@
+print("\n>>_se_list");
+
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Slv/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="Val_Footstep_L", type=1, category=-1, }; // 
+st[51] = { path=2, file="Val_Footstep_R", type=1, category=-1, }; // 
+st[55] = { path=2, file="Val_ShotBeam", type=0, category=2, }; // 
+st[56] = { path=2, file="Val_ChargeBeam", type=0, category=2, }; // 
+st[57] = { path=2, file="Val_ChargeStrike", type=0, category=2, }; // 
+st[63] = { path=2, file="Val_SwingA", type=0, category=2, }; // 
+st[64] = { path=2, file="Val_SwingC", type=0, category=2, }; // 
+// st[60] = { path=2, file="Val_Bomb", type=0, category=2, }; // 
+st[65] = { path=2, file="Val_ShotA", type=0, category=2, }; // 
+st[70] = { path=2, file="Val_WarpMove", type=0, category=2, }; // 
+
+// イグニッション選択
+st[80] = { path=1, file="Slv00_6201", type=0, category=1}; // 殿下のため、負ける訳にはいかぬ！
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+// 登場シーン	
+st[100] = { path=1, file="Slv00_2000", type=0, category=1}; // 殿下に勝利を！
+st[101] = { path=1, file="Slv00_2001", type=0, category=1}; // 再起不能にしてやろう。
+st[102] = { path=1, file="Slv00_2002", type=0, category=1}; // ヴァルキュリアの力…思い知るがいい！
+st[103] = { path=1, file="Slv00_2003", type=0, category=1}; // 今すぐ武器を捨て、降伏せよ！
+
+st[105] = { path=1, file="Slv00_2060", type=0, category=1}; // 根性
+
+// 戦闘勝利・汎用	
+st[110] = { path=1, file="Slv00_2100", type=0, category=1}; // ヴァルキュリアの力を甘く見るな。
+st[111] = { path=1, file="Slv00_2101", type=0, category=1}; // 当然の結果だな。
+// 戦闘勝利・辛勝	
+st[112] = { path=1, file="Slv00_2102", type=0, category=1}; // フン、他愛もない。
+// 戦闘勝利・楽勝	
+st[113] = { path=1, file="Slv00_2103", type=0, category=1}; // 私は、負けるわけにはいかんのだ！
+
+// ラウンド勝利	
+st[120] = { path=1, file="Slv00_2150", type=0, category=1}; // 立て、まだ戦いは終わっていない。
+st[121] = { path=1, file="Slv00_2151", type=0, category=1}; // 敵、撃破。
+
+// タイムアップ判定負け	
+st[130] = { path=1, file="Slv00_2200", type=0, category=1}; // 馬鹿な…！
+st[131] = { path=1, file="Slv00_2201", type=0, category=1}; // くっ…あと少しで…！
+
+// 弱攻撃	
+st[140] = { path=1, file="Slv00_2300", type=0, category=1}; // は
+st[141] = { path=1, file="Slv00_2301", type=0, category=1}; // ふ
+st[142] = { path=1, file="Slv00_2302_b", type=0, category=1}; // せい
+st[143] = { path=1, file="Slv00_2303_b", type=0, category=1}; // た
+st[144] = { path=1, file="Slv00_2304", type=0, category=1}; // や
+
+// 中攻撃	
+st[150] = { path=1, file="Slv00_2400", type=0, category=1}; // ふん
+st[151] = { path=1, file="Slv00_2401", type=0, category=1}; // そこだ
+st[152] = { path=1, file="Slv00_2402", type=0, category=1}; // てあっ
+st[153] = { path=1, file="Slv00_2403", type=0, category=1}; // せあっ
+st[154] = { path=1, file="Slv00_2404", type=0, category=1}; // でいっ
+st[155] = { path=1, file="Slv00_2405", type=0, category=1}; // いやっ
+st[156] = { path=1, file="Slv00_2406", type=0, category=1}; // そらっ
+
+// 強攻撃	
+st[160] = { path=1, file="Slv00_2500", type=0, category=1}; // くらえ！
+st[161] = { path=1, file="Slv00_2501", type=0, category=1}; // はああっ！
+st[162] = { path=1, file="Slv00_2502", type=0, category=1}; // いゃあ！
+st[163] = { path=1, file="Slv00_2503", type=0, category=1}; // 終わりだ！
+st[164] = { path=1, file="Slv00_2504", type=0, category=1}; // 沈め！
+st[165] = { path=1, file="Slv00_2505", type=0, category=1}; // 落ちろ！
+st[166] = { path=1, file="Slv00_2506_b", type=0, category=1}; // 潰れろ！
+
+
+// 特殊攻撃	
+// st[170] = { path=1, file="Slv00_2600", type=0, category=1}; // 消え去れ！
+// st[171] = { path=1, file="Slv00_2601", type=0, category=1}; // 不注意だぞ！
+// st[172] = { path=1, file="Slv00_2602", type=0, category=1}; // とどめっ！
+st[173] = { path=1, file="Slv00_2603", type=0, category=1}; // 逃さん！
+// st[174] = { path=1, file="Slv00_2604", type=0, category=1}; // 貴様ァ！
+st[175] = { path=1, file="Slv00_2605", type=0, category=1}; // 吹き飛べ！
+st[176] = { path=1, file="Slv00_2606", type=0, category=1}; // がら空きだな！
+st[177] = { path=1, file="Slv00_2607", type=0, category=1}; // 飛べ！
+
+// 投げ技成功	
+st[180] = { path=1, file="Slv00_2700_s0", type=0, category=1}; // フン…潰れろ！　　（※投げで相手をダウンさせ、ヒールで踏みつけます）
+st[181] = { path=1, file="Slv00_2700_s1", type=0, category=1}; // フン…潰れろ！　　（※投げで相手をダウンさせ、ヒールで踏みつけます）
+st[182] = { path=1, file="Slv00_2701_s0", type=0, category=1}; // フン…無様だな。　　（※投げで相手をダウンさせ、ヒールで踏みつけます）
+st[183] = { path=1, file="Slv00_2701_s1", type=0, category=1}; // フン…無様だな。　　（※投げで相手をダウンさせ、ヒールで踏みつけます）
+st[184] = { path=1, file="Slv00_2702", type=0, category=1}; // これがいいのか？　　（※投げで相手をダウンさせ、ヒールで踏みつけます）
+
+// 投げ技失敗	
+st[190] = { path=1, file="Slv00_2800", type=0, category=1}; // なんだと！？
+st[191] = { path=1, file="Slv00_2801", type=0, category=1}; // こんな事が！？
+
+// 敵の投げ技を回避	
+st[200] = { path=1, file="Slv00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// 無礼な！
+st[201] = { path=1, file="Slv00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// どこを触っているのだ！
+
+// 挑発アクション	
+// st[210] = { path=1, file="Slv00_3100", type=0, category=1}; // 貴様、私を侮辱する気か！
+// st[211] = { path=1, file="Slv00_3101", type=0, category=1}; // 本気で来い！
+
+// ジャンプ	
+st[220] = { path=1, file="Slv00_3200", type=0, category=1}; // ふっ
+st[221] = { path=1, file="Slv00_3201", type=0, category=1}; // はっ
+st[222] = { path=1, file="Slv00_3202", type=0, category=1}; // であっ
+
+// ダッシュ	
+st[230] = { path=1, file="Slv00_3300", type=0, category=1}; // いくぞ
+st[231] = { path=1, file="Slv00_3301", type=0, category=1}; // 行動開始
+st[232] = { path=1, file="Slv00_3302", type=0, category=1}; // はっ
+
+// バックステップ	
+st[240] = { path=1, file="Slv00_3400", type=0, category=1}; // ふん
+// st[241] = { path=1, file="Slv00_3401", type=0, category=1}; // でゃっ
+st[242] = { path=1, file="Slv00_3402", type=0, category=1}; // はあっ
+
+// 小攻撃ガード	
+st[250] = { path=1, file="Slv00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// フン
+st[251] = { path=1, file="Slv00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// 効かんな
+st[252] = { path=1, file="Slv00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// つまらん
+
+// 中攻撃ガード	
+st[260] = { path=1, file="Slv00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// 甘い
+st[261] = { path=1, file="Slv00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// 小賢しい
+st[262] = { path=1, file="Slv00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// ほう
+
+// 大攻撃ガード	
+st[270] = { path=1, file="Slv00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// この力…！
+st[271] = { path=1, file="Slv00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// 手強いな
+st[272] = { path=1, file="Slv00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// ぬうう
+
+// 攻撃を見切り余裕でガード	
+st[280] = { path=1, file="Slv00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 諦めろ
+st[281] = { path=1, file="Slv00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 無駄だ
+st[282] = { path=1, file="Slv00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// こんなものか？
+
+// ガード失敗	
+st[290] = { path=1, file="Slv00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// 抜けた…！？
+st[291] = { path=1, file="Slv00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// これはっ！？
+st[292] = { path=1, file="Slv00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// どうなっている！
+
+// 受け身	
+st[300] = { path=1, file="Slv00_4000", type=0, category=1}; // 貴様…！
+st[301] = { path=1, file="Slv00_4001", type=0, category=1}; // 問題ない
+st[302] = { path=1, file="Slv00_4002", type=0, category=1}; // 惜しかったな
+
+// バリア発動	
+st[310] = { path=1, file="Slv00_4100", type=0, category=1}; // かかってくるがいい
+st[311] = { path=1, file="Slv00_4101", type=0, category=1}; // 先手はくれてやる
+st[312] = { path=1, file="Slv00_4102", type=0, category=1}; // 好きにしていいぞ
+
+// バリアガード成功	
+st[320] = { path=1, file="Slv00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// 無駄な抵抗を
+st[321] = { path=1, file="Slv00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// 軽いな
+st[322] = { path=1, file="Slv00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// なんだ？これは
+
+// 小ダメージ	
+st[330] = { path=1, file="Slv00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// ぐっ！
+st[331] = { path=1, file="Slv00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// かっ！
+st[332] = { path=1, file="Slv00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// うっ！
+
+// 中ダメージ	
+st[340] = { path=1, file="Slv00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// ああっ！
+st[341] = { path=1, file="Slv00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// ぐぁっ！
+st[342] = { path=1, file="Slv00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// ぬあっ！
+
+// 大ダメージ	
+st[350] = { path=1, file="Slv00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// があっ！
+st[351] = { path=1, file="Slv00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// くうう！
+st[352] = { path=1, file="Slv00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// まずいっ！
+
+// 電撃ダメージ	
+// st[360] = { path=1, file="Slv00_4600", type=0, category=1}; // からだが、うごかない……
+// 麻痺ダメージ	
+// st[361] = { path=1, file="Slv00_4601", type=0, category=1}; // 視界が…
+// 特殊ダメージ	
+// st[362] = { path=1, file="Slv00_4602", type=0, category=1}; // 力が…入らない
+
+// ダウン	
+st[370] = { path=1, file="Slv00_4700", type=0, category=1, prio=Def_SEP_KO };	// ああああっ！
+st[371] = { path=1, file="Slv00_4701", type=0, category=1, prio=Def_SEP_KO };	// この私が、負けるなんて…！
+st[372] = { path=1, file="Slv00_4702", type=0, category=1, prio=Def_SEP_KO };	// これしきの事で…！
+
+// ダウン・ノックアウト	
+st[380] = { path=1, file="Slv00_4800", type=0, category=1, prio=Def_SEP_KO };	// ぐぁぁあああっ！！
+st[381] = { path=1, file="Slv00_4801", type=0, category=1, prio=Def_SEP_KO };	// ここが、私の死に場所か…
+st[382] = { path=1, file="Slv00_4802", type=0, category=1, prio=Def_SEP_KO };	// マクシミリアン…さま……！
+
+// 起きあがり	
+st[390] = { path=1, file="Slv00_4900", type=0, category=1}; // 私とした事が！
+st[391] = { path=1, file="Slv00_4901", type=0, category=1}; // クッ！
+st[392] = { path=1, file="Slv00_4902", type=0, category=1}; // もう終わりか？！
+
+// 起きあがり・瀕死	
+// st[400] = { path=1, file="Slv00_5000", type=0, category=1}; // まだやれるっ！
+// st[401] = { path=1, file="Slv00_5001", type=0, category=1}; // この程度では！
+// st[402] = { path=1, file="Slv00_5002", type=0, category=1}; // まだまだ…！
+
+// ブラスト	
+st[410] = { path=1, file="Slv00_5100", type=0, category=1}; // うおおおお！
+st[411] = { path=1, file="Slv00_5101", type=0, category=1}; // 思い知れ！
+st[412] = { path=1, file="Slv00_5102_b", type=0, category=1}; // この力、殿下のために！
+
+// コンボブラスト	
+st[420] = { path=1, file="Slv00_5200", type=0, category=1}; // 続けていくぞ！
+st[421] = { path=1, file="Slv00_5201", type=0, category=1}; // 殲滅する！
+
+// バウンドブラスト	
+st[430] = { path=1, file="Slv00_5300", type=0, category=1}; // うっとおしい！
+st[431] = { path=1, file="Slv00_5301", type=0, category=1}; // ええい、邪魔だ！
+st[432] = { path=1, file="Slv00_5302", type=0, category=1}; // 無礼者が！
+
+// 攻撃サポートキャラ呼び出し	
+st[440] = { path=1, file="Slv00_5400", type=0, category=1}; // 援護を頼む！
+st[441] = { path=1, file="Slv00_5401", type=0, category=1}; // 突撃！
+st[442] = { path=1, file="Slv00_5402", type=0, category=1}; // やってくれ！
+
+// 補助サポートキャラ呼び出し	
+// st[450] = { path=1, file="Slv00_5500", type=0, category=1}; // 支援兵！
+// st[451] = { path=1, file="Slv00_5501", type=0, category=1}; // 補給を頼む！
+// st[452] = { path=1, file="Slv00_5502", type=0, category=1}; // いまだ！
+
+// 防御サポートキャラ呼び出し	
+// st[460] = { path=1, file="Slv00_5600", type=0, category=1}; // 技工兵！
+// st[461] = { path=1, file="Slv00_5601", type=0, category=1}; // すまない！
+// st[462] = { path=1, file="Slv00_5602", type=0, category=1}; // 助かったぞ。
+
+// 専用サポートキャラ呼び出し（アリシア）	
+st[465] = { path=1, file="Slv00_5700", type=0, category=1}; // アリシア！
+st[466] = { path=1, file="Slv00_5701", type=0, category=1}; // 行けアリシア！
+st[467] = { path=1, file="Slv00_5702", type=0, category=1}; // 行くぞアリシア！ Bパターン:一斉射撃！
+
+// 好調時にポテンシャル発動	
+st[470] = { path=1, file="Slv00_6100", type=0, category=3}; // 私に任せろ！
+st[471] = { path=1, file="Slv00_6101", type=0, category=3}; // いい調子だ！
+st[472] = { path=1, file="Slv00_6102", type=0, category=3}; // このまま押し切る！
+
+// ピンチ時にポテンシャル発動	
+st[480] = { path=1, file="Slv00_6200", type=0, category=3}; // 私の居場所は戦場にしかない…！
+st[481] = { path=1, file="Slv00_6201", type=0, category=3}; // 殿下のため、負ける訳にはいかぬ！
+st[482] = { path=1, file="Slv00_6202", type=0, category=3}; // 私を本気で怒らせたな…！
+
+// レアな隠しポテンシャル発動	
+// st[490] = { path=1, file="Slv00_6300", type=0, category=3}; // 我が身は殿下のために…！
+// st[491] = { path=1, file="Slv00_6301", type=0, category=3}; // この命、くれてやる訳にはいかん！
+
+// 激突演出	
+// st[500] = { path=1, file="Slv00_6400", type=0, category=3}; // はあああああああ！
+// st[501] = { path=1, file="Slv00_6401", type=0, category=3}; // うおおおおおおお！
+// st[502] = { path=1, file="Slv00_6402", type=0, category=3}; // ヴァルキュリアは負けぬ！
+
+// 必殺技１	
+st[510] = { path=1, file="Slv00_7000", type=0, category=1}; // 連光線！
+st[511] = { path=1, file="Slv00_7001", type=0, category=1}; // 当たれ！
+st[512] = { path=1, file="Slv00_7002", type=0, category=1}; // 制圧射撃！
+st[513] = { path=1, file="Slv00_7003_b", type=0, category=1}; // 焼き尽くす！
+
+st[514] = { path=1, file="Slv00_7000_b", type=0, category=1}; // 連光線！
+
+
+// 必殺技2	
+// st[520] = { path=1, file="Slv00_7100", type=0, category=1}; // ゆくぞ
+st[521] = { path=1, file="Slv00_7101_b", type=0, category=1}; // スピードを上げるぞ
+st[522] = { path=1, file="Slv00_7102", type=0, category=1}; // 始末する
+st[523] = { path=1, file="Slv00_7103", type=0, category=1}; // 残像だ
+
+// 必殺技3	
+st[525] = { path=1, file="Slv00_7200_s0", type=0, category=1}; // ふうん！　トドメだ！
+st[526] = { path=1, file="Slv00_7200_b_s1", type=0, category=1}; // ふうん！　トドメだ！
+// st[527] = { path=1, file="Slv00_7201_b_s0", type=0, category=1}; // 見えている！　ここだ！
+// st[528] = { path=1, file="Slv00_7201_b_s1", type=0, category=1}; // 見えている！　ここだ！
+// st[529] = { path=1, file="Slv00_7202_b_s0", type=0, category=1}; // おとなしく！　寝てろ！
+// st[530] = { path=1, file="Slv00_7202_b_s1", type=0, category=1}; // おとなしく！　寝てろ！
+// st[531] = { path=1, file="Slv00_7203_b_s0", type=0, category=1}; // 貴様は！　消えろ！
+// st[532] = { path=1, file="Slv00_7203_b_s1", type=0, category=1}; // 貴様は！　消えろ！
+
+// 必殺技4	
+// st[535] = { path=1, file="Slv00_7300_b_s0", type=0, category=1}; // これで！　最後だ！
+// st[536] = { path=1, file="Slv00_7300_b_s1", type=0, category=1}; // これで！　最後だ！
+st[537] = { path=1, file="Slv00_7301_b_s0", type=0, category=1}; // そこだ！　でぃやぁ！
+st[538] = { path=1, file="Slv00_7301_b_s1", type=0, category=1}; // そこだ！　でぃやぁ！
+// st[539] = { path=1, file="Slv00_7302_b_s0", type=0, category=1}; // 目障りだ！　散れ！
+st[540] = { path=1, file="Slv00_7302_b_s1", type=0, category=1}; // 目障りだ！　散れ！
+st[541] = { path=1, file="Slv00_7303_b_s0", type=0, category=1}; // 突撃！　弾けろ！
+st[542] = { path=1, file="Slv00_7303_b_s1", type=0, category=1}; // 突撃！　弾けろ！
+
+// 必殺技5	
+st[545] = { path=1, file="Slv00_7400_s0", type=0, category=1}; // もらった！　落ちろ！
+st[546] = { path=1, file="Slv00_7400_s1", type=0, category=1}; // もらった！　落ちろ！
+st[547] = { path=1, file="Slv00_7401_s0", type=0, category=1}; // ここだ！　でぇい！
+st[548] = { path=1, file="Slv00_7401_b_s1", type=0, category=1}; // ここだ！　でぇい！
+st[549] = { path=1, file="Slv00_7402_s0", type=0, category=1}; // 貫け！　せやあっ！
+st[550] = { path=1, file="Slv00_7402_s1", type=0, category=1}; // 貫け！　せやあっ！
+
+st[551] = { path=1, file="Slv00_7403_b_s0", type=0, category=1}; // 捕えた！　はああっ！
+st[552] = { path=1, file="Slv00_7403_b_s1", type=0, category=1}; // 捕えた！　はああっ！
+
+st[553] = { path=1, file="Slv00_7402_b_s0", type=0, category=1}; // 貫け！
+
+// 必殺技6	
+st[560] = { path=1, file="Slv00_7500_b", type=0, category=1}; // おおおおお！
+// st[561] = { path=1, file="Slv00_7501_b", type=0, category=1}; // 宣戦布告だ！
+st[562] = { path=1, file="Slv00_7502", type=0, category=1}; // 勝たせてもらうぞ！
+st[563] = { path=1, file="Slv00_7503", type=0, category=1}; // 預けるぞ、カール。　　（※全弾撃ち終えると部下が登場し、マシンガンを持ち帰ってくれます）
+
+// 超必殺技1	
+st[565] = { path=1, file="Slv00_8000_s0", type=0, category=1}; // (A)終わらせてやろう…！(B)せあっ！(C)おおおおおおお！
+// st[566] = { path=1, file="Slv00_8000_s1", type=0, category=1}; // (A)終わらせてやろう…！(B)せあっ！(C)おおおおおおお！
+st[567] = { path=1, file="Slv00_8000_s2", type=0, category=1}; // (A)終わらせてやろう…！(B)せあっ！(C)おおおおおおお！
+// st[568] = { path=1, file="Slv00_8001_s0", type=0, category=1}; // (A)ヴァルキュリアの力…(B)思い知れ！(C)閃光線！
+// st[569] = { path=1, file="Slv00_8001_s1", type=0, category=1}; // (A)ヴァルキュリアの力…(B)思い知れ！(C)閃光線！
+st[570] = { path=1, file="Slv00_8001_s2", type=0, category=1}; // (A)ヴァルキュリアの力…(B)思い知れ！(C)閃光線！
+// st[571] = { path=1, file="Slv00_8002_s0", type=0, category=1}; // (A)遊びは終わりだ！(B)はぁあっ！(C)消え去るがいい！
+st[572] = { path=1, file="Slv00_8002_s1", type=0, category=1}; // (A)遊びは終わりだ！(B)はぁあっ！(C)消え去るがいい！
+st[573] = { path=1, file="Slv00_8002_s2", type=0, category=1}; // (A)遊びは終わりだ！(B)はぁあっ！(C)消え去るがいい！
+
+// 超必殺技2	
+st[575] = { path=1, file="Slv00_8100_s0", type=0, category=1}; // (A)勝利を我が手に！(B)はあああああああ！(C)もう立つ事もできまい。
+st[576] = { path=1, file="Slv00_8100_s1", type=0, category=1}; // (A)勝利を我が手に！(B)はあああああああ！(C)もう立つ事もできまい。
+// st[577] = { path=1, file="Slv00_8100_s2", type=0, category=1}; // (A)勝利を我が手に！(B)はあああああああ！(C)もう立つ事もできまい。
+// st[578] = { path=1, file="Slv00_8101_s0", type=0, category=1}; // (A)貴様を始末する！(B)マクシミリアン様のために…！(C)完了だ。
+// st[579] = { path=1, file="Slv00_8101_s1", type=0, category=1}; // (A)貴様を始末する！(B)マクシミリアン様のために…！(C)完了だ。
+// st[580] = { path=1, file="Slv00_8101_s2", type=0, category=1}; // (A)貴様を始末する！(B)マクシミリアン様のために…！(C)完了だ。
+// st[581] = { path=1, file="Slv00_8102_s0", type=0, category=1}; // (A)あの世で悔いるがいい……(B)帝国に逆らった愚かさを！(C)残念だったな。
+// st[582] = { path=1, file="Slv00_8102_s1", type=0, category=1}; // (A)あの世で悔いるがいい……(B)帝国に逆らった愚かさを！(C)残念だったな。
+// st[583] = { path=1, file="Slv00_8102_s2", type=0, category=1}; // (A)あの世で悔いるがいい……(B)帝国に逆らった愚かさを！(C)残念だったな。
+st[584] = { path=1, file="Slv00_8102_b", type=0, category=1}; // (C)あの世で悔いるがいい
+
+// 超必殺技3	
+st[590] = { path=1, file="Slv00_8150", type=0, category=1}; // マクシミリアン様…どうか栄光をその手に…
+st[591] = { path=1, file="Slv00_8151", type=0, category=1}; // さらばだ
+st[592] = { path=1, file="Slv00_8152", type=0, category=1}; // ヴァルキュリアの、真の破壊の力…
+
+
+
+// // 対人戦３連続勝利
+// 1000	ほう、貴様もなかなかやるではないか。どうだ？私のもとで働いてみる気はあるか？
+
+// // 対人戦１０連続勝利
+// 1001	よくやったな、褒美に私が何か料理を作ってやろう。好きな物を言うといい、何でも作ってやるぞ。
+
+// // 汎用勝利
+// 1010	フン、勝って当然だ！
+
+// // 汎用勝利
+// 1011	誇って良いぞ。《蒼の魔女》と相対して、まだ息があるのだからな。
+
+// // 汎用勝利
+// 1012	くだらん……貴様が私に勝てる要素は何一つない。
+
+// // 汎用勝利
+// 1013	この勝利を殿下に捧げます。
+
+// // 汎用勝利
+// 1014	お前が死ぬ事も、私が死する事も……全ては殿下のためだ。
+
+// // 汎用勝利
+// 1015	見た事のない服装だが……ガリアの者ではなかったのか？
+
+// // 汎用勝利
+// 1016	これより帰投する。後始末は任せたぞ、カール。
+
+// // 勝利画面レアボイス
+// 1017	投降しろ、命だけは取らないでおいてやる。
+
+// // 勝利画面レアボイス
+// 1018	クッ……イェーガーめ、私にこんな雑用を押し付けるとは……カール！すぐに殿下の元に戻るぞ
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	帝国軍、ガリア方面侵攻部隊所属、セルベリア・ブレス大佐だ。
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	私にご命令くだされば、必ずや勝利をもたらして見せましょう。
+
+// // キャラセレクト画面キャラクター決定
+// 1130	勝利を我等に！
+
+// // コンティニュー画面コンテニュー待機
+// 1200	まだだ…まだ終わってはいない…！
+
+// // コンティニュー画面再戦決定
+// 1210	殿下のため、まだ戦える！
+
+// // コンティニュー画面ゲームオーバー
+// 1220	申し訳ありません…殿下…
+
+// // 乱入出迎えボイス
+// 1300	帝国に楯突くか……いいだろう、相手になってやる。
+
+// // 乱入出迎えボイス
+// 1301	挑戦者か、身の程を弁えさせてやろう。
+
+// // タイトルコール
+// 1700	ファイティング・クライマックス！
+
+// // タイトルコール
+// 1701	電撃文庫、ファイティング・クライマックス！
+
+// // エンディング１（5～6秒程度）
+// 8200	貴様のおかげだ。助かったぞ、また頼む。
+
+// // エンディング１（5～6秒程度）
+// 8201	フ…また一緒に「夢」を見よう。

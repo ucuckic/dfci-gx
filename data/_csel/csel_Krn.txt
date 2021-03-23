@@ -1,0 +1,10 @@
+[System]
+ProjectName=csel_Krn
+[DataFile]
+FileNum= 1
+File00=csel_Krn.HA6
+[BmpcutFile]
+FileNum= 1
+File00=csel_Krn.cg
+[PAniFile]
+FileNum= 0

@@ -1,0 +1,493 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+local pat_num = -1;
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+local color_table = [
+	0, // カラー0 : 軍服
+	0, // カラー1 : 軍服
+	0, // カラー2 : 軍服
+	0, // カラー3 : 軍服
+	0, // カラー4 : 軍服
+	2, // カラー5 : サンタ
+	0, // カラー6 : 軍服
+	0, // カラー7 : 軍服
+	1, // カラー8 : 水着
+	0, // カラー9 : 軍服
+	0, // カラー10 : 軍服
+	0, // カラー11 : 軍服
+	0, // カラー12 : 軍服
+	2, // カラー13 : サンタ
+	2, // カラー14 : サンタ
+	1, // カラー15 : 水着
+	0, // カラー16 : 軍服
+	1, // カラー17 : 水着
+	0, // カラー18 : 軍服
+	1, // カラー19 : 水着
+	1, // カラー20 : 水着
+	2, // カラー21 : サンタ
+	0, // カラー22 : 軍服
+	0, // カラー23 : 軍服
+	//※カラー数分定義、0～23の24色予定
+];
+
+local layer_mask = [
+	(1<<1)|(1<<2), // レイヤー1のみ表示
+	(1<<0)|(1<<2), // レイヤー2のみ表示
+	(1<<0)|(1<<1), // レイヤー3のみ表示
+]
+	
+// カラーによって衣装のレイヤーを変える
+local SetLayerMask = function() : (color_table, layer_mask)
+{
+	local select_color_num = tDDC.Support_GetSelectColor();
+	select_color_num = select_color_num%color_table.len(); // 配列飛び出さないようにループ
+	local colorVal = layer_mask[color_table[select_color_num]];
+	BMvTbl.SetHan6LayerMask( { val = colorVal } ); // 消すレイヤーを指定
+}
+
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00, SetLayerMask)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		
+		Battle_Std.AddXPos_CheckFrontStage( -200, 200 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		SetLayerMask();
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // 攻撃エフェクトの呼び出し
+			// パターン名変更不可 Battle_Std.Qen_CheckHeiMilFroCombo()
+			local eff = BMvEff.CreateObject( { mvname="Mv_Sup00AtkObj", x=400*128, y=0 } ); // 着弾中心点座標にオブジェクト呼び出し
+			BSound.SE_Play( { type=_SeType_Player, num=[170,171,172,173] } );
+			break;
+		}
+	}
+}
+
+local pat_num_BallEff_Rifle = BMvEff.GetPatternNum( { datatype=0, pat="BallEff_Rifle" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BallEff_Cannon = BMvEff.GetPatternNum( { datatype=0, pat="BallEff_Cannon" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Eff_Smoke_Small = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Smoke_Small" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Eff_Smoke_Large = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Smoke_Large" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00AtkObj = BMvEff.GetPatternNum( { datatype=0, pat="Sup00AtkObj" } ); // パターン文字列のパターン番号を事前取得
+
+local CreateSmoke = function(ballLanding, mvs_MvCount ) : (pat_num_Eff_Smoke_Small, pat_num_Eff_Smoke_Large)
+{
+	// 着弾点周辺に煙幕表示
+	local patName = ( mvs_MvCount%3==0 )? pat_num_Eff_Smoke_Large : pat_num_Eff_Smoke_Small;
+	local rand = BMvEff.Random_Limit(400); // 煙幕は出現位置ランダム
+	BMvEff.CreateObject( { start_pat=patName, x=ballLanding+(200-rand)*128} ); // Y座標は判定ツールで固定
+}
+
+// パターン名変更不可 Battle_Std.Qen_CheckHeiMilFroCombo()
+t.Mv_Sup00AtkObj <-
+{
+	function Init() : (pat_num_Sup00AtkObj)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00AtkObj );
+
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=255, flag=_ClearFlag_ChangeMv } ); // 弾無敵にスカる
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+		
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange } ); // フローレイティア殴られたら消える
+		
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+	}
+	function FrameUpdate() : (pat_num_BallEff_Rifle, pat_num_BallEff_Cannon,CreateSmoke)
+	{
+		// local ballAngle = -1450; // 弾が飛んでくる角度
+		// local angleCoefficient = 0.5; // 発射角度の係数（デフォルト着弾点からの距離×係数が角度の変化量）
+		
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.CallCount==0 )
+		{
+			local mvs_MvCount = mvs.MvCount;
+			
+			if ( mvs_MvCount%5==0 ) // ライフル弾呼び出し
+			{
+				local ballLanding = mvs_MvCount%6*70; // 着弾点のずらし
+				if ( mvs_MvCount%2==0 ) // Fの偶奇で着弾点の前後を変える
+				{
+					ballLanding *= -1;
+				}
+				
+				Battle_Std.CreateFireBall({ x=ballLanding, y=0, mv="Mv_FireBall_Sup00", pat=pat_num_BallEff_Rifle,
+				angle=-1450-ballLanding*0.5,
+				});
+				// 着弾点周辺に煙幕表示
+				if( _DevVITA == 0 ) CreateSmoke(ballLanding, mvs_MvCount);
+			}
+			if ( mvs_MvCount%7==1 ) // キャノン砲弾呼び出し
+			{
+				local ballLanding = mvs_MvCount%5*70;// 着弾点のずらし
+				if ( mvs_MvCount%2==0 ) // Fの偶奇で着弾点の前後を変える
+				{
+					ballLanding *= -1;
+				}
+				Battle_Std.CreateFireBall({ x=ballLanding, y=0, mv="Mv_FireBall_Sup00", pat=pat_num_BallEff_Cannon,
+				angle=-1450-ballLanding*0.5,
+				});
+				// 着弾点周辺に煙幕表示
+				if( _DevVITA == 0 ) CreateSmoke(ballLanding, mvs_MvCount);
+			}
+		}
+		
+		Battle_Std.CheckSousai(); // def_MC_Sousai のフラグがあるMvと触れたら相殺し合う
+	}
+	function HitInterrupt_After()
+	{
+		// トロフィー用処理
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			Battle_Std.Fro_s_CheckHeiMilCombo(); // 全員の攻撃があたると１
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+t.Mv_FireBall_Sup00 <- 
+{
+	function Init()
+	{
+	}
+	function FrameUpdate()
+	{
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup10,SetLayerMask)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 ); // 表示するパターンを設定
+		
+		Battle_Std.AddXPos_CheckFrontStage( 200, 200 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		SetLayerMask();
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // 攻撃エフェクトの呼び出し
+			local eff = BMvEff.CreateObject( { mvname="Mv_Sup10AtkObj", x=0, y=0 } ); // 着弾中心点座標にオブジェクト呼び出し
+			BSound.SE_Play( { type=_SeType_Player, num=[180,181,182,183] } );
+			break;
+		}
+	}
+}
+
+local pat_num_BallEff_Mortar = BMvEff.GetPatternNum( { datatype=0, pat="BallEff_Mortar" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BallEff_MissileA = BMvEff.GetPatternNum( { datatype=0, pat="BallEff_MissileA" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BallEff_MissileB = BMvEff.GetPatternNum( { datatype=0, pat="BallEff_MissileB" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BallEff_MissileC = BMvEff.GetPatternNum( { datatype=0, pat="BallEff_MissileC" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BallEff_MissileD = BMvEff.GetPatternNum( { datatype=0, pat="BallEff_MissileD" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BallEff_MissileE = BMvEff.GetPatternNum( { datatype=0, pat="BallEff_MissileE" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_BombEff_Small = BMvEff.GetPatternNum( { datatype=0, pat="BombEff_Small" } ); // パターン文字列のパターン番号を事前取得
+
+// パターン名変更不可 Battle_Std.Qen_CheckHeiMilFroCombo()
+local pat_num_BombEff_Large = BMvEff.GetPatternNum( { datatype=0, pat="BombEff_Large" } ); // パターン文字列のパターン番号を事前取得
+
+local pat_num_Sup10AtkObj = BMvEff.GetPatternNum( { datatype=0, pat="Sup10AtkObj" } ); // パターン文字列のパターン番号を事前取得
+
+local patNameAr = [
+	pat_num_BallEff_Mortar,
+	pat_num_BallEff_MissileA,
+	pat_num_BallEff_MissileB,
+	pat_num_BallEff_MissileC,
+	pat_num_BallEff_MissileD,
+	pat_num_BallEff_MissileE,
+];
+
+t.Mv_Sup10AtkObj <-
+{
+	function Init() : (pat_num_Sup10AtkObj)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10AtkObj );
+
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=255, flag=_ClearFlag_ChangeMv } ); // 弾無敵にスカる
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+		
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange } ); // フローレイティア殴られたら消える
+	}
+	function FrameUpdate() : (pat_num_BallEff_Mortar, pat_num_BallEff_MissileA, pat_num_BallEff_MissileB, pat_num_BallEff_MissileC, pat_num_BallEff_MissileD, pat_num_BallEff_MissileE, patNameAr)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			local ballPosX = 400; // 着弾点
+			local ballPosY = -200; // 着弾点
+			// 着弾点は相手の位置をサーチする
+			local enemy = BMvCore.GetEnemyCharaData(); // 敵情報を得る
+			if ( enemy.isdone() )
+			{
+				local posst = BMvEff.GetPointStatus( { target=enemy } ); // 位置情報取得
+				ballPosX = posst.pos_x/128*BMvTbl.GetMuki();
+				ballPosY = posst.pos_y/128 - 200;
+			}
+			local cnt = BMvTbl.AddLP(0,1); // うった回数加算
+			local patName = patNameAr[ (cnt-1)%patNameAr.len() ];
+			local eff = Battle_Std.CreateFireBall({ x=ballPosX, y=ballPosY, mv="Mv_FireBall_Sup10", pat=patName, angle=0, });
+			if( eff.push() )
+			{
+				BMvTbl.SetLP(0,cnt-1);
+				eff.pop();
+			}
+			break;
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_sp10_expBig = BMvEff.GetPatternNum( { datatype=0, pat="sp10_expBig" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_sp10_exp = BMvEff.GetPatternNum( { datatype=0, pat="sp10_exp" } ); // パターン文字列のパターン番号を事前取得
+
+
+t.Mv_FireBall_Sup10 <- 
+{
+	function Init()
+	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=255, flag=_ClearFlag_ChangeMv } ); // 弾無敵にスカる
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+		
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+		
+		// BMvTbl.SetLP(0,0); // 何発目か 0起算
+	}
+	function FrameUpdate() : (pat_num_BombEff_Large, pat_num_sp10_exp, pat_num_sp10_expBig)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			local bombLarge = BMvEff.CreateObject( { mvname="Mv_BombEff_Large", start_pat=pat_num_BombEff_Large, x=0, y=0 } ); // 爆発エフェクト(大)表示
+			local patTypeBig = (BMvTbl.GetLP(0)%2==0); // 偶数か奇数かで大＞小＞大＞小とやる
+			local pointRad = (patTypeBig)? 100*128 : 50*128; // 小さい奴はあんまり遠くに出すとへん
+			local eff_pos = BMvEff.Random_PointRad( { radx=pointRad, rady=pointRad } );
+			BMvEff.CreateObject( { start_pat=(patTypeBig)? pat_num_sp10_expBig : pat_num_sp10_exp, x=eff_pos.x, y=eff_pos.y } );
+			break;
+		}
+		local mvs = BMvTbl.GetMvStatus();
+		if( Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Sousai_MySubSuccess ) && mvs.isUpdate )
+		{
+			// 相殺したら消える絵に移行
+			local patNum = mvs.DataPattern + 20;
+			local frameNum = mvs.DataFrame;
+			frameNum = 2+(frameNum*2);
+			
+			local eff = BMvEff.CreateObject( { mvname="Mv_FireBall_Sup10_Sousai", start_pat=patNum, start_frame=frameNum, x=0, y=0 } );
+			BMvTbl.SetFinalize(0); // 相殺したら消える
+		}
+		Battle_Std.CheckSousai(); // def_MC_Sousai のフラグがあるMvと触れたら相殺し合う
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+t.Mv_FireBall_Sup10_Sousai <- 
+{
+	function Init(){}
+	function FrameUpdate(){}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+t.Mv_BombEff_Small <-
+{
+	function Init()
+	{
+	}
+	function FrameUpdate(){}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+t.Mv_BombEff_Large <-
+{
+	function Init(){}
+	function FrameUpdate(){}
+	function HitInterrupt_After()
+	{
+		// トロフィー用処理
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			Battle_Std.Fro_s_CheckHeiMilCombo(); // 全員の攻撃があたると１
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+// ※10を使う
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 特殊やられ
+//-----------------------------------------------------------------------------
+
+t.Mv_SupportCharaMissType1 <-
+{
+	function Init_After() : (SetLayerMask)
+	{
+		SetLayerMask();
+	}
+}
+
+//-----------------------------------------------------------------------------
+// RO-KYU-BU!
+//-----------------------------------------------------------------------------
+
+t.Mv_SupportROKYUBU1 <-
+{
+	function Init_After() : (SetLayerMask)
+	{
+		SetLayerMask();
+	}
+}
+
+t.Mv_SupportROKYUBU2 <-
+{
+	function Init_After() : (SetLayerMask)
+	{
+		SetLayerMask();
+	}
+}
+
+
+FRO_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Fro_s );
+
+_dp(" -> Load OK");

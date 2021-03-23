@@ -1,0 +1,73 @@
+
+
+select_powerup <- {};
+
+//-----------------------------------------------------------------------------
+// Desc: select_powerup.movetiming()
+// カーソル移動時に呼ばれる、初回にカーソルが点灯した瞬間も呼ばれる
+//-----------------------------------------------------------------------------
+select_powerup.movetiming <- function( team, poweruptype, subsptype )
+{
+	switch( poweruptype )
+	{
+	case 0: // プレイヤーキャラクター
+		Battle_Std.CreateIgnitionPAni( 800, team, _CharaPrio_GaugeHP_P1, 0, 0 ); // Ｐアイコン
+		// Battle_Std.CreateIgnitionPAni( 801, team, _CharaPrio_GaugeCombo_P1, 0, 0 ); // 切り札
+		break;
+	case 1: // サポートキャラクター
+		Battle_Std.CreateIgnitionPAni( 807, team, _CharaPrio_GaugeHP_P1, 0, 1 ); // サポートアイコン
+		break;
+	case 2: // リンクサポートキャラクター
+		Battle_Std.CreateIgnitionPAni( 806, team, _CharaPrio_GaugeHP_P1, 0, 2 ); // ブラストアイコン
+		// Battle_Std.CreateIgnitionPAni( 805, team, _CharaPrio_GaugeCombo_P1, 0, 2 ); // Cゲージ（全体）
+		break;
+	}
+
+
+}
+
+//-----------------------------------------------------------------------------
+// Desc: select_powerup.selecttiming()
+// 決定された瞬間に呼ばれる
+//-----------------------------------------------------------------------------
+
+
+
+select_powerup.selecttiming <- function( team, poweruptype, subsptype )
+{
+	// team // プレイヤーサイド 0 or 1
+	// poweruptype; // 選んだもの 0-2
+	// subsptype; // サブサポートタイプ poweruptype==2のときだけ
+	
+	// local posx = 0;
+	// local posy = (-200)<<7;
+	// テスト
+	
+	// Battle_Std.CreateIgnitionPAni( 798, team, _CharaPrio_Near_P1  ); // イグニッション選択
+	// Battle_Std.CreateIgnitionPAni( 805, team, _CharaPrio_GaugeCombo_P1 ); // Cゲージ（全体）
+	// Battle_Std.CreateIgnitionPAni( 802, team, _CharaPrio_GaugeHP_P1 ); // 体力ゲージ
+	// Battle_Std.CreateIgnitionPAni( 803, team, _CharaPrio_GaugeCombo_P1 ); // Cゲージ（①のところ）
+	// Battle_Std.CreateIgnitionPAni( 804, team, _CharaPrio_GaugeCombo_P1 ); // Cゲージ（バーのところ）
+	
+	switch( poweruptype )
+	{
+	case 0: // プレイヤーキャラクター
+		Battle_Std.CreateIgnitionPAni( 800, team, _CharaPrio_GaugeHP_P1, 0 ); // Ｐアイコン
+		// Battle_Std.CreateIgnitionPAni( 801, team, _CharaPrio_GaugeCombo_P1, 8 ); // 切り札
+		tDDC.Jem_SetMessageEx( 10, 80, "IGNITION", -1 ); // ポテンシャルカットイン
+		break;
+	case 1: // サポートキャラクター
+		Battle_Std.CreateIgnitionPAni( 807, team, _CharaPrio_GaugeHP_P1, 0 ); // サポートアイコン
+		tDDC.Jem_SetMessageEx( 1, 80, "IGNITION", -1 ); // ポテンシャルカットイン
+		break;
+	case 2: // リンクサポートキャラクター
+		Battle_Std.CreateIgnitionPAni( 806, team, _CharaPrio_GaugeHP_P1, 0 ); // ブラストアイコン
+		// Battle_Std.CreateIgnitionPAni( 805, team, _CharaPrio_GaugeCombo_P1, 8 ); // Cゲージ（全体）
+		tDDC.Jem_SetMessageEx( 2, 80, "IGNITION", -1 ); // ポテンシャルカットイン
+		break;
+	}
+	
+	BMvTbl.SetPP( def_PP_SelectIgnitionType, 99 ); // 決定済みにする
+}
+
+btl_debPrint( "\n>>> select_powerup." );

@@ -1,0 +1,40 @@
+BGM(|先頭|個数),1,37
+1,歌：川田まみ 作詞：川田まみ 作曲：尾崎武士 編曲：尾崎武士、中沢伴行,93
+2,歌：園崎未恵 作詞：寺田貴治、中川輝彦 作・編曲：床井健一 ギター：馬場一人 ベース：FIRE (the Badasses),94
+3,「荒廃と済世」　　戦場のヴァルキュリアステージBGM ,1
+4,「Fighting Blossom」　　バーチャファイター５ステージBGM,2
+5,「Higher Higher」　　ＮｉＧＨＴＳステージBGM,4
+6,「Cyphernetic Tornado」　　ファンタシースターオンライン２ステージBGM,5
+7,「Seaside B-field」　　ソニック・ザ・ヘッジホッグステージBGM,7
+8,「7th Crisis」　　セブンスドラゴン２０２０ステージBGM　,8
+9,「深淵」　　ＳｈｉｎｏｂｉステージBGM,9
+10,「Stand on the edge」　　電脳戦機バーチャロンステージBGM,13
+11,「Frontline」　　ボーダーブレイクステージBGM,14
+12,「碧の幻影」　　戦場のヴァルキュリアステージ（夜）BGM,15
+13,「Eternal Glory」　　ワンダーランドウォーズステージBGM,16
+14,「Enjoyment Infinity」　　Hi☆sCoool！ セハガールステージBGM,17
+15,「Dragon Knight」　　ワールド エンド エクリプスステージBGM,18
+16,「Aim to Top」　　トレーニングステージBGM,29
+17,「ID　- duel version - 」　　コンシューマー版　決戦ステージBGM,90
+18,「belief　- duel version - 」　　コンシューマー版　決戦ステージBGM,92
+19,「FIGHTING CLIMAX　- duel version - 」　　アーケード版　決戦ステージBGM,91
+20,「Blazing Heart」　　ストーリー・通常シーンBGM,50
+21,「Shining Wind」　　ストーリー・日常シーンBGM,58
+23,「Despair」　　ストーリー・悲哀シーンBGM,53
+24,「ちょ、ちょっと待ってくれ」　　ストーリー・ギャグシーンBGM,54
+25,「Login : Next Dream 」　　ストーリー・幸福シーンBGM,51
+27,「い、いったん落ち着こう」　　ストーリー・ドタバタシーンBGM,61
+29,「ID　- title version - 」　　コンシューマー版タイトルBGM,32
+30,「belief　- title version - 」　　コンシューマー版タイトルBGM,31
+31,「FIGHTING CLIMAX　- title version - 」　　アーケード版タイトルBGM,30
+32,「Sparklers」　　メインメニューBGM,87
+33,「Photon Stream」　　ネットワークメニューBGM,89
+34,「The Edge」　　スペシャルメニューBGM,88
+35,「Ignition」　　キャラクターセレクトBGM,99
+36,「Judgement Road」　　ストーリーセレクトBGM,59
+37,「Go!!」　対戦開始演出BGM,84
+38,「The Victor」　　対戦勝利演出BGM,98
+39,「State of Emergency」　　コンティニュー演出BGM,82
+40,「Breaking of the spirit」　　ゲームオーバー演出BGM ,83
+%DPAD_V%選択 %OK%再生 %CANCEL%戻る,,
+%DPAD_V%選択 %OK%停止 %CANCEL%戻る,,

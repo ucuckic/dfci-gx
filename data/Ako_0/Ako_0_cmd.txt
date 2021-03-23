@@ -1,0 +1,134 @@
+//コマンドテーブル skillは格ゲーコマンド表記
+btl_debPrint2("\n[cmd.txt]");
+
+local t =
+{
+	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+
+	Skill_236A = {CmdCheck = { BallLimit = {[def_BLS_Ako_Scroll_Thunder]=1} }},
+	Skill_236B = {CmdCheck = { BallLimit = {[def_BLS_Ako_Scroll_Ice]=1} }},
+	Skill_236C = {CmdCheck = { BallLimit = {[def_BLS_Ako_Scroll_Frame]=1} }},
+	Skill_236EX = {CmdCheck = { BallLimit = {[def_BLS_Ako_Scroll_Meteor]=1} }},
+	
+	Skill_J236A = {CmdCheck = { BallLimit = {[def_BLS_Ako_Scroll_Thunder]=1} }},
+	Skill_J236B = {CmdCheck = { BallLimit = {[def_BLS_Ako_Scroll_Ice]=1} }},
+	Skill_J236C = {CmdCheck = { BallLimit = {[def_BLS_Ako_Scroll_Frame]=1} }},
+	Skill_J236EX = {CmdCheck = { BallLimit = {[def_BLS_Ako_Scroll_Meteor]=1} }},
+
+	Skill_J214A = {},
+	Skill_J214B = {},
+	Skill_J214C = {},
+	Skill_J214EX = {},
+
+	Skill_214A = {},
+	Skill_214B = {},
+	Skill_214C = {},
+	Skill_214EX = {},
+
+	Skill_Sousai = {},
+	Skill_Sousai2 = {},
+	Skill_Sousai4 = {},
+	Skill_Sousai4_JAdd = {},
+	
+	Skill_Kirifuda = {},
+	
+	Skill_41236SP = {},
+	
+	Skill_63214SP = {},	
+	
+	Skill_CallSupport4or6 = {},
+	Skill_CallSupport = {},
+	Skill_AirCallSupport4or6 = {},
+	Skill_AirCallSupport = {},
+	
+	// AirDash_F = {},
+
+}
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_StdA",
+		UpdateMoveName="Mv_Atk_StdB",
+	},
+	{
+		CheckMoveName="Mv_Atk_StdB",
+		UpdateMoveName="Mv_Atk_CroC",
+		ResetTmplName="Std_Atk_StdB"
+	},
+	{
+		CheckMoveName="Mv_Atk_CroC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_CroC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			FrameIDCheck = { Only = [200] },
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 0 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_CroA",
+		UpdateMoveName="Mv_Atk_CroB",
+	},
+	{
+		CheckMoveName="Mv_Atk_CroB",
+		UpdateMoveName="Mv_Atk_CroC",
+		ResetTmplName="Std_Atk_CroB"
+	},
+	{
+		CheckMoveName="Mv_Atk_CroC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_CroC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			FrameIDCheck = { Only = [200] },
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 1 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_AirA",
+		UpdateMoveName="Mv_Atk_AirB",
+	},
+	{
+		CheckMoveName="Mv_Atk_AirB",
+		UpdateMoveName="Mv_Atk_AirC",
+		ResetTmplName="Std_Atk_AirB",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerAir, //スマートステアアナウンスの追加
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 2 );
+
+AKO_CommandTable <- Battle_Std.MakeCommandTable( t );
+
+_dp(" -> Load OK");

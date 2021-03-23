@@ -1,0 +1,1918 @@
+// メモ
+/*
+■プレイヤーシングル
+・攻撃力1.05倍に上昇
+■プレイヤーダブル
+・攻撃力1.07倍に上昇
+・全ての通常技をジャンプキャンセル可
+
+■サポートシングル
+・サポートの呼び出し硬直短縮(25F)
+■サポートダブル
+・サポートの呼び出し硬直短縮(25F)
+・空中でサポートを呼び出し可（１ゲージ消費）
+・サポートのリキャスト速度１２０％上昇
+
+■ブラストシングル
+・ブラスト５０％増加
+■ブラストダブル
+・ブラスト５０％増加
+
+
+*/
+
+// キャラクターのMvに定義する定数
+// CDef_キャラ名_***
+// 例) 
+// CDef_Kur_KirufudaUse
+// CDef_Wil_s_sample
+// CDef_で始まる定数をうっかり定義しないように注意
+
+// Battle_Std.Val_CheckFlag
+const Def_CAB_Trump = 1;
+const Def_CAB_Support = 2;
+const Def_CAB_Blast = 4;
+const Def_CAB_Hold = 8;
+const Def_CAB_All = 15;
+const Def_CAB_End = 16;
+
+// Battle_Std.MakeMv.SetCaptureCharaAnime
+// Throw用フラグ
+const Def_SCCA_Throw_CheckFrontStage = 1; // Throwで掴む時前方のステージ端にいかないようX座標に補正をかける
+
+// 全般フラグ
+const Def_SCCA_HitVec_InitVec = 1; // HitVecを設定する（設定しないと引継ぎ）
+const Def_SCCA_HitVec_AutoMuki = 2; // 敵の方を向き直す
+
+// Ignition 関係
+const Def_IGNM_JumpCancel = 1; // 通常技をジャンプキャンセルできる
+const Def_IGNS_RecastSpeedUp = 110; // サポートのリキャスト速度アップ 0:無し 100:1.0倍 深雪:150%？
+const Def_IGNS_RecastSpeedUpLv2 = 120; // サポートのリキャスト速度アップ 0:無し 100:1.0倍 深雪:150%？
+const Def_IGNS_CallSupportAir = 1; // 空中でサポートを呼び出せる（ゲージ消費あり）
+const Def_IGNS_CallSupportDelayLock = 1;
+const Def_IGNS_CallSupportDelayLockLv1 = 30; // サポートの呼び出し硬直を固定にする
+const Def_IGNS_CallSupportDelayLockLv2 = 27; // サポートの呼び出し硬直を固定にする(2以上差をつけること)
+const Def_IGNS_CallSupportDelayLockPar = 90; // サポートの呼び出し硬直を固定にするけど、↑未満だった時の倍率
+const Def_IGNS_CallSupportDelayLockSubLv1 = 1; // サポートの呼び出し硬直を固定にするけど、↑未満だった時の減算
+const Def_IGNS_CallSupportDelayLockSubLv2 = 2; // サポートの呼び出し硬直を固定にするけど、↑未満だった時の減算
+
+// Def_IGNS_CallSupportDelayLockLvX より大きい場合 Def_IGNS_CallSupportDelayLockLvX
+// Def_IGNS_CallSupportDelayLockLvX 以下の時 -1 or -2
+// 40～31 → 30
+// 30～20 → 30-1 ～ 20-1 → ※最低22
+
+//tDDC.PowerUpSys_GetCount 用の定数
+const Def_IGNT_MainCharacter = 0;
+const Def_IGNT_SupportCharacter = 1;
+const Def_IGNT_SubSupportCharacter = 2;
+
+// ポテンシャル定数
+// _JemCheckType_Ex + XXX
+// tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_ChraFlag2 ); // サポートを呼び出した回数
+const Def_PTNT_Reversal = 0; // リバサ行動した回数（_JemCheckType_Reversalと同じ）
+const Def_PTNT_ExtendAction = 1; // エクステンドアクション回数（判定ツール調整必要）
+const Def_PTNT_ThrowSuccess = 2; // 通常投げ成功回数
+const Def_PTNT_EXSkill = 3; // ＥＸ必殺技発動回数
+const Def_PTNT_CounterHit = 4; // カウンターヒットした回数
+const Def_PTNT_ChraFlag1 = 5; // キャラ固有の回数１
+const Def_PTNT_ChraFlag2 = 6; // キャラ固有の回数２（ホロ）
+const Def_PTNT_CallSupport = 7; // サポートを呼び出した回数（ゲージ消費した回数）
+const Def_PTNT_StatusUpPlus = 8; // イリヤ三段階目用すごい強い
+const Def_PTNT_StatusUp = 9; // ホロで使ってる　攻撃力＆防御力アップ
+
+
+// COM用定数
+// Squirrelは定数の書き換えはできないが再定義はできるので最初に定義だけしてエラー落ちを回避する
+const com_throw_recover_pos = 99; // 投げぬけ動作位置
+
+// COMの挙動定数(発動頻度)
+const com_frequency0 = 1;
+const com_frequency1 = 10;
+const com_frequency2 = 30;
+const com_frequency3 = 100;
+const com_frequency4 = 300;
+const com_frequencyX = 0;//9999; // デバッグ用
+
+// 間合い定義
+const com_Xlen_SPSkill = 60000; // 超技発動する間合い
+const com_Xlen_Kirifuda = 30000; // 切り札発動する間合い
+
+const com_TaikuAtk = "5B"; // 対空で使う通常技
+const com_TaikuSkill_0 = "A+B"; // 対空で使うインパクト A+B or 2+A+B
+const com_TaikuSkill_1 = "2+A+B"; // 対空で使うインパクト A+B or 2+A+B
+const com_ActiveSkill_0 = "A+B"; // 攻撃的インパクト A+B or 2+A+B
+const com_KenseiSkill_0 = "236A"; // 牽制で使う必殺技１ 236Aor236Bor214Aor214B
+const com_KenseiSkill_1 = "236B"; // 牽制で使う必殺技１ 236Aor236Bor214Aor214B
+const com_AirActiveSkill_0 = "J236A"; // 空中で攻撃的な必殺技 J236A or J236B or J214A or J214B
+const com_AirActiveAtk_0 = "JC"; // 空中で飛び込みに使う攻撃 JBorJC
+const com_TuigekiSkill_0 = "A+B"; // 追撃で使う必殺技１ A+B or 236Aor236Bor214Aor214B
+const com_TuigekiSkill_1 = "236B"; // 追撃で使う必殺技２ A+B or 236Aor236Bor214Aor214B
+const com_TuigekiEXSkill_0 = "236EX"; // 追撃で使うＥＸ必殺技１ 236EXor214EX
+const com_TuigekiEXSkill_1 = "236EX"; // 追撃で使うＥＸ必殺技２ 236EXor214EX
+
+// ゲージ消費定義(5ゲージで100)
+const com_EXSC_EXSkill = 20;
+const com_EXSC_SPSkill = 40;
+
+const Def_DrawBattleFukidasi = 0; // 仮
+
+
+//デバッグ用有効化フラグ
+const Def_Dbg_IWExist			= 0; //最大ためVOからの即死IWExistを実装するかどうか
+const Def_Dbg_AssaultCansel		= 0; //アサルトキャンセルを実装するかどうか
+const Def_Dbg_GuardCancelAssault	= 0; //ＧＣアサルトを実装するかどうか
+const Def_Dbg_AssaultAutoVector		= 1; //アサルトを距離によって変化させるかどうか
+
+const Def_Sys_MoveDownRecover_UseGRD		= 1; // 前後ダウン復帰でのGRDを消費するか　消費量
+const Def_Sys_QuickDownRecover			= 2; // ダウン時にボタンで早く起き上がるようにするか 0:起き上がらない 1:起き上がる　2:受け身をとる(Mv注意)
+const Def_Sys_DownRecover_BigKasanari	= 1; // ダウン復帰の重なりをしたにでかいものにするかどうか
+const Def_Sys_HajiShield_EnemyNockBack	= 1; // 端背負ったシールド中は相手にガードベクトルを与えるか
+const Def_Sys_EXCutinNageMuteki			= 2; // EXカットイン技に強制的に投げ無敵をつけるか 0:付けない 1～:無敵フレーム
+const Def_Sys_ShieldSuccess_MinusVecTime	= 1; // シールド成功時に減らすベクトル時間
+const Def_Sys_GuardShield_UseEXS		= 1; // ガードシールド発動にEXSを消費するかどうか def_SP_GuardShield_Init消費
+const Def_Sys_GuardShield_PlusVecTime	= 15; // ガードシールド発動時にガードベクトルに加算するベクトル時間
+const Def_Sys_ReverseBeatAnnounce		= 0; // リバースビートのアナウンスを出すかどうか
+const Def_Sys_VeilOff_GRDPlus			= 0; // VO中の攻撃でGRDをモリモリ増やすか
+const Def_Sys_RecoverBarrierType		= 1; // 受け身時のバリアタイプ 0:すぐ消える 1:行動可能になったら消える　※キャラ別再指定あり
+const Def_Sys_VeilOff_GRDBonus			= 1; // ヴェールオフ発動時にGRDボーナスを与えるか 0:何もしない 1:色々やる
+const Def_Sys_DyingIWExistAtk			= 2; // 瀕死の時だけ出せるIWE攻撃を実装するかどうか
+const Def_Sys_DyingVeilOffShortCharge	= 0; // 瀕死の時VOのタメ時間を短くするかどうか
+const Def_Sys_ExSkillSpectrum			= 0; // EX必殺技に残像をつけるかどうか
+const Def_Sys_DashWaitMove				= 1; // ダッシュでかかりの硬直を無くすかどうか(1にするとDirectダッシュ攻撃が消滅)
+const Def_Sys_DirectDashDelay			= 0; // 生出しダッシュ攻撃の発生を何フレーム遅くするか 0:遅くしない 1～:遅くするフレーム(Dashパターン経由)
+const Def_Sys_Dash_NoGuardMove			= 0; // ダッシュ移動開始後、行動可能だがガードできないフレームをつけるかどうか
+const Def_Sys_GroundUkemiType			= 1; // 0 今まで 1:レバーでNか後ろか選べる＋地上受け身とダウン受け身が同じになる
+const Def_Sys_VeilOffHitEffect			= 2; // VOヒット効果 0:相手ブレイク　1:相手のVORPALを消す 2:相手のVORPALを消す　生出しだとブレイクさせる
+const Def_Sys_CancelAirAtk_GuardCrouch	= 2; // キャンセルで出したジャンプ攻撃を屈ガード可能にするか 0:何もしない 1:屈ガード可能にする 2:ダメージ補正をかける
+
+//ゲームのルールフラグ
+const Def_Rule_GroundThrowType	= 1; // 0:投げスカリあり 1:レバー入れ強
+const Def_Rule_RoundLoseRecover = 0; // ラウンド敗北時に起き上がるか 0:起き上がらない 1:起き上がる
+const Def_Rule_ReverseBeat = 1; // リバビの有無
+const Def_Rule_GuardShield	= 0; // ガード中のシールド発動
+const Def_Rule_AdvanceGuard	= 1; // アドバをありにするか
+const Def_Rule_AdvanceGuardCost = 5000; // アドバのコスト
+const Def_Rule_LowerHPLoserAdvGuardCost = 1; // アドバのコストを体力で分けるかどうか
+const Def_Rule_AdvanceGuardCost_HPLoser = 0; // 体力負け側のアドバコスト
+const Def_Rule_AdvanceGuard_CommandType = 1; // アドバコマンドタイプ 0:ボタン1つ 1:ボタン2つ以上
+const Def_Rule_AdvanceGuard_EffectType = 1; // アドバ効果 0:下がって押し返す 1:下がらず押し返す
+const Def_Rule_AdvanceGuard_SetTime = 18; // アドバするとガード硬直が固定になる 0:そのまま 1～:何フレーム固定にするか
+const Def_Rule_AdvanceGuard_AddTime = 0; // アドバするとガード硬直が増加する 0:そのまま 1～:増加フレーム
+
+const Def_Rule_DownBoundSlideKeep = 0; // 地面バウンドの抜けにDivKeepで残す慣性の最大値(PAT350のみ) 0だと無効
+const Def_Rule_OkiagariFree_Crouch = 1; // 起き上がりのファイナライズをフリーを挟まずしゃがみにするかどうか
+const Def_Rule_AirRecover_NoMoveFrame = 20; // 空中受け身の仕様(254:着地まで動けない 0～:フレーム後行動可能、技を出すとかすると無敵消失)
+const Def_Rule_CallSupportWaitFrame = 0; // 通常サポート呼び出し何フレーム目から実際にサポートを呼び出すか
+const Def_Rule_AutoRecovery = 0; // ジャンプ攻撃のやられをオートリカバリーにするか
+const Def_Rule_NoChickenGuardFrame = 6; // ジャンプ離陸から何フレームチキガできないか
+const Def_Rule_GuardPose_LoopFrames = 1; // ガードポーズが何枚ループか
+
+const Def_Rule_GRDOsikomiKanri = 0; // ＧＲＤの押し込みチェックをするか 1:前に出たりするとGRDが増える
+const Def_Rule_TensionKanri = 1; // テンション的な管理をするか 1:自動でSP増加 ネガティブなことすると止まる予定
+const Def_Rule_DonwOiutiYarare = 0; // ダウン追い討ちを専用の浮かないやられにするか
+const Def_Rule_StopEXSAutoRecover_EXSPAct = 1; // EX・SP技中はEXS自動増加を止めるか　→　プログラム内定数に変更されて効果無し
+const Def_Rule_JumpSideMoveCtrl = 2; // ジャンプ中に左右でぐにゃっと操作できるかどうか 0:できない 1:できる　2:垂直ジャンプのみ 
+const Def_Rule_PBlast_RecoverSupportWait = 0; // Ｐブラスト発動時にサポートリキャストを回復するか　※未実装
+const Def_Rule_CBlast_ControlBoundType = 1; // Ｃブラスト発動時にレバー方向で打ち上げ方向を選べるようにするか 0:垂直のみ 1:前入れで横吹き飛ばし
+
+const Def_Rule_SPBonus_HPLoserAtkDamage = 1000; // 体力負け側がダメージを与えた時のＳＰ増加値　0だと無効　→　プログラム内定数に変更されて効果無し
+const Def_Rule_NormalAtk_AddNoJumpCansel = 1; // 通常技に勝手にジャンプキャンセル不可フラグが付ける
+
+//システム分別用（意味不明派）
+const Def_Rule_EnableReverceBeat	= 1; // リバースビートの有無 0:リバビ無し 1:あり 2:2A>Aはリバースビート扱いにしない
+const Def_Rule_AtkA_SetComboLimit = 0; // A攻撃のコンボリミットを設定するか（0だと何度でも出せるが、連打制限かかる。リバビとのあわせ技に注意。）
+const Def_Rule_StdSmartSteer	= 1; // スマートステアの有無
+const Def_Rule_CroSmartSteer	= 1; // スマートステアの有無
+const Def_Rule_AirSmartSteer	= 1; // スマートステアの有無
+const Def_Rule_GroAtkACmdNum_BSS	= 2; // 地上Ａ攻撃のコマンド番号をスマートステアより優先度高くするかどうか 0:しない　1:する 2:しゃがみだけする
+const Def_Rule_SetThrowType		= 2; // 通常投げの相手パターン自動変更 0:UNI(何もしない) 1:304で地面 2:320で浮く
+const Def_Rule_GroundBoundSlideKeep = 1; // 地上のけぞり抜けにDivKeepで慣性を残す
+const Def_Rule_GroundGuardSlideKeep = 1; // 地上ガード抜けにDivKeepで慣性を残す
+const Def_Rule_AirRecover_ClearAirJumpCount = 1; // 空中受け身時に二段ジャンプの回数をリセットするか
+const Def_Rule_SkipRock_DownOiuti		= 1; // ダウン追い討ち時に半ロックを行わない 1:行わない 0:行う
+const Def_Rule_CmdHitStatus_JumpCancel	= "Hit"; // ジャンプキャンセル条件(二段ジャンプ含む) "Hit" or "Damage"
+const Def_Rule_CmdCheckMuki_MultiJump	= 2; // MultiJumpのコマンドチェックの向き設定、 0-自動(基本値) 1-向いている方向 2-振り向き予定の方向
+const Def_Rule_SPSkillMvEnd_EraseCutIn = 0; // SP技のMv終了(FinとLU)タイミングでカットインを消去する
+
+const Def_Rule_GameSystem			= 2;
+	const Def_RGS_UNI				= 1;
+	const Def_RGS_CLI				= 2;
+const Def_Rule_CmdCancelCheck		= 1; // キャンセルチェックにMvCodeを含めるか(必殺は必殺の時不可とか)
+const Def_Rule_StandbyMvType		= 2; // １ラウンド目のMvタイプ 0:Mv_Standby同士で開始 1:1P=Mv_Standby　2P=Mv_StandbyWait 2:1に加えて掛け合いがあったら変える
+const Def_Rule_SPYoga_EasyCommand	 = 0; // 超技のヨガコマンドを簡易コマンドにするかどうか(6214Dとかで出る)
+
+const Def_Rule_AuraKanri			= 0; // オーラとか管理オブジェクトを生成するか 0:行わない(boundobj生成されないよ) 1:UNIとか
+const Def_Rule_RunAuraKanri		= 0; // オーラとＧＲＤの管理を行うか
+
+const Def_Rule_ToParentFireBallHitStatus = 1; // FireBall飛び道具のヒットを親に伝えるか
+const Def_Rule_AddComboRateFireBallDamage = 1; // FireBallヒット時にコンボレートを加算するかどうか
+const Def_Rule_CreateHitPar	= 0; // ヒットエフェクトからパーティクルを飛ばすか 0:飛ばさない 1:飛ばす
+const Def_Rule_SPCutinAura		= 0; // 超技カットイン中にキャラに縁取りオーラをつけるかどうか
+
+// 調整デバッグ用
+const Def_Rule_SkillKezuriType	= 1; // 必殺技と飛び道具への削り指定 0:削り無し 1:距離に応じて変化
+const Def_Rule_EXSkill_BlastAddType = 2; // EX必殺技発動時にブラストを回復するかどうか　0:しない 1:何でも間でもふやす 2:チャージ中のみ増やす
+const Def_Rule_EXSkill_BlastAddVal = 10000; // ↑の回復量(最大10万)
+
+const Def_Rule_Kirifuda_FreeJumpCancel = 1; // 切り札効果中はジャンプキャンセルの制限が無くなる
+const Def_Rule_Kirifuda_EnableReverseBeat = 1; // 切り札効果中はリバースビートができる
+const Def_Rule_KirifudaTime_Attack = 1200; // 切り札効果時間（攻撃タイプ）
+const Def_Rule_KirifudaTime_AttackMiss = 1200; // 切り札効果時間（攻撃タイプ空振り）
+const Def_Rule_KirifudaTime_PowerUp = 1500; // 切り札効果時間(強化タイプ)※未使用
+const Def_Rule_KirifudaTimeDmgMinus_Attack = 150; // 打撃系切り札やられの減少量（キリトや黒雪姫は少ない）
+const Def_Rule_KirifudaTimeDmgMinus_PowerUp = 150; // ※未使用 
+const Def_Rule_KirifudaAttack_PowerUpAtk = 105; // 攻撃タイプの切り札ヒット時にパワーアップさせるか＋アップ係数
+const Def_Rule_Kirifuda_CancelSupportCostZero = 1; // 切り札効果中はキャンセルサポートのゲージ消費を無くす（無くすではなく１ゲージ安くなるに一応変更）
+const Def_Rule_Kirifuda_CallSupportNoMotion = 1; // 切り札効果中はサポート呼び出しのモーションを無くす
+const Def_Rule_PowBlastSpAdd = 10000; // パワーアップブラストでSPゲージを増やすかどうかと増加量
+const Def_Rule_ComboBlastSpAdd = 10000; // コンボブラストでＳＰゲージを増やすかどうかと増加量
+const Def_Rule_PowBlastHitSpAdd = 10000; // パワーアップブラストヒットでSPゲージを増やすかどうかと増加量
+const Def_Rule_ComboBlastHitSpAdd = 0; // コンボブラストヒットでＳＰゲージを増やすかどうかと増加量
+const Def_Rule_EscBlastHitSpAdd = 0; // エスケープブラストヒットでＳＰゲージを増やすかどうかと増加量
+
+const Def_Rule_PowBlast_FrameSpAdd = 0; // パワーアップブラスト中毎フレーム増加させるSPゲージ量
+const Def_Rule_GroundAtkInit_ClearNageMuteki = 0; // 地上通常技を出すと各種投げ無敵を消去するかどうか 1:だと起き上がりに投げ抜けを入れるのが結構難しいっぽい
+const Def_Rule_63214SPSkill_BlastAddType = 2; // 63214SP発動時にブラストを回復するかどうか　0:しない 1:何でも間でもふやす 2:チャージ中のみ増やす
+const Def_Rule_63214SPSkill_BlastAddVal = 20000; // ↑の回復量(最大10万)
+const Def_Rule_GuardMissMarkType = 2; // ガード失敗マークタイプ 0:表示しない 1:標準 2:角度で出る
+const Def_Rule_SupportMvType = 1; // 0:通常 1:横入れで２種類目のMvを呼ぶ
+const Def_Rule_EnableToumeiDown = 0; // 透明ダウンやられで透明にするのを有効にするか
+
+//CmdCheck用定数
+const Def_CmdCh_GenDoujiCheck = 1; // 同時押しチェックを出すかどうか(通常技は勝手に出る)
+const Def_CmdCh_KeepDoujiCheck = 2; // コマンド成立時に同時押しチェックの猶予を消さない
+
+//キャラクター番号
+const Def_ChrNo_Sha		= 0;
+const Def_ChrNo_Asu		= 1;
+const Def_ChrNo_Krt		= 2;
+const Def_ChrNo_Mis		= 3;
+const Def_ChrNo_Krn		= 4;
+const Def_ChrNo_Kur		= 5;
+const Def_ChrNo_Tgr		= 6;
+const Def_ChrNo_Stm		= 7;
+const Def_ChrNo_Ykn		= 8;
+const Def_ChrNo_Sbm		= 9;
+const Def_ChrNo_Tmk		= 10;
+const Def_ChrNo_Hiw		= 11;
+const Def_ChrNo_Yak		= 13;
+const Def_ChrNo_Slv		= 14;
+const Def_ChrNo_Emi		= 15;
+const Def_ChrNo_Qen		= 16;
+const Def_ChrNo_Oni		= 17;
+const Def_ChrNo_Krk		= 19;
+const Def_ChrNo_Yuk		= 18;
+const Def_ChrNo_Ako		= 20;
+
+const Def_ChrNo_Naoto	= 21;
+
+
+
+
+//サポートキャラは101～ (※-100するとデータ番号と一致)
+const Def_ChrNo_Wil_s		= 101;
+const Def_ChrNo_Lea_s		= 102;
+const Def_ChrNo_Tom_s		= 103;
+const Def_ChrNo_Kro_s		= 104;
+const Def_ChrNo_Sbt_s		= 105;
+const Def_ChrNo_Tks_s		= 106;
+const Def_ChrNo_Aen_s		= 107;
+const Def_ChrNo_Akj_s		= 108;
+const Def_ChrNo_Crt_s		= 109;
+const Def_ChrNo_Hol_s		= 110;
+const Def_ChrNo_Kgk_s		= 111;
+const Def_ChrNo_Har_s		= 112;
+const Def_ChrNo_Bog_s		= 113;
+const Def_ChrNo_Ino_s		= 114;
+const Def_ChrNo_Kin_s		= 115;
+const Def_ChrNo_Mas_s		= 116;
+const Def_ChrNo_Ero_s		= 117;
+const Def_ChrNo_Mou_s		= 118;
+const Def_ChrNo_Pai_s		= 119;
+const Def_ChrNo_Alc_s		= 120;
+
+const Def_ChrNo_Dok_s		= 121;
+const Def_ChrNo_Acr_s		= 122;
+const Def_ChrNo_Izy_s		= 123;
+
+const Def_ChrNo_Fro_s		= 124;
+
+const Def_ChrNo_Iry_s		= 125;
+const Def_ChrNo_Ren_s		= 126;
+const Def_ChrNo_Rus_s		= 127;
+const Def_ChrNo_Asm_s		= 128;
+const Def_ChrNo_Zer_s		= 129;
+const Def_ChrNo_Uih_s		= 130;
+
+const Def_ChrNo_Smy_s		= 140;
+
+const Def_ChrNo_Mzm_s		= 200; //mine
+const Def_ChrNo_Mik_s		= 201; //mine
+
+//コンボリミット用定数、コンパイル時に変換されるので定義位置に注意
+// 900～929:弱
+// 930～959:中
+// 960～989:強
+
+const DEF_BS_CL_STDA		= 900;
+const DEF_BS_CL_STDB		= 930;
+const DEF_BS_CL_STDC		= 960;
+const DEF_BS_CL_CROA		= 901;
+const DEF_BS_CL_CROB		= 931;
+const DEF_BS_CL_CROC		= 961;
+const DEF_BS_CL_AIRA		= 902;
+const DEF_BS_CL_AIRB		= 932;
+const DEF_BS_CL_AIRC		= 962;
+const DEF_BS_CL_DASHSTDA	= 903;
+const DEF_BS_CL_DASHSTDB	= 933;
+const DEF_BS_CL_DASHSTDC	= 963;
+const DEF_BS_CL_DASHCROA	= 904;
+const DEF_BS_CL_DASHCROB	= 934;
+const DEF_BS_CL_DASHCROC	= 964;
+
+const DEF_BS_CL_ATK1A = 905;
+const DEF_BS_CL_ATK1B = 935;
+const DEF_BS_CL_ATK1C = 965;
+
+const DEF_BS_CL_ATK3A = 906;
+const DEF_BS_CL_ATK3B = 936;
+const DEF_BS_CL_ATK3C = 966;
+
+const DEF_BS_CL_ATK6A = 907;
+const DEF_BS_CL_ATK6B = 937;
+const DEF_BS_CL_ATK6C = 967;
+
+const DEF_BS_CL_ATK4A = 908;
+const DEF_BS_CL_ATK4B = 938;
+const DEF_BS_CL_ATK4C = 968;
+
+const DEF_BS_CL_ATKJ2A = 909;
+const DEF_BS_CL_ATKJ2B = 939;
+const DEF_BS_CL_ATKJ2C = 969;
+
+const DEF_BS_CL_ATKJ6A = 910;
+const DEF_BS_CL_ATKJ6B = 940;
+const DEF_BS_CL_ATKJ6C = 970;
+
+const DEF_BS_CL_ATKJ4A = 911;
+const DEF_BS_CL_ATKJ4B = 941;
+const DEF_BS_CL_ATKJ4C = 971;
+
+
+const DEF_BS_CL_ATKA_A = 912;
+const DEF_BS_CL_ATKB_B = 942;
+const DEF_BS_CL_ATKC_C = 972;
+const DEF_BS_CL_ATK2A_2A = 913;
+const DEF_BS_CL_ATK2B_2B = 943;
+const DEF_BS_CL_ATK2C_2C = 973;
+const DEF_BS_CL_ATKJB_JB = 974;
+const DEF_BS_CL_ATKJC_JC = 975;
+
+
+const DEF_BS_CL_ATKA_A_A = 915;
+const DEF_BS_CL_ATK6B_6B = 946;
+
+//def_CN_AtkAandB
+const DEF_BS_CL_ATKAANDB = 919;
+const DEF_BS_CL_ATKCAANDB = 920;
+const DEF_BS_CL_ATKJAANDB = 921;
+
+//def_CN_AtkBandC
+const DEF_BS_CL_ATKBANDC = 916;
+const DEF_BS_CL_ATKCBANDC = 917;
+const DEF_BS_CL_ATKJBANDC = 918;
+
+//必殺技なのにチェーンキャンセルできるような特殊なもの用コンボリミット
+const DEF_BS_CL_Skill00	= 980;
+const DEF_BS_CL_Skill01	= 981;
+const DEF_BS_CL_Skill02	= 982;
+const DEF_BS_CL_Skill03	= 983;
+const DEF_BS_CL_Skill04	= 984;
+const DEF_BS_CL_Skill05	= 985;
+const DEF_BS_CL_Skill06	= 986;
+const DEF_BS_CL_Skill07	= 987;
+const DEF_BS_CL_Skill08	= 988;
+const DEF_BS_CL_Skill09	= 989;
+const DEF_BS_CL_Skill10	= 990;
+const DEF_BS_CL_Skill11	= 991;
+const DEF_BS_CL_Skill12	= 992;
+const DEF_BS_CL_Skill13	= 993;
+const DEF_BS_CL_Skill14	= 994;
+const DEF_BS_CL_Skill15	= 995;
+const DEF_BS_CL_Skill16	= 996;
+const DEF_BS_CL_Skill17	= 997;
+const DEF_BS_CL_Skill18	= 998;
+const DEF_BS_CL_Skill19	= 999;
+
+// 使わない
+const def_CL_Skill_236236EX		= 500;
+const def_CL_Skill_214236EX		= 510;
+const def_CL_Skill_214214EX		= 520;
+const def_CL_Skill_41236EX			= 530;
+const def_CL_Skill_41236C			= 540;
+const def_CL_Skill_41236B			= 550;
+const def_CL_Skill_41236A			= 560;
+const def_CL_Skill_63214EX			= 570;
+const def_CL_Skill_63214C			= 580;
+const def_CL_Skill_63214B			= 590;
+const def_CL_Skill_63214A			= 600;
+const def_CL_Skill_236EX			= 610;
+const def_CL_Skill_236C			= 620;
+const def_CL_Skill_236B			= 630;
+const def_CL_Skill_236A			= 640;
+const def_CL_Skill_623EX			= 650;
+const def_CL_Skill_623C			= 660;
+const def_CL_Skill_623B 			= 670;
+const def_CL_Skill_623A 			= 680;
+const def_CL_Skill_214EX			= 690;
+const def_CL_Skill_214C			= 700;
+const def_CL_Skill_214B			= 710;
+const def_CL_Skill_214A			= 720;
+const def_CL_Skill_421EX 			= 730;
+const def_CL_Skill_421C			= 740;
+const def_CL_Skill_421B			= 750;
+const def_CL_Skill_421A			= 760;
+const def_CL_Skill_0202EX			= 770;
+const def_CL_Skill_0202C			= 780;
+const def_CL_Skill_0202B			= 790;
+const def_CL_Skill_0202A			= 800;
+
+const def_CL_Skill_DoubleCircleEX	= 802;
+const def_CL_Skill_DoubleCircleC	= 803;
+const def_CL_Skill_DoubleCircleB	= 804;
+const def_CL_Skill_DoubleCircleA	= 805;
+
+const def_CL_Skill_CircleEX		= 810;
+const def_CL_Skill_CircleC			= 820;
+const def_CL_Skill_CircleB			= 830;
+const def_CL_Skill_CircleA			= 840;
+const def_CL_Skill_J236EX			= 850;
+const def_CL_Skill_J236C			= 860;
+const def_CL_Skill_J236B			= 870;
+const def_CL_Skill_J236A			= 880;
+const def_CL_Skill_J623EX			= 300;
+const def_CL_Skill_J623C			= 310;
+const def_CL_Skill_J623B 			= 320;
+const def_CL_Skill_J623A 			= 330;
+const def_CL_Skill_J214EX 			= 340;
+const def_CL_Skill_J214C 			= 350;
+const def_CL_Skill_J214B 			= 360;
+const def_CL_Skill_J214A 			= 370;
+const def_CL_Skill_J421EX			= 380;
+const def_CL_Skill_J421C 			= 390;
+const def_CL_Skill_J421B 			= 400;
+const def_CL_Skill_J421A 			= 410;
+const def_CL_Skill_J63214EX 		= 420;
+const def_CL_Skill_J63214C			= 430;
+const def_CL_Skill_J63214B 		= 440;
+const def_CL_Skill_J63214A 		= 450;
+const def_CL_Skill_J41236EX		= 460;
+const def_CL_Skill_J41236C			= 470;
+const def_CL_Skill_J41236B	 		= 480;
+const def_CL_Skill_J41236A			= 490;
+
+//見難いから小文字も使おう
+
+//キャラクター別定数（？）
+const def_CHR_Elt_BulletMax		= 13; //弾丸最大数
+
+const def_Cha_ObjID_Dah			= 1; // ObjectID
+const def_Cha_ObjID_Barrier		= 2; // ObjectID
+const def_Cha_ObjID_BarrierBook	= 3; // ObjectID
+const def_Cha_ObjID_IWE_RedBoard	= 8; // ObjectID
+const def_Cha_ObjID_IWE_DahMoya	= 9; // ObjectID
+
+//MvからどのMvに行ったり行かなかったりするか用フラグ
+//Finalizeコードもこれ
+const def_CHR_Dah_ActFlag_Stand		= 1; // 1
+const def_CHR_Dah_ActFlag_Walk_F	= 2; // 2
+const def_CHR_Dah_ActFlag_Walk_B	= 4; // 3
+const def_CHR_Dah_ActFlag_0202A		= 8; // 4
+const def_CHR_Dah_ActFlag_0202B		= 16; // 5
+const def_CHR_Dah_ActFlag_0202C		= 32; // 6
+const def_CHR_Dah_ActFlag_236A		= 64; // 7
+const def_CHR_Dah_ActFlag_236B		= 128; // 8
+const def_CHR_Dah_ActFlag_236C		= 256; // 9
+const def_CHR_Dah_ActFlag_214A		= 512; // 10
+const def_CHR_Dah_ActFlag_214B		= 1024; // 11
+const def_CHR_Dah_ActFlag_214C		= 2048; // 12
+const def_CHR_Dah_ActFlag_AppearAct	= 4096; // 13 消滅中の攻撃
+const def_CHR_Dah_ActFlag_ChaDmgVanish	= 8192; //14 消滅
+const def_CHR_Dah_ActFlag_DahDmgVanish	= 16384; //15 消滅
+const def_CHR_Dah_ActFlag_DahLimitVanish	= 32768; //16 動きすぎでの消滅
+const def_CHR_Dah_ActFlag_MoveFront		= 65536; // 17
+const def_CHR_Dah_ActFlag_MoveBack		= 131072; // 18
+const def_CHR_Dah_ActFlag_J214C		= 262144; //19
+const def_CHR_Dah_ActFlag_IW		= 524288; //20
+const def_CHR_Dah_ActFlag_623A		= 1048576; //21
+const def_CHR_Dah_ActFlag_623B		= 2097152; //22
+const def_CHR_Dah_ActFlag_623C		= 4194304; // 23
+const def_CHR_Dah_ActFlag_AirAct	= 8388608; // 24 空中の攻撃
+const def_CHR_Dah_ActFlag_InputWalk	= 16777216; // 25
+const def_CHR_Dah_ActFlag_HideRock	= 33554432; // 26　0202攻からの掴み
+// const def_CHR_Dah_ActFlag_63214A	= 67108864; //27
+// const def_CHR_Dah_ActFlag_63214B	= 134217728; //28
+// const def_CHR_Dah_ActFlag_63214C	= 268435456; // 29
+
+const def_PP_Cha_DahActionPointLimit		= 1000; //これをこえると動かなくなる
+
+//BoudStatusのPower定数　※実はフラグになっている
+const def_BS_Pow_LV0			= 1; //超弱（無声）やられ
+const def_BS_Pow_LV1			= 2; //弱やられ
+const def_BS_Pow_LV2			= 0; //デフォルトは中やられ(初期値は0なので)
+const def_BS_Pow_LV3			= 4; //強やられ
+const def_BS_Pow_Furimuki		= 8; // 振り向き属性（攻撃してきたものに振り向く。基本は相手操作親の向き依存。）
+const def_BS_Pow_NoAdvFrameSet	= 16; // アドバでのフレーム固定を受け付けない
+const def_BS_Pow_GuardFloat		= 32; // ガードで浮くやつ（無敵がつく）
+
+//GRD_CorrectBreakTimeの定数(何パーセントの減算か)
+const def_CBT_NoboriTyudanGuard			= 30;	// のぼり中段
+const def_CBT_TyudanGuard 				= 4;		// 中段
+const def_CBT_TyudanGuardSyodan			= 10;	// 中段初段
+const def_CBT_GedanGuard 				= 4;		// 下段
+const def_CBT_GedanGuardSyodan			= 6;		// 下段初段
+const def_CBT_Guard 					= 2;		// ガード
+
+//HP値操作関係
+const def_HPV_Liberate			= 0; //100%ヴェールオフ(廃止)
+const def_HPV_OverLiberate		= 0; //200%ヴェールオフ(廃止)
+
+//座標定数
+const def_POS_GamenGaiYuuyoX				= 16384;		//画面外チェックで画面内と判断される端からの猶予座標(128*128)
+const def_POS_AirDashLimitHeight			= 0;		//空中ダッシュ高度制限座標(11776　92ドット) 8192
+const def_POS_AirDashHoseiMinHeight			= 16384;		//空中ダッシュ高度補正座標(128ドットより低いと上ベクトルをかける)
+const def_POS_GamenHajiX					= 262144;	//画面端までの距離　155648
+const def_POS_TechOverGamenHajiX			= 278528;	//なげ掴み時に画面外に行ったと判断される距離(+128ドット)　172032
+const def_POS_AboutAir					= -15000;	//これより低いと大体空中だよ
+
+//ファイナライズコード定数
+const def_FC_FireBallHit					= 30000;
+const def_FC_FireBallSousai					= 30001;
+const def_FC_FireBallLand					= 30002;
+const def_FC_FireBallWall					= 30003;
+const def_FC_FireBallGamenGai				= 30004;
+const def_FC_FireBallBlocked				= 30005;
+const def_FC_Lose							= 30006;
+const def_FC_RoundLose						= 30007;
+const def_FC_WallRecover_Sita				= 30008;
+const def_FC_FireBallDamage					= 30009;
+const def_FC_FireBallGuard					= 30010;
+
+// 開幕の掛け合い用フラグ
+const def_DTF_Exclude1PlayMode	= 1; // 一人用プレイを除外する
+
+// AirCountSlot定数 BMvTbl.AddAirCount( num, count )
+// 空中から地上にくると0になるフラグ用。空中ダッシュは7を使い、必殺技は0～6を使う
+const def_ACS_AirDash	= 7;
+
+//行動コード定数　プログラムから参照する方（MvAction定数）
+//定数の値のみ参照されているので書き換え不可
+/* 02 */const def_MC_Skill						= 2; //必殺技
+/* 06 */const def_MC_Throw						= 32; //投げ属性
+/* 07 */const def_MC_EXAction						= 64; //ＥＸ属性（＋通常技で特殊技、＋必殺技でＥＸ必殺技）
+/* 08 */const def_MC_SPAction						= 128; //ＳＰ属性（＋必殺技でＩＷ）
+/* 11 */const def_MC_NoBursted						= 1024; //バーストされない技
+/* 12 */const def_MC_NoBurst						= 2048; //自分がバーストできない状態
+/* 28 */const def_MC_PositiveAction				= 134217728; // ポジティブな行動（自動増加に影響）　※プログラム参照
+/* 29 */const def_MC_NegativeAction				= 268435456; // ネガティブな行動（自動増加に影響）　※プログラム参照
+
+//行動コード定数０（Mvの最初で0になる、未設定だと0）MvCode MoveCode
+/* 00 */const def_MC_None							= 0; //未設定
+/* 01 */const def_MC_Atk							= 1; //通常技
+/* 02 */ // プログラム予約
+/* 03 */const def_MC_FireBall						= 4; //飛び道具(CreateFireBallや自動生成されたものにつく)
+/* 04 */const def_MC_AtkBlade						= 8; //攻撃判定の付いたブレード
+/* 05 */const def_MC_Recovery						= 16; //受け身
+/* 06 */ // プログラム予約
+/* 07 */ // プログラム予約
+/* 08 */ // プログラム予約
+/* 09 */const def_MC_NoJumpCansel					= 256; //通常Ｃからジャンプキャンセルを除外する
+/* 10 */const def_MC_DoujiCanselOK					= 512; //同時押しコマンドで別の技に移行が許されるか
+/* 11 */ // プログラム予約
+/* 12 */ // プログラム予約
+/* 13 */const def_MC_HitStatus_Damage				= 4096; //Mvの攻撃でダメージしてるか※通常技、特殊技、必殺技のみ
+/* 14 */const def_MC_HitStatus_Guard				= 8192; //Mvの攻撃でガードしてるか※通常技、特殊技、必殺技のみ
+/* 15 */const def_MC_DoujiCanselNG_NormalAtk			= 16384; //同時押しコマンドで別の技に移行が許されない通常技
+/* 16 */const def_MC_CharaFlag1					= 32768; // キャラ別フラグ // ケイアス：指示を出し終えたモーションか ユズリハ：モード継続　ダハーカ：殴られ済の行動 アカツキ：こうせい関係のMv
+/* 17 */const def_MC_CharaFlag2					= 65536; // キャラ別フラグ // ケイアス：キャンセル可能を受け取らないモーションか
+/* 18 */const def_MC_NoSend_ScriptKnockBackVecor		= 131072; //シールドなどのスクリプトによって相手から受ける特殊なノックバックベクトルの影響を親に渡さない
+/* 19 */const def_MC_GRDLowBreak					= 262144; //ＧＲＤブレイクの効果が短い・カウンターによるCP増加が低い・ダハーカを壊せない・（強化セグメントを壊せない：廃止）
+/* 20 */const def_MC_GRDBreak_FatalDmgHosei			= 524288; //ＧＲＤブレイクでダメージ補正がゆるくなる(130%)
+/* 21 */const def_MC_Sousai							= 1048576; //攻撃判定が重なっていたら相殺される（自分が相殺したいなら加えてFrameUpdateで関数を呼ぶ）相殺時に見た目変更したいならFireBallとして呼ぶかdef_MC_Sousai_EnemySubSuccessを見る
+/* 22 */const def_MC_Sousai_NoSubHitCount			= 2097152; //def_MC_Sousaiで相殺されたとき自分のヒット数を減算しない(両者これだと相打ち)
+/* 23 */const def_MC_Sousai_EnemySubSuccess					= 4194304; //def_MC_Sousaiで相手の何かのヒット数減算に成功した
+/* 24 */const def_MC_FireBallRect					= 8388608; // 飛び道具判定が含まれた操作親Mv　特殊な飛び道具反射に対応、アカツキのこうせい
+/* 25 */const def_MC_NoMoveBasicAction				= 16777216; // 歩き・しゃがみの基本動作に移行できない ※投げ回避できないのでジャンプを除外
+/* 26 */const def_MC_ExDamageHosei					= 33554432; // ヒット時に乗算補正をかける行動（厳しすぎる崩しとか）
+/* 27 */const def_MC_EnableAirAtkStatus				= 67108864; // AirAtkStatusが有効なMv
+/* 28 */ // プログラム予約
+/* 29 */ // プログラム予約
+/* 30 */const def_MC_EXHitCancelNG				= 536870912; // HIT時はEXでの行動でキャンセル不可（ＳＰじゃないとダメってこと）
+/* 31 */const def_MC_ThrowRect					= 1073741824; // 投げ属性の攻撃判定が出るＭＶ（オブジェクトのやられ×攻撃のチェック用）
+
+// 行動コード定数１
+// Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_GenFlag );
+/* 00 */const def_MC1_None = 0;
+/* 01 */const def_MC1_SupportChara = 1;
+/* 02 */const def_MC1_Sousai_MySubSuccess = 2; //def_MC_Sousaiで自分のヒット数減算に成功した
+/* 03 */const def_MC1_CharaFlag3 = 4;
+/* 04 */const def_MC1_AtkLow = 8; // 弱攻撃につく（一部弱じゃないけど弱くしたい攻撃にもつく）
+/* 05 */const def_MC1_AtkJump = 16; // ジャンプ攻撃につく
+/* 06 */const def_MC1_AtkLegs = 32; // 足払い系につく
+/* 07 */const def_MC1_AtkBall = 64; // 飛び道具系につく
+/* 08 */const def_MC1_AtkImpact = 128; // インパクトスキルにつく（インパクト相殺はインパクト技には負けやすい）
+/* 09 */const def_MC1_SupportMukiAuto = 256; // このMvからだされたサポートはSetMukiAutoされて生成される
+/* 10 */const def_MC1_Kirifuda = 512; // 切り札（同時押し猶予とかあるし切り札状態になってるかどうかは不明）
+/* 11 */const def_MC1_EnableZurasiExSpCancel = 1024; // ExやSp技ででかかり数フレーム空キャン可能なＭｖ
+/* 12 */const def_MC1_SlowRocketeerAirAtk = 2048; // おそめののぼり中段ジャンプ攻撃
+/* 13 */const def_MC1_VeryWeakImpactAtk = 4096; // 
+/* 14 */const def_MC1_ExtendAction = 8192; // エクステンドアクションしたＭｖ
+/* 15 */const def_MC1_AutoSPGuardAtk = 16384; // 
+/* 16 */
+/* 17 */const def_MC1_Reversal = 65536; // リバーサル表示の出たMv
+/* 18 */const def_MC1_KirifudaReversaled = 131072; // 相手がリバーサル切り札中の行動
+/* 19 */const def_MC1_NotPlusBlast = 262144; // 発動時にブラストを増やさない（なんか特殊過ぎるけど…）
+/* 20 */const def_MC1_SousaiLv1 = 524288; // やや強い（必殺技）
+/* 21 */const def_MC1_SousaiLv2 = 1048576; // 強い（ＥＸ必殺技とか）
+/* 22 */const def_MC1_SousaiLv3 = 2097152; // めちゃ強い
+/* 23 */const def_MC1_NoSetStdPattern = 4194304; // Beforeで立ててStdでのパターン変更を行わない
+/* 24 */const def_MC1_NoKirifudaBoost = 8388608; // CA中のデンデンとか不可にする。モードグリーンのCAなどの確定安定系用。
+/* 25 */const def_MC1_AdvNoSetTime = 16777216; // アドバの固定を発生させない
+
+/* 26 */const def_MC1_SidouHitSkill = 33554432; // 始動であたった必殺技（Mv移行でフラグ引継ぎあり）
+
+/* 27 */const def_MC1_EnableCansel_SkilltoSkill = 67108864; // 必殺技でも必殺Ｃで必殺技へのキャンセルを許容する※UNIと違う
+/* 28 */const def_MC1_EnableCansel_SkilltoAtk = 134217728; // 必殺技の通常Ｃで通常技へのキャンセルを許容する※UNIと違う
+/* 29 */const def_MC1_KirifudaSukaed = 268435456; // 相手が切り札スカした行動
+/* 30 */const def_MC1_AirAtkKirikaeTyudanCheckStart = 536870912; // このMvから出したジャンプ攻撃でF式チェックを行う
+/* 31 */const def_MC1_GenFlag = 1073741824; // Mv固有フラグ（Mv名と一緒に調べて使ってね）
+
+
+
+const def_MC7_StdAssult = 1;//地上アサルト制限をかけたい技
+const def_MC7_AirAssult = 2;//空中アサルト
+const def_MC7_StdAssultIgnoreNoMove = 4;//地上アサルトの行動不能フラグの影響を受けない　※アサルトの処理がInit_StdなのでInitBeforeで呼ぶこと
+const def_MC7_LightLegsMuteki = 8;//小足属性への無敵を設定予定のMV(これがあるとSetHitMutekiで小足無敵が消えない)
+const def_MC7_InActive = 16;//被CS時にインアクティブが検知される行動(これとは別に、通常技・必殺技・アサルトが検知される)
+const def_MC7_StdAssultFrameAdd = 32;
+const def_MC7_AnyCancelGRD = 64;//色々キャンセルできる技のGRD増加処理を既に行ったかどうか
+const def_MC7_SetMutekiDamage = 128;//ダメージを与えているときは無敵にする
+const def_MC7_ShieldWeakGRDAdd = 256;//被シールドでGRDが多く増加する技
+const def_MC7_CompletedShieldWeakGRDAdd = 512;//被シールドでのGRD増加処理を済ませた技
+const def_MC7_ThrowCounter = 1024;//硬直中を掴んだ投げ
+const def_MC7_StdAssultLimitAirAtk = 2048;//地上アサルトの制限を受けた技（着地まで）
+
+
+// Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_FromEnemyCharaFlag1 );
+const def_MC2_CheckStartExtendAction = 1;
+const def_MC2_CheckEndExtendAction = 2;
+const def_MC2_ZyodanAirAtk = 4; // 上段化したジャンプ攻撃
+const def_MC2_FromEnemyCharaFlag1 = 8; // 敵が設定・参照するフラグ１
+const def_MC2_CounterHit = 16;
+
+//mvtmplフラグ
+const def_TmplFlags_ChangeStatusOnly		= 1; //状態の移行のみを行う（※他のフラグも入ってるような状態になるよ）
+const def_TmplFlags_NoFurimuki				= 2; //振り向きを行わない(地上必殺技は基本振り向くがこれがあると振り向かない)
+const def_TmplFlags_NoAddComboRate			= 4; //コンボレートの加算をしない
+const def_TmplFlags_DoujiCancelOK			= 16; //同時押しでのキャンセルを認める（必殺技はこれをつけないと同時押しキャンセルできない）
+const def_TmplFlags_NoDrawReversalInfo		= 32; //リバーサルアナウンスの文字表示を出さない（リバサはカウントされる）
+
+//fireball用tmplフラグ
+const def_FBTmplFlags_NoClearVector			= 1; //スクリプトによる自動ベクトル初期化を行わない
+const def_FBTmplFlags_NoChangeLandMv		= 2; //着地でＭｖ変化をしないようにする
+
+//FL(フレーム)定数
+const def_FL_NoneDoujiCheck				= 3;		//同時押し猶予フレーム
+const def_FL_SpecialDoujiCheck				= 3;		//同時押し猶予フレーム
+const def_FL_ExSpecialDoujiCheck			= 3;		//同時押し猶予フレーム
+//↑のフレームまでチェックオブジェクトはあるが、lastdelayで有効なのは2Fまでなので実質2F
+
+const def_FL_NeutralWaitMin				= 420;	//待機アニメジャンプ最低フレーム(挑発)
+const def_FL_NeutralWaitStep				= 240;	//↑を超えて以降、待機アニメジャンプのチェックを何フレおきにするか
+
+//無敵時間関係
+const def_FL_JumpWaitNageMuteki				= 16;	//ジャンプ待機中にかかる投げ無敵（Mv抜けると０になります）
+const def_FL_F_RecoverMuteki				= 254;	//空中受身無敵時間 18
+const def_FL_B_RecoverMuteki				= 254;	//空中受身無敵時間 20
+const def_FL_N_RecoverMuteki				= 254;	//空中受身無敵時間 21
+const def_FL_D_RecoverMuteki				= 10;	//空中受身無敵時間 10
+const def_FL_DownRecoverMuteki				= 60;	//ダウン受身無敵時間（着地まで）
+
+const def_FL_F_GroundRecoverMuteki			= 23;	//地上受身無敵時間
+const def_FL_B_GroundRecoverMuteki			= 23;	//地上受身無敵時間
+const def_FL_N_GroundRecoverMuteki			= 23;	//地上受身無敵時間
+const def_FL_WallRecoverMuteki				= 30;	//壁受身無敵時間（抜けると解除）
+
+const def_FL_ModoriGuardFloatDagekiMuteki	= 6;		//ガードフロート戻りの打撃無敵時間
+const def_FL_ModoriGuardNageMuteki			= 8;		//ガード戻りの投げ無敵時間
+const def_FL_ModoriYarareNageMuteki			= 8;		//地上やられ戻りの投げ無敵時間
+
+const def_FL_GroundRecoverModoriNageMuteki	= 8;		//地上受身後の投げ無敵時間
+const def_FL_UkiRecoverModoriNageMuteki		= 8;		//浮きやられ受身着地後の投げ無敵時間
+const def_FL_OkiagariNageMuteki				= 8;		//起き上がりの投げ無敵時間
+
+//硬直時間関係
+const def_FL_GroundRecoverHane_Recovery		= 20;	//地上受け身（跳ね）硬直 メルカヴァとか20Fきっちりしかないからいじれないよ
+const def_FL_WallRecoverWaitMin				= 10;	//壁受身から最速で動けるまで
+const def_FL_WallRecoverWaitMax				= 10;	//壁受身の後何もしないとこのフレームで受身を取る
+
+//投げ・投げ抜け関係
+const def_FL_Tech							= 10;	//つかまれてからの投げ抜け猶予フレーム（-1すると格ゲー的猶予）
+const def_FL_BoundTech						= 10;	//やられ中に強引に掴んだときの投げ抜け猶予フレーム
+const def_FL_TechSenkou					= 9;	//投げコマンド入力してからの投げ抜け猶予フレーム このフレームまでは投げ抜け※def_FL_Techより小さいこと
+const def_FL_TechMiss						= 1;	//投げコマンド入力してからの投げ抜け失敗フレーム このフレームまでは投げ抜けミス
+
+const def_FL_LiberateMutekiTime				= 30;	//ヴェールオフの無敵時間
+const def_FL_Liberate_LandRecovery			= 7;		//ヴェールオフの着地硬直 ver1.02:7F ver1.03loc:12F
+const def_FL_LiberateHit_LandRecovery		= 2;		//ヴェールオフヒット時の着地硬直
+
+const def_FL_ConvertMinTime				= 15;	//コンセントレーションの最低保障時間
+const def_FL_ConvertMaxTime				= 420;	//コンセントレーションの最大継続可能時間（ver1.03から追加）
+
+const def_FL_ConvertStopTime				= 40;	//チェインシフトの時間停止・無敵時間
+const def_FL_CancelSupportStopTime			= 0;	//キャンセルサポートの時間停止・無敵時間
+const def_FL_CancelSupportDelayFrame		= 24;	//キャンセルサポートの全体F
+
+const def_FL_SPCutinStopTime				= 60;	//SPカットインの時間停止(Worth)
+const def_FL_EXCutinStopTime				= 20;	//EXカットインの時間停止
+
+const def_FL_Shield_StdTime				= 14;	//立ちシールド最低保障時間（これ以上だとD離して解除）戻りが5F*2なので+10Fされる
+const def_FL_Shield_CroTime				= 17;	//屈みシールド最低保障時間（これ以上だとD離して解除）戻りが5F*2なので+10Fされる
+const def_FL_Shield_AirTime				= 17;	//空中シールド最低保障時間（これ以上だとD離して解除）戻りが5F*2なので+10Fされる
+const def_FL_Shield_MaxTime				= 420;	//シールド最大持続可能時間（これ以上だと強制的に解除）
+
+const def_FL_ShieldStopTime				= 0;		//シールド成功時の停止時間 Ver.1.03:6F
+
+const def_FL_Shield_GRDPlusStartFrame 		= 20;	//シールドの何フレーム目からGRDを増やすか
+const def_FL_Shield_SPCostStartFrame			= 30;	//シールドの何フレーム目からゲージを消費するか
+
+const def_FL_ChainShift_ConvertFrame			= 200;	//チェインシフトの変換時間
+const def_FL_WorthSkill_NageMutekiFrame		= 30;	//インフィニットワースに必ずつく投げ無敵時間
+
+const def_FL_EXSLimit_EXSkill				= 300;	//EX技発動後にかかるゲージ増加制限フレーム
+const def_FL_EXSLimit_IWSkill				= 180;	//IW技発動後にかかるゲージ増加制限フレーム
+const def_FL_EXSLimit_IWEAtk				= 400;	//IWE攻撃発動後にかかるゲージ増加制限フレーム
+
+//着地硬直関係(LandRecovery)
+const def_FL_Jump_LandRecovery				= 2; 	//空ジャンプの着地硬直
+const def_FL_Assault_LandRecovery			= 4; 	//アサルトの着地硬直 Ver.1.04:8 (アサルトからは何も出さないほうが硬直短)
+const def_FL_BarrierAir_LandRecovery			= 6; 	//空中シールド着地硬直
+const def_FL_BarrierAirFall_LandRecovery		= 2; 	//空中シールド終了後の着地硬直
+
+//ジャンプ攻撃の着地硬直(特殊技も含む)※パターン変化でも解除（着地パターンは12Fまで保障して作ってある）
+const def_FL_AtkAirA_LandRecovery			= 2; 	// 空振り
+const def_FL_AtkAirB_LandRecovery			= 3; 	//
+const def_FL_AtkAirC_LandRecovery			= 4; 	//
+const def_FL_AtkAirA_LandRecovery_Shielded	= 10; 	// シールドされた
+const def_FL_AtkAirB_LandRecovery_Shielded	= 10; 	//
+const def_FL_AtkAirC_LandRecovery_Shielded	= 10; 	//
+const def_FL_AtkAirA_LandRecovery_Damage	= 0; 	// ダメージした
+const def_FL_AtkAirB_LandRecovery_Damage	= 0; 	//
+const def_FL_AtkAirC_LandRecovery_Damage	= 0; 	//
+const def_FL_AtkAirA_LandRecovery_Guard		= 2; 	// ガードされた
+const def_FL_AtkAirB_LandRecovery_Guard		= 3; 	//
+const def_FL_AtkAirC_LandRecovery_Guard		= 4; 	//
+
+//アサルトから出した着地硬直
+const def_FL_AtkAirA_LandRecovery_Assault			= 3; 	// 空振り
+const def_FL_AtkAirB_LandRecovery_Assault			= 4; 	//
+const def_FL_AtkAirC_LandRecovery_Assault			= 5; 	//
+const def_FL_AtkAirA_LandRecovery_AssaultShielded	= 10; 	// シールドされた
+const def_FL_AtkAirB_LandRecovery_AssaultShielded	= 10; 	//
+const def_FL_AtkAirC_LandRecovery_AssaultShielded	= 10; 	//
+const def_FL_AtkAirA_LandRecovery_AssaultDamage		= 1; 	// ダメージした
+const def_FL_AtkAirB_LandRecovery_AssaultDamage		= 1; 	//
+const def_FL_AtkAirC_LandRecovery_AssaultDamage		= 1; 	//
+const def_FL_AtkAirA_LandRecovery_AssaultGuard		= 3; 	// ガードされた
+const def_FL_AtkAirB_LandRecovery_AssaultGuard		= 4; 	//
+const def_FL_AtkAirC_LandRecovery_AssaultGuard		= 5; 	//
+
+// 飛び道具制限定数(BallLimitSlot)
+const def_BLS_Tmk_Goal = 0;
+const def_BLS_Tmk_Hina = 1;
+const def_BLS_Tmk_Saki = 2;
+const def_BLS_Tmk_Maho = 3;
+const def_BLS_Tmk_Airi = 4;
+const def_BLS_Tmk_Ball = 9;
+
+const def_BLS_Qen_Heivia = 0;
+const def_BLS_Qen_HandAxe = 1;
+
+const def_BLS_Ako_Scroll_Thunder = 0;
+const def_BLS_Ako_Scroll_Ice = 1;
+const def_BLS_Ako_Scroll_Frame = 2;
+const def_BLS_Ako_Scroll_Meteor = 3;
+
+const Def_Ako_SP_Level = 1; 
+const Def_Ako_SP_XP = 2; 
+
+//自由変数のどれを使うか・キャラ別定数（0～20ぐらい）
+//操作親からしかいじっちゃだめなやつ
+const def_PP_Mis_214JumpCount		= 0; // 214の派生ジャンプをした回数 割と適当に管理してるのでバグないかチェック
+
+const def_PP_Kur_OverDriveType		= 0; // きりふだの切り替えタイプ 0:デフォ 1:赤 2:緑 3:青
+
+const def_PP_Kur_KirifudaStick		= 1; // きりふだの入力 0:ニュートラルとか 4:後ろ 6:前
+
+const def_PP_Kur_BLLastPosX			= 2; // 
+const def_PP_Kur_BLLastPosY			= 3; // 
+const def_PP_Kur_BLLastPosStatus	= 4; // 
+
+const def_PP_Kur_OD_GreenChecker	= 5; // 
+
+const def_PP_Krn_ThrowItemNum		= 0; // アイテム投げのカウンタ（ループする）
+
+const def_PP_Tmk_Score = 0; // シュートが入ると増えていくスコア
+const def_PP_Tmk_Add214B = 1; // 214Bの後の追加コマンド 0:未入力 1:ロングあいり 2:ロング 3:通常 4:通常あいり
+const def_PP_Tmk_Add214C = 2; // 214Cの後の追加コマンド 0:未入力 1:ひなた 2:さき 3:あいり
+const def_PP_Tmk_MemberFlag = 3; // メンバーが過去に一度でも呼ばれるとフラグたつ (1<<0):ひなた (1<<1):さき (1<<2):まほ (1<<3):あいり
+	const def_PP_Tmk_MF_Hina = 1;
+	const def_PP_Tmk_MF_Saki = 2;
+	const def_PP_Tmk_MF_Maho = 4;
+	const def_PP_Tmk_MF_Airi = 8;
+	const def_PP_Tmk_MF_All = 15;
+
+const def_PP_Krt_AddSkill = 0; // 二刀の追加必殺技系フラグ
+
+const def_PP_Yak_Yakuho = 0; // ヤクホチェック 0:ない 1:でた 2:最速
+
+const def_PP_Stm_DoubleKirifuda = 0; // 切り札重ねがけチェックよう
+
+const def_PP_Emi_KirifudaCount = 0; // 切り札を何回つかったか
+
+const def_PP_Yuk_StandbySt = 0;
+const def_PP_Yuk_SkillJumpSt = 1;
+
+const def_PP_Ako_BuffLeftFrame = 1; // バフの残り効果時間。毎フレーム0まで減少、サポ使用不可になると0になる
+const def_PP_Ako_HealLimit = 2; // ヒールの回復制限（一回のリキャスト中初段の回復は一回まで）　サポ使用可能で0に初期化
+const def_PP_Ako_ExHealLimit = 3; // EXヒールの回復制限（一回のリキャスト中初段の回復は一回まで）　サポ使用可能で0に初期化
+const def_PP_Ako_TotalHealVal = 4; // 一度のリキャ中にどんだけ回復したか？　サポ使用可能で0に初期化
+
+const def_PP_Rus_Retry = 0; // サポゲージ回復時に「リトライだ」を言うフラグ
+const def_PP_Rus_GobuNearRus = 1; // 6S中ゴブリンが近くにくると1
+const def_PP_Rus_ObjectStatus = 3; // 6Sのゴブリンとオーク管理
+	const def_PP_Rus_OS_Gob = 2; // ゴブリンいる間有効
+	const def_PP_Rus_OS_Orc = 3; // オークいる間有効
+
+const def_PP_Hyd_236Bakuha			= 0; //爆発
+const def_PP_Hyd_236HitStatus		= 1; //236のヒット情報受け皿（コマンドチェックで使用）
+const def_PP_Yuz_BattouMode		= 0; //抜刀モードかどうか　0:通常 1:抜刀モード -1:クールタイム（モード移行できない状態）
+const def_PP_Yuz_BattouA			= 1; //抜刀モードかどうか　0:ストックなし 1:ストックあり -1:このボタンを完全ホールド
+const def_PP_Yuz_BattouB			= 2; //抜刀モードかどうか　0:ストックなし 1:ストックあり -1:このボタンを完全ホールド
+const def_PP_Yuz_BattouC			= 3; //抜刀モードかどうか　0:ストックなし 1:ストックあり -1:このボタンを完全ホールド
+//const def_PP_Yuz_BattouKeepFrame	= 4; //発動後何フレーム抜刀モードのままでいるか。これが０でかつボタンを離すと解除される。
+const def_PP_Yuz_BattouAutoButton	= 5; //対応技のあと即ボタンを離していてもこれでどれかをホールドにする 0:A 1:B 2:C
+const def_PP_Yuz_KeepBattouMv		= 6; //
+
+const def_PP_Wal_HitCount			= 0; //ヒット数いくつで抜けるとかに使う
+const def_PP_Car_0202HS			= 0; //0202ヒットステータス
+const def_PP_Car_214Hold			= 1; //214攻の設置状況 0:未設置 1:Aで設置中 2:BorCで設置中
+const def_PP_Car_BandC_Type		= 2; //B+Cの時のレバーの向き 0:前 1:後
+const def_PP_Car_BloodPoolCount		= 3; //設置してあるディゾルブ数（214はカウントしない）
+
+const def_PP_Wal_BandC_Type		= 0; //B+Cの時のレバーの向き 0:前 1:後
+
+const def_PP_Mer_214				= 0; //214ヒットステータス
+
+const def_PP_Vat_Bit_CheckObject	= 0; //ビットチェックオブジェクト出したかどうか　0:未生成 1:生成済み
+const def_PP_Vat_Bit_ComboCount		= 1; //ビットが連続ヒットorガードした回数(10で１回、ガード時は10ずつ増加、ヒット時は5ずつ増加)
+
+const def_PP_Set_HitCount			= 0; //ヒット数いくつで抜けるとかに使う
+const def_PP_Set_FrameCount		= 1; //フレーム数いくつで抜けるとかに使う
+const def_PP_Set_214Input			= 2; //214派生の先行入力用
+
+const def_PP_Hil_3CCommand			= 0; //2C入力時に3C入力だったかどうか
+const def_PP_Hil_HoldLv			= 1; //ホールド剣のタメレベル 0:LV1 1:LV2
+
+const def_PP_Elt_Bullet			= 0; //タマを何発うったか（最大値は…）
+const def_PP_Elt_PowBullet			= 1; //強化弾丸のこり
+const def_PP_Elt_ReloadTmp0		= 2; //リロード用テンポラリ
+const def_PP_Elt_ReloadTmp1		= 3; //リロード用テンポラリ
+const def_PP_Elt_AerialStatus		= 5; //エリアルジャンプ中は1 着地で0
+const def_PP_Elt_CuttingSinkCount	= 6; //コンボ中421Bを何回入れたか　コンボ終了で0
+
+const def_PP_Aka_KouseiSuccess		= 0; //こうせいせいこうフラグ
+const def_PP_Aka_StdBandCType		= 1; //こうせい 0:奇数回 1:遇数回
+
+const def_PP_Aka_Status			= 2; //汎用ステータス
+	const def_PPFlag_Aka_ElectDmgCreate	= 1; //ビリビリやられ生成オブジェクト生成済みかどうか
+	const def_PPFlag_Aka_KouseiHold		= 2; // こうせいB+Cホールド中かどうか
+const def_PP_Aka_236HitStatus		= 3; //236攻のヒットステータス
+const def_PP_Aka_Near_StdB		= 4; //近Bを使ったら1、遠Bを使ったら0
+
+
+
+
+const def_PP_Naoto_Bullets = 0;
+const def_PP_Naoto_PersonaStatus = 1;
+const def_PP_Naoto_Fate = 2;
+const def_PP_Naoto_ReloadTime = 3;
+const def_PP_Naoto_TrapCount = 4;
+const def_PP_Naoto_ShootBuffer = 5;
+
+
+
+const def_PP_Cha_DirectActionType	= 4; //ケイアスのダハーカ指示アクション
+const def_PP_Cha_DahMode			= 5; //ダハーカの状態(0:出現していない 1:出現中)
+const def_PP_Cha_DahNormalCancel	= 6; //ダハーカのキャンセル情報(0:失敗 1:通常C可 255:行動可)
+const def_PP_Cha_DahStatus			= 7; //ダハーカの汎用ステータス
+	const def_PPFlag_Cha_DS_Invisible		= 1; //イベントでの非表示
+	const def_PPFlag_Cha_DS_CallVanishEff 	= 2; //消滅エフェクトを出す(出した後フラグは消される)
+	const def_PPFlag_Cha_DS_PowerfulMode	 	= 4; //強化状態
+	const def_PPFlag_Cha_DS_Hiding			= 8; //潜伏状態
+	const def_PPFlag_Cha_DS_ChangeChaMv		= 16; //ダハーカ攻撃中にケイアスのＭｖが変化したかどうか
+	const def_PPFlag_Cha_DS_AliveCheckObject	= 32; //↑の監視オブジェクトがあるかどうか
+	const def_PPFlag_Cha_DS_Vanishing		= 64; //消滅して消えている状態
+const def_PP_Cha_DahActList		= 8; //ダハーカがコンボ中に使った技記憶
+const def_PP_Cha_DahActionPoint		= 9; //ダハーカの行動ポイント(何かすると増加していって限界まで行くと消えるとか)
+const def_PP_Cha_ButtonHoldFrame	= 10; //何フレーム何かのボタンを押しっぱなしにしているか
+const def_PP_Cha_ButtonA_HoldFrame	= 11; //
+const def_PP_Cha_ButtonB_HoldFrame	= 12; //
+const def_PP_Cha_ButtonC_HoldFrame	= 13; //
+const def_PP_Cha_DahHomingOffSet			= 14; // ダハーカ追尾オフセットX座標
+
+const def_PP_Bya_LastWebTrapType = 0; // 最後に置いた罠 0:A 1:B 2:C 10:JA 11:JB 12:JC
+const def_TS_Bya_WebTrap = 0; // 罠設置中の飛び道具スロット(214)
+const def_TS_Bya_WebTrapAir = 3; // 罠設置中の飛び道具スロット(J214)
+const def_TS_Bya_WebTrapGround = 2; // 地面罠設置中の飛び道具スロット
+const def_TS_Bya_WebTrapAtk = 1; // 罠攻撃中の飛び道具スロット
+
+/*
+const def_PP_Vat_AirLimitFlags		= 5; //空中必殺技はそれぞれ空中で１回しか出せないようにする
+	const def_PP_Vat_ALF_46A		= 1;
+	const def_PP_Vat_ALF_46B		= 2;
+	const def_PP_Vat_ALF_46EX		= 4;
+	const def_PP_Vat_ALF_64A		= 8;
+	const def_PP_Vat_ALF_64B		= 16;
+	const def_PP_Vat_ALF_64EX		= 32;
+	const def_PP_Vat_ALF_22A		= 64;
+	const def_PP_Vat_ALF_22B		= 128;
+	const def_PP_Vat_ALF_22EX		= 256;
+*/
+
+//自由変数のどれを使うか定数（20以降）
+//操作親からしかいじっちゃだめなやつ
+const def_PP_SelectIgnitionType		= 19; // 選択中のイグニッションタイプ　-1:未選択 0～2 99:決定（これを見て点滅オブジェクトなどが変化）
+
+const def_PP_CallSupportType			= 21; // 呼ぼうと入力したサポートタイプ 0:通常 1:横入れ 2:CA 3:ガーキャン
+const def_PP_TksItemCount			= 22; // りゅーじの弁当取得回数が入ってる
+
+const def_PP_EnemyCharaNo			= 23; // 敵のキャラ番号が入っている
+
+const def_PP_SousaiCount			= 24; // 相殺した回数
+const def_PP_StandbyWaitFrame		= 25; // Mv_StandbyWaitで何フレーム待機したか
+
+const def_PP_StandbyType			= 26; // 開幕MV指定 0:Mv_Neutral 1:Mv_Standby 2:Mv_StandbyWait 3:Mv_StandbyDuet
+	const def_PP_ST_Neutral			= 0;
+	const def_PP_ST_Standby			= 1;
+	const def_PP_ST_StandbyWait		= 2;
+	const def_PP_ST_StandbyDuet		= 3;
+	const def_PP_ST_StandbyDuetEnemy	= 4;
+	
+const def_PP_ParamStandbyWaitFrame	= 27; // StandbyWaitでいる時間（0だと初期値を使うが、値が入っているとそっちで見る）
+
+const def_PP_CmdCancelStatus		= 28; //CmdCheck通過時に更新されるキャンセルステータス
+	const def_PP_CCS_None		= 1;
+	const def_PP_CCS_Normal		= 2;
+	const def_PP_CCS_Special	= 4;
+	const def_PP_CCS_ExSpecial	= 8;
+	const def_PP_CCS_Ex			= 16;
+	const def_PP_CCS_ChainShift = 32;
+
+const def_PP_CmdButtonStatus		= 29; //CmdCheck通過時に更新されるボタンステータス(CommandTblでも定数を使用)
+	const def_PP_CBS_ButtonA		= 1;
+	const def_PP_CBS_ButtonB		= 2;
+	const def_PP_CBS_ButtonC		= 4;
+	const def_PP_CBS_ButtonD		= 8;
+
+const def_PP_JumpStartHeight		= 30; // ジャンプと二段ジャンプをしたときの高さが入ってる
+
+const def_PP_SoundStatus				= 31; //SE再生のフラグ
+	const def_PP_SS_NoBoundVoice		= 1;	 //やられボイスを再生しない
+	const def_PP_SS_NoBoundVoiceOnce	= 2; //次のやられボイスを再生しない(BoundInitで消されます)
+	
+const def_PP_LastPlaySound			= 32; //最後に再生したSEの番号
+const def_PP_AniSetObject			= 33; //
+const def_PP_OsikomiVal			= 34; //押し込み係数が入ってる（-100←→100）
+
+const def_PP_VeilOffGaugeType		= 35; //ヴェールオフ発動時のゲージ状態 0:100%開放 1:200%開放
+
+const def_PP_RecoverHoldMask		= 36; //受け身に使った押しっぱなしボタン(同時押しにも対応) 1<<0:A 1<<1:B 1<<2:C 1<<3:D
+
+const def_PP_Temp2				= 37; //割と適当に使う汎用変数
+const def_PP_Temp					= 39; //割と適当に使う汎用変数
+const def_PP_IWEXS_ChgVO_Hit		= 38; //IWEXSが使用可能かどうか 200%で相手が瀕死で最大ためＶＯをヒットで１
+
+const def_PP_CmdStatus				= 40; //CmdCheck通過時(成功時)に更新されるステータス
+	const def_PP_CS_MoveAble		= 1; //行動可能だったか※同時押しのズラしキャンセルがあるので注意
+	const def_PP_CS_ReverseBeat	= 2; //リバースビート扱いで出そうとしてるか
+	const def_PP_CS_DoujiDash_F	= 4; //6+A+Bでダッシュを入力したかどうか
+	const def_PP_CS_UseGauge	= 8;
+	const def_PP_CS_ExCancelOK	= 16; // Ｅｘキャンセルが出せる状態からだったか
+	const def_PP_CS_SpCancelOK	= 16; // Ｓｐキャンセルが出せる状態からだったか
+
+	
+const def_PP_TechReverse			= 62; //逆投げかどうか
+const def_PP_PlayerPosX 			= 59; //プレイヤーX座標記憶
+const def_PP_EnemyPosX 			= 58; //相手のX座標記憶
+
+const def_PP_NoneDouji 			= 50; //None技が無条件に出せる状態 0:出せない 1以上:のこり猶予F
+const def_PP_SpecialDouji 			= 51; //Special技が無条件に出せる状態 投げとかB+Cで使用中
+const def_PP_ExSpecialDouji 		= 52; //ExSpecial技が無条件に出せる状態 IWEXISTで使用中
+
+const def_PP_CaptureCheckObject		= 53; //つかみチェックオブジェクト生成済みかどうか
+const def_PP_TechHit_FrameManager	= 54; //投げ抜けフレーム管理
+
+const def_PP_StdComboChain			= 55; //Ａ連打コンボチェック
+const def_PP_CroComboChain			= 47; //Ａ連打コンボチェック
+const def_PP_AirComboChain			= 49; //Ａ連打コンボチェック
+
+const def_PP_JumpStatus			= 56; //ジャンプステータス　前後Ｎジャンプから着地まで有効
+	const def_PP_JS_JumpF			= 1; //前ジャンプ状態（※二段ジャンプとかしてもフラグは消えない）
+	const def_PP_JS_JumpN			= 2; //垂直ジャンプ状態
+	const def_PP_JS_JumpB			= 4; //後ろジャンプ状態
+	const def_PP_JS_MultiJumpF		= 8; //二段ジャンプ以降の前ジャンプ状態
+	const def_PP_JS_MultiJumpN		= 16; //二段ジャンプ以降の垂直ジャンプ状態
+	const def_PP_JS_MultiJumpB		= 32; //二段ジャンプ以降の後ろジャンプ状態
+	const def_PP_JS_SkillLimit0		= 64; //空中必殺技制限スロット０
+	const def_PP_JS_SkillLimit1		= 128; //空中必殺技制限スロット１
+	const def_PP_JS_SkillLimit2		= 256; //空中必殺技制限スロット２
+	const def_PP_JS_SkillLimit3		= 512; //空中必殺技制限スロット３
+	
+const def_PP_PlayerStatus			= 57; //汎用ステータスとか？
+	//0 1 2 4 8 16 32 64 128 256 ...
+//	const def_PP_PS_isAlive		= 0;
+//	const def_PP_PS_isKO			= 1;		//KOされている
+	const def_PP_PS_isGRDJ_Win		= 2;
+	const def_PP_PS_isGRDJ_Draw	= 4;
+	const def_PP_PS_isLiberate		= 8;
+	const def_PP_PS_isOverLiberate	= 16;
+	const def_PP_PS_AuraKanriEnd	= 32;	//オーラ管理をやめる
+	const def_PP_PS_isThrowMv		= 64;	//投げ属性のモーションかどうか（このモーション中は行動不能でも投げ抜けが可能）
+	const def_PP_PS_isBallSousaiMv	= 128;	//飛び道具相殺属性のモーションかどうか
+	const def_PP_PS_NoAura			= 256;	//オーラを再張りしない
+	//↑この辺適当なタイミングで折られてるっぽいよ
+
+const def_PP_AuraType				= 48;	//見た目何のオーラがはられてる？
+	const def_PP_AT_isNone			= 0;
+	const def_PP_AT_isGRDJ_Win		= 1;
+	const def_PP_AT_isGRDJ_Draw	= 2;
+	const def_PP_AT_isLiberate		= 3;
+	const def_PP_AT_isOverLiberate	= 4;
+	const def_PP_AT_isCutin		= 5;
+	const def_PP_AT_isEtc			= 6;
+
+const def_PP_ReversalLeftTime		= 41;	//これが1以上で必殺技を出すとリバーサル扱いになる
+const def_PP_AssaultCount			= 43;	//アサルトを出したか（空中での回数制限用。地上状態になると０になる）
+
+// ↓この辺のフラグは監視オブジェクトで見ていて重いので今後使わない
+const def_PP_BoundStatus			= 42;	//やられ中のフラグ管理（エリアルやられとか、呪縛やられとか、コンボ中１回しかできないもの用）
+	const def_PP_BS_None			= 0;
+	const def_PP_BS_Aerial			= 1;		//エリアルやられフラグ
+	const def_PP_BS_Zyubaku		= 2;		//呪縛やられフラグ
+	const def_PP_BS_JumpCansel		= 4;		//ジャンプキャンセルされたかフラグ（相手は１回しかジャンプキャンセルできない。チェインシフトで回復）
+	const def_PP_BS_isBound		= 8;		//そもそもやられ状態かどうか。これがたってないと各種フラグはたたない。
+	const def_PP_BS_Sirimoti		= 16;	//しりもちやられフラグ
+	const def_PP_BS_Lock			= 32;	//汎用ロックやられやられフラグ
+	const def_PP_BS_AerialJumpCansel= 64;	//エリアルジャンプキャンセルされたかフラグ（def_PP_BS_JumpCanselとは別に相手は１回しかジャンプキャンセルできない。チェインシフトで回復）
+	const def_PP_BS_SSBonus		= 128;	//相手がスマートステアボーナスをとった
+
+// Battle_Std.EnemyDamageFlag_Add( def_DF_ChrFlag1ed );
+const def_DF_JumpCanseled = 1; // ジャンプキャンセルされる
+const def_DF_ComboRecasted = 2; // コンボ中のリキャストをされる
+const def_DF_AerialJumpCanseled = 4; // エリアルジャンプキャンセルをされる
+const def_DF_Locked	= 8; //汎用ロックやられやられフラグ
+const def_DF_ChrFlag1ed	= 16; //キャラ別コンボ中１回技
+	
+//const def_PP_GuadShieldCheck		= 44;	//ガードシールドフラグ
+const def_PP_AirAtkStatus			= 44;	//ジャンプ攻撃のステータス（ジャンプ攻撃、ジャンプ特殊技で使う）
+//	const def_PP_AAS_Hit			= 1;		//ヒットorガードした（着地の隙が無くなる）
+	const def_PP_AAS_Shielded		= 2;		//シールドされた（なんか硬直とか）
+	const def_PP_AAS_inAssault		= 4;		//アサルトから出されたジャンプ攻撃（地上・空中・ダッジ全部）
+	const def_PP_AAS_inAirAssault	= 8;		//空中アサルトから出されたジャンプ攻撃
+	const def_PP_AAS_Rocketeer		= 16;	//ジャンプ上昇中に出したかどうか
+	const def_PP_AAS_Damage			= 32;		//ダメージ与えた（着地の隙が無くなる）
+	const def_PP_AAS_Guard			= 64;		//ガードされた（着地の隙が減る？）
+	const def_PP_AAS_Hit			= 96;		//ダメージorガード
+
+	const def_PP_AAS_RockerteerHosei= 256;		//ロケッティア補正で上段にした
+	const def_PP_AAS_KirikaeHosei	= 512;		//切り替えで低ダ補正で上段にした
+	const def_PP_AAS_KirikaeHoseiClear	= 1024;		//切り替えで低ダ補正で上段にしたを消した
+//	const def_PP_AAS_Cancel		= 128;	// キャンセルで出した
+
+const def_PP_LastWallCount			= 45;	//damageimpactで更新されるwallcount記憶
+const def_PP_ChainShiftStatus		= 46;	//　ノーキャンチェインシフトかどうか見る用
+
+// Battle_Std.GS_AddFlag( def_PP_GS_ResurrectReserve );
+const def_PP_GlobalStatus			= 20; // 初期化されることの無いフラグ
+	const def_PP_GS_ThrowStdC		= 1; // 投げ扱いの立ちＣ
+	const def_PP_GS_DButtonHold		= 2; // Dボタンを押している
+	const def_PP_GS_ThrustComboBlast	= 4; // 前に突き飛ばすコンボブラスト
+	const def_PP_GS_AtkA_Rapid1		= 8; // A連1回目
+	const def_PP_GS_AtkA_Rapid2		= 16; // A連2回目
+	const def_PP_GS_AliveAdvGuardVec	= 32; // リフレクベクトルが残っている
+	const def_PP_GS_AliveBoundingObj	= 64; // Mv_Obj_Boundingを生成済みかどうか
+	const def_PP_GS_SPKanriObjFlag		= 128; // Mv_SPAfterImage_KanriObject用のフラグ
+	const def_PP_GS_ThrowAtkAppeared		= 256; // Throw_Fで相殺親から攻撃判定が出た
+	const def_PP_GS_BackScreenBlack			= 512; // 背景を真っ黒にするFadeProc_Setを呼んでいる
+	const def_PP_GS_NoAct_Move = 1024; // 前後歩き、ダッシュ、バクステ、ジャンプ、しゃがみが使用不可になる
+	const def_PP_GS_NoAct_Atk = 2048; // 攻撃全てが使用不可になる(CLAと切り札は使える)
+	const def_PP_GS_TransferSupportMv_MissType1 = 4096; // サポート呼び出しが書き換え要求 Mv_SupportCharaType1 
+	const def_PP_GS_NoAct_SPAtk = 8192; // 攻撃全てが使用不可になる２(CLAと切り札)　これと組み合わせると全部不可
+	const def_PP_GS_NoAct_Blast = 16384; // 攻撃全てが使用不可になる３(ブラスト)　これと組み合わせると全部不可
+	const def_PP_GS_CAB_Support = 32768; // CAブーストでサポートを行った
+	// const def_PP_GS_StopRecastSupport = 8192; // サポート回復がとまる？
+	const def_PP_GS_Act_ExEscBlast = 65536; // 行動可能でも出せるEXエスブラを使用可能にする
+	const def_PP_GS_DmgVecIsAlive = 131072; // やられベクトルが入る度に初期化される
+	const def_PP_GS_Resurrection = 262144; // リザレクション処理やった　1ラウンドに1回やったかのチェック用
+	const def_PP_GS_ResurrectReserve = 524288; // リザレクション予約（リザレクション処理オブジェクトがある間は1で、リザが終わったら消去される）
+	
+
+//BoundのInitで初期化される
+//const def_PP_BoundCansel			= 45;	//やられ中とかに何か出そうとするステータス（ヒットストップ後に発動する用）
+//	const def_PP_BC_GCAssault		= 1;	//ガードキャンセルアサルト
+
+//const def_PP_ShieldStatus			= 45;	//シールドステータス
+//	const def_PP_SHS_HoldAuto		= 1;		//ホールドで自動シールド張りなおしするか
+
+
+// サポートキャラのPP
+// 0～10はMv_Startupで0に初期化されます
+// それ以外も基本0から始まってるようだけど、まぁ念のため
+const def_PP_SupAtkTypeCA_CalledFrame			= 50; // CA攻の呼び出されフレームレベル
+const def_PP_SupAtkTypeExA_CalledFrame			= 51; // ExN攻の呼び出されフレームレベル
+const def_PP_SupAtkTypeExB_CalledFrame			= 52; // Ex6攻の呼び出されフレームレベル
+const def_PP_SupAtkTypeA_CalledFrame			= 61; // N攻の呼び出されフレームレベル
+const def_PP_SupAtkTypeB_CalledFrame			= 62; // 6攻の呼び出されフレームレベル
+const def_PP_SupportAttackType					= 63; // サポート攻撃の種類がいくつあるキャラか（フラグになった） 1:N 2:左右 4:回避
+	const def_PP_SA_NeutralAttack				= 1;
+	const def_PP_SA_SideAttack					= 2;
+	const def_PP_SA_ReversalAttack				= 4;
+	const def_PP_SA_ClimaxAttack				= 8;
+	const def_PP_SA_GuardCancelAttack			= 16;
+// Battle_Std.SupSt_AddFlag( def_PP_FromSkillSup );
+const def_PP_SupStatus							= 60; // サポートキャラ汎用ステータス
+	const def_PP_EnableMissType1_5S				= 4; // 5Sに失敗行動１が有効かどうか
+	const def_PP_EnableMissType1_6S				= 8; // 6Sに失敗行動１が有効かどうか
+	const def_PP_EnableCrashType1				= 16; // つぶし行動がでて良い状態
+	const def_PP_DrawingCrashMv					= 32; // つぶし行動が表示中（この間は当然リキャストしてはいけない）
+	const def_PP_FinishCrashMv					= 64; // つぶし行動が終わった
+	const def_PP_ImmuneCrashMv					= 128; // つぶし行動を無効化する状態（この間は反応しない）
+	const def_PP_VerySlowRecast					= 256; // 回復が超遅くなる
+	const def_PP_Success						= 512; // 成功扱い（ダメージを与えたり、当て身に成功する）
+	const def_PP_NextCABoostOn					= 1024; // 次の攻撃を自動でキンにする
+	const def_PP_ReleaseButton					= 2048; // Dボタンを離した(エクステンド用)
+	const def_PP_ExtendCheckEnd					= 12288; // エクステンド攻撃チェック終了
+	const def_PP_ExtendCheckStart				= 16384; // エクステンド攻撃チェックを始めたかどうか
+	const def_PP_ActiveAtkMove					= 32768; // 攻撃Mvなどで画面内に映っている状態かどうか
+	const def_PP_ExtendAtk						= 65536; // エクステンド攻撃中
+	const def_PP_SetExtendRecast				= 131072; // リキャスト性能をエクステンドのものにする
+	const def_PP_EnableMissType1_CA				= 262144; // CAに失敗行動１が有効かどうか
+	const def_PP_EnableMissType1_GC				= 524288; // ガーキャンに失敗行動１が有効かどうか
+	const def_PP_ActiveMissMove					= 1048576; // エンジュの失敗行動の待機中～終了まで1
+	const def_PP_DmgEscNoSafeFinalize			= 2097152; // サポのDmgやEscの保険処理で60Fで消えるのを999Fにするフラグ
+	const def_PP_FromSkillSup					= 4194304; // スキルサポ(236Dとか)で呼ばれたかどうか
+const def_PP_SupEscSuppoort						= 58; // Escサポート
+const def_PP_SupFinCount						= 59; // サポート呼び出しが無事にfinまでいったら回数が増える
+
+const def_PP_SkillSupTypeA_CallWaitFrame		= 53; // 236Dサポの発生までのサポキャラ毎のウェイト値
+const def_PP_SkillSupTypeB_CallWaitFrame		= 54; // 214Dサポの発生までのサポキャラ毎のウェイト値
+const def_PP_SupBuffLv							= 55; // バフ（アコ214）のレベル。これを見てキラキラだしたり空中可になったりする。
+const def_PP_SupHealRecastHosei					= 56; // アコのヒールでのリキャスト回復量係数（攻撃を出すと更新される）
+const def_PP_SupRecastPower						= 49; // リキャスト予定の速度
+
+// Battle_Std.SupBuffSt_AddFlag( def_PP_SBS_EnableAtk );
+const def_PP_SupBuffStatus						= 48; // これも勝手には初期化されない
+	const def_PP_SBS_EnableAtk						= 1; // バフが有効な攻撃かどうか　サポ攻撃の最初でつけたり消したりする
+	const def_PP_SBS_ExBuff							= 2; // 214EXを出すとつく。バフの残り時間のヘリが遅くなる。サポ攻撃の最初で消える？
+
+//オブジェクト単位（まだ使ってない）
+//const def_LP_TechReverse = 0;		// 逆投げかどうか
+//const def_LP_TechPlayerPosX = 1;	// プレイヤーX座標記憶
+//const def_LP_TechEnemyPosX = 2;		// 相手のX座標記憶
+
+//FireBallオブジェクトのLP使用状況メモ
+//BallのLPで使っていいのは0～5あたり
+// 0:
+// 1:
+// 2:
+// 3:
+// 4:
+// 5:
+// 6:def_LP_BallFlags
+// 7:def_LP_MvType
+// 8:def_LP_BallSlot
+
+//FireBall用のLP定義
+	
+const def_LP_BallFlags				= 6;		// 飛び道具用フラグ集
+	const def_BallFlags_None		= 0;		// いらないけど
+	const def_BallFlags_Finalize	= 1;		// 次回ファイナライズしてね
+	const def_BallFlags_SousaiSubHited	= 2;		// 相殺処理を一度でも行った（相殺でヒット数を減らされた）
+const def_LP_MvType				= 7;		// Mvの属性（飛び道具とかってか飛び道具にしか使ってない）
+	const def_MvType_Normal		= 0;		// Mvの属性：無属性
+	const def_MvType_Ball			= 1;		// Mvの属性：飛び道具
+const def_LP_BallSlot				= 8;		// Eff6-100 101用スロット（61とか11とか）
+
+
+//０～９
+const def_LP_Hyd_236_Type			= 0;		// 飛び道具ＡorＢ
+const def_LP_Hyd_236_Hit			= 1;		//
+const def_LP_Vat_236_Type			= 0;		// 飛び道具ＡorＢ
+const def_LP_Vat_236EX_HitCount		= 1;		// EX飛び道具ヒット数
+
+const def_LP_Car_BloodPool_Type		= 0;		// 血だまりがチェックするFireBall
+const def_LP_Car_SkillLevel		= 1;		// 必殺技の弱中ＥＸ識別
+const def_LP_Car_BloodPool_Grp		= 2;		// 血だまりの画像記憶 0:A 1:B 2:C 10:A(2P) 11:B(2P) 12:C(2P)
+
+const def_LP_Ori_41236SP_LastX		= 0;
+
+const def_LP_Dah_DirectOrder			= 8; // ケイアスから行動を呼ばれている
+	// Finalizeコードが入っているはず
+const def_LP_Dah_Status				= 9;	// ダハーカオブジェクトの状態
+	const def_LPDSFlags_Finalized	= 1;	// ファイナライズしたUpdateタイミング（毎Updateでリセット）
+
+
+//適当に弄っていいやつ
+//const...
+
+//パターン(PAT)番号（文字）
+const def_PAT_Neutral			= 0;		//ニュートラル
+
+const def_PAT_Walk_F			= 10;	//前進・前進停止
+const def_PAT_Walk_B			= 11;	//後退・後退停止
+
+const def_PAT_Crouch			= 12;	// しゃがみ移行
+const def_PAT_Crouch_Wait		= 13;	// しゃがみ待機
+const def_PAT_Crouch_toN		= 14;	// 立ち上がり
+const def_PAT_Furimuki_S		= 15;	// 立ち振り向き
+const def_PAT_Furimuki_C		= 16;	// しゃがみ振り向き
+
+const def_PAT_GuardS			= 17;	//立ちガード・戻り
+const def_PAT_GuardC			= 18;	//屈みガード・戻り
+const def_PAT_GuardA			= 19;	//空中ガード・戻り
+
+const def_PAT_JumpWait_F		= 35;	//前ジャンプ待機
+const def_PAT_JumpWait_N		= 36;	//垂直ジャンプ待機
+const def_PAT_JumpWait_B		= 37;	//後ろジャンプ待機
+const def_PAT_Jump_F			= 38;	//前ジャンプ
+const def_PAT_Jump_N			= 39;	//垂直ジャンプ
+const def_PAT_Jump_B			= 40;	//後ろジャンプ
+
+const def_PAT_MultiJump_F		= 38;	//多段ジャンプ
+const def_PAT_MultiJump_N		= 39;	//多段ジャンプ
+const def_PAT_MultiJump_B		= 40;	//多段ジャンプ
+
+const def_PAT_Dash_F			= 45;	//地上前ダッシュ・停止
+const def_PAT_Dash_B			= 46;	//地上後ろダッシュ・停止
+
+const def_PAT_Standby_1		= 50;	//登場１
+const def_PAT_Standby_2		= 51;	//登場２
+const def_PAT_GuardCancelAtk	= 60;	//ガーキャン攻撃
+
+const def_PAT_AirDash_F		= 67;	//空中前ダッシュ
+const def_PAT_AirDash_B		= 68;	//空中後ダッシュ
+
+const def_PAT_Mv_Assault_Dodge	= 67;	//地上アサルト（ダッジ）
+const def_PAT_Mv_Assault_Std	= 68;	//地上アサルト
+const def_PAT_Mv_Assault_Air	= 68;	//空中アサルト
+const def_PAT_Mv_Assault		= 68;	//各種アサルト
+const def_PAT_Mv_AirDash		= 80;	//各種アサルト扱いの空中ダッシュ
+
+const def_PAT_Throw_F			= 55;	//地上前投げ
+const def_PAT_Throw_F_TechWait	= 56;	//地上投げ成立～抜けまでの待機
+const def_PAT_Throw_F_Hit		= 57;	//地上投げ攻撃部分
+
+const def_PAT_Barrier_Std		= 17;	//立ちレジスト 387
+const def_PAT_Barrier_Cro		= 18;	//しゃがみレジスト 388
+const def_PAT_Barrier_Air		= 19;	//空中レジスト 389
+
+const def_PAT_VGuard_Time		= 10;	//空ガードする時間
+const def_PAT_VGuard_S			= 17;	// 立ちモーション 390
+const def_PAT_VGuard_C			= 18;	// しゃがみモーション 391
+
+const def_PAT_IWEAtk			= 259;	//IWE攻撃VO
+const def_PAT_Liberate			= 260;	//ヴェールオフ
+const def_PAT_Convert			= 261;	//コンセントレーション＆ＩＷＥ攻撃
+const def_PAT_ChainShift		= 262;	//チェインシフト
+
+const def_PAT_StandbyWait		= 49;	// 登場ポーズ開幕待機
+const def_PAT_Standby			= 50;	// 登場ポーズ
+const def_PAT_Win				= 52;	// 勝利ポーズ
+const def_PAT_RoundWin			= 53;	// ラウンド勝利ポーズ
+
+const def_PAT_TimeupLose		= 54;	//時間切れ負け・引き分けポーズ
+
+
+const def_PAT_Atk_StdA			= 1;		// 立ち弱
+const def_PAT_Atk_StdB			= 2;		// 立ち中
+const def_PAT_Atk_StdC			= 3;		// 立ち強
+const def_PAT_Atk_CroA			= 4;		// しゃがみ弱
+const def_PAT_Atk_CroB			= 5;		// しゃがみ中
+const def_PAT_Atk_CroC			= 6;		// しゃがみ強
+const def_PAT_Atk_AirA			= 7;		// ジャンプ弱 
+const def_PAT_Atk_AirB			= 8;		// ジャンプ中 
+const def_PAT_Atk_AirC			= 9;		// ジャンプ強
+
+const def_PAT_Atk_DashStdA		= 401;	// ダッシュ立ち弱 ※未使用
+const def_PAT_Atk_DashStdB		= 402;	// ダッシュ立ち中
+const def_PAT_Atk_DashStdC		= 403;	// ダッシュ立ち強
+const def_PAT_Atk_DashCroA		= 404;	// ダッシュしゃがみ弱 ※未使用
+const def_PAT_Atk_DashCroB		= 405;	// ダッシュしゃがみ中 ※未使用
+const def_PAT_Atk_DashCroC		= 406;	// ダッシュしゃがみ強 ※未使用
+const def_PAT_Atk_DashAirA		= 407;	// ダッシュジャンプ弱 ※未使用
+const def_PAT_Atk_DashAirB		= 408;	// ダッシュジャンプ中 ※未使用
+const def_PAT_Atk_DashAirC		= 409;	// ダッシュジャンプ強 ※未使用
+
+const def_PAT_EXCutinGrp		= 997;	// EX技カットイン
+const def_PAT_IWCutinGrp		= 998;	// IW技カットイン
+const def_PAT_IWXCutinGrp		= 999;	// IWX技カットイン
+
+const def_PAT_WRecover_Stop = "GUkemi_0"; // 壁受け身パターン
+const def_PAT_GRecover_Jump = "GUkemi_1"; // 地上:垂直受け身パターン
+const def_PAT_GRecover_Land = "GUkemi_2"; // 地上:伏せ受け身パターン
+const def_PAT_GRecover_Slip = "GUkemi_3"; // 地上:滑り受け身パターン
+const def_PAT_ARecover_Jump = "DUkemi_0"; // 空中受け身パターン
+const def_PAT_ARecover_Auto = "UUkemi_1"; // 空中自動復帰受け身パターン
+
+
+// コンボnum
+//コマンド優先順位定数
+
+const def_CN_GuardCancelCallSupport	= 3;
+const def_CN_CallSupportCA			= 4;
+const def_CN_CallSupportCAAir		= 5;
+
+const def_CN_Skill_AirCallSupport4or6	= 6; // アコ用
+const def_CN_Skill_AirCallSupport	= 7; // アコ用
+const def_CN_Skill_CallSupport4or6	= 8; // アコ用
+const def_CN_Skill_CallSupport	= 9; // アコ用
+
+const def_CN_CancelCallSupport4or6	= 10; // キャンセル4or6サポート（通常技より優先度を↑に）
+const def_CN_CancelCallSupport	= 11; // キャンセルサポート（通常技より優先度を↑に）
+
+const def_CN_Skill_236236EX	=  15;
+const def_CN_Skill_214236EX	=  20;
+const def_CN_Skill_214214EX	=  30;
+
+const def_CN_Skill_DyingIWE	= 50; //IWE攻撃
+
+const def_CN_Skill_DoubleCircleEX	= 100;
+const def_CN_Skill_DoubleCircleC	= 101;
+const def_CN_Skill_DoubleCircleB	= 102;
+const def_CN_Skill_DoubleCircleA	= 103;
+
+const def_CN_Liberate			= 106; //ヴェールオフ
+const def_CN_Blast			= 104; //金ブラスト
+const def_CN_ComboBlast		= 105; //ＯＭブラスト
+const def_CN_BoundBlast		= 106; //青ブラスト
+const def_CN_BoundBlastEx	= 108; //EX青ブラスト（やられ中でなくても出せる特殊なもの）
+
+const def_CN_Skill_IWEXIST		= 107; //何でここなの
+
+const def_CN_Skill_CircleEX	= 110;
+const def_CN_Skill_CircleC		= 111;
+const def_CN_Skill_CircleB		= 112;
+const def_CN_Skill_CircleA		= 113;
+
+const def_CN_Skill_41236SP_DZ	= 117;
+const def_CN_Skill_41236EX_DZ	= 118;
+const def_CN_Skill_41236SP		= 120; //CPUが120キメ打ちしてる
+const def_CN_Skill_41236EX		= 119;
+const def_CN_Skill_41236C		= 121;
+const def_CN_Skill_41236B		= 122;
+const def_CN_Skill_41236A		= 123;
+
+const def_CN_Skill_623EX_DZ		= 129;
+const def_CN_Skill_623EX		= 130;
+const def_CN_Skill_623C		= 131;
+const def_CN_Skill_623B 		= 132;
+const def_CN_Skill_623A 		= 133;
+
+const def_CN_Skill_236EX_DZ		= 138;
+const def_CN_Skill_236SP		= 139;
+const def_CN_Skill_236EX		= 140;
+const def_CN_Skill_236C		= 141;
+const def_CN_Skill_236B		= 142;
+const def_CN_Skill_236A		= 143;
+
+const def_CN_Skill_63214SP_DZ	= 147;
+const def_CN_Skill_63214EX_DZ	= 148;
+const def_CN_Skill_63214SP		= 149;
+const def_CN_Skill_63214EX		= 150;
+const def_CN_Skill_63214C		= 151;
+const def_CN_Skill_63214B		= 152;
+const def_CN_Skill_63214A		= 153;
+
+const def_CN_Skill_421EX 		= 160;
+const def_CN_Skill_421C		= 161;
+const def_CN_Skill_421B		= 162;
+const def_CN_Skill_421A		= 163;
+
+const def_CN_Skill_214EX_DZ		= 168;
+const def_CN_Skill_214EX		= 170;
+const def_CN_Skill_214C		= 171;
+const def_CN_Skill_214B		= 172;
+const def_CN_Skill_214A		= 173;
+
+const def_CN_Skill_0202EX_DZ	= 175;
+const def_CN_Skill_0202EX_PT	= 179; // ポテンシャル時
+const def_CN_Skill_0202EX		= 180;
+const def_CN_Skill_0202C		= 181;
+const def_CN_Skill_0202B		= 182;
+const def_CN_Skill_0202A		= 183;
+
+//この辺使ってる？
+const def_CN_Skill_236A_236EX	= 195; //※
+const def_CN_Skill_236A_236C	= 196; //※
+const def_CN_Skill_236A_236BorC	= 196; //※
+const def_CN_Skill_236A_236B	= 197; //※
+const def_CN_Skill_236A_236A	= 198; //※
+
+const def_CN_Skill_236B_236EX	= 195; //※
+const def_CN_Skill_236B_236C	= 196; //※
+const def_CN_Skill_236B_236BorC	= 196; //※
+const def_CN_Skill_236B_236B	= 197; //※
+const def_CN_Skill_236B_236A	= 198; //※
+
+const def_CN_Skill_236A_236A_236A	= 198; // ※
+const def_CN_Skill_236_236			= 198; // ※
+const def_CN_Skill_236_236_236		= 199; // ※
+
+
+const def_CN_Skill_J41236SP_DZ	= 218;
+const def_CN_Skill_J41236SP		= 219;
+const def_CN_Skill_J41236EX		= 220;
+const def_CN_Skill_J41236C		= 221;
+const def_CN_Skill_J41236B	 	= 222;
+const def_CN_Skill_J41236A		= 223;
+
+const def_CN_Skill_J623EX		= 230;
+const def_CN_Skill_J623C		= 231;
+const def_CN_Skill_J623B 		= 232;
+const def_CN_Skill_J623A 		= 233;
+
+const def_CN_Skill_J236EX_DZ	= 238;
+const def_CN_Skill_J236EX		= 240;
+const def_CN_Skill_J236C		= 241;
+const def_CN_Skill_J236B		= 242;
+const def_CN_Skill_J236A		= 243;
+
+const def_CN_Skill_J63214SP 	= 249;
+const def_CN_Skill_J63214EX 	= 250;
+const def_CN_Skill_J63214C		= 251;
+const def_CN_Skill_J63214B 	= 252;
+const def_CN_Skill_J63214A 	= 253;
+
+const def_CN_Skill_J421EX		= 260;
+const def_CN_Skill_J421C 		= 261;
+const def_CN_Skill_J421B 		= 262;
+const def_CN_Skill_J421A 		= 263;
+
+const def_CN_Skill_J214EX_DZ	= 268;
+const def_CN_Skill_J214EX 		= 270;
+const def_CN_Skill_J214C 		= 271;
+const def_CN_Skill_J214B 		= 272;
+const def_CN_Skill_J214A 		= 273;
+
+const def_CN_Skill_J0202EX_PT 	= 279; // ポテンシャル時
+const def_CN_Skill_J0202EX 		= 280;
+const def_CN_Skill_J0202C 		= 281;
+const def_CN_Skill_J0202B 		= 282;
+const def_CN_Skill_J0202A 		= 283;
+
+//共通システム部分
+const def_CN_Throw_F			= 306;
+const def_CN_Throw_A			= 307;
+
+const def_CN_Convert			= 350; //チェインシフト ver.1.02:1907→ver.1.03:350
+
+const def_CN_Atk_DashStdC_Normal= 370; //行動可能時
+const def_CN_Atk_DashStdB_Normal= 371;
+const def_CN_Atk_DashStdC		= 380; //行動不能時
+const def_CN_Atk_DashStdB		= 381;
+const def_CN_Atk_DashStdC_Direct= 390; //ダッシュ攻撃生だし
+const def_CN_Atk_DashStdB_Direct= 391;
+
+const def_CN_Assault_Std		= 395;
+const def_CN_Assault_Air		= 397;
+
+const def_CN_Dash_F			= 400;
+const def_CN_Dash_B			= 401;
+const def_CN_Dash_F_Douji		= 402;
+
+const def_CN_Atk4AandB			= 470;
+const def_CN_Atk6AandB			= 471;
+const def_CN_Atk4BandC			= 472;
+const def_CN_Atk6BandC			= 473;
+const def_CN_Atk4AandC			= 474;
+const def_CN_Atk6AandC			= 475;
+
+const def_CN_AtkCBandC			= 480;
+const def_CN_AtkBandC			= 481;
+const def_CN_AtkJBandC			= 482;
+
+const def_CN_AtkCAandB			= 483;
+const def_CN_AtkAandB			= 484;
+const def_CN_AtkJAandB			= 485;
+
+const def_CN_AtkCAandC			= 486;
+const def_CN_AtkAandC			= 487;
+const def_CN_AtkJAandC			= 488;
+const def_CN_AtkRAandC			= 489; // ダウン中に出せるリバサ切り札
+
+// シールド（通常技・特殊技より優先に変更）
+const def_CN_Barrier_Cro		= 690;
+const def_CN_Barrier_Std		= 691;
+const def_CN_Barrier_Air		= 692;
+
+// 通常技・特殊技この辺から
+const def_CN_Atk1C 			= 700;
+const def_CN_Atk1B 			= 701;
+const def_CN_Atk1A 			= 702;
+//const def_CN_Atk2C 			= 710;
+//const def_CN_Atk2B 			= 711;
+//const def_CN_Atk2A 			= 712;
+const def_CN_Atk3C 			= 720;
+const def_CN_Atk3B 			= 721;
+const def_CN_Atk3A 			= 722;
+const def_CN_Atk4C 			= 730;
+const def_CN_Atk4B 			= 731;
+const def_CN_Atk4A 			= 732;
+
+const def_CN_Atk6C 			= 740;
+const def_CN_Atk6B 			= 741;
+const def_CN_Atk6A 			= 742;
+const def_CN_Atk6C_Add			= 745;
+const def_CN_Atk6B_Add			= 746;
+const def_CN_Atk6A_Add			= 747;
+
+const def_CN_Atk7C 			= 750;
+const def_CN_Atk7B 			= 751;
+const def_CN_Atk7A 			= 752;
+const def_CN_Atk8C 			= 760;
+const def_CN_Atk8B 			= 761;
+const def_CN_Atk8A 			= 762;
+const def_CN_Atk9C 			= 770;
+const def_CN_Atk9B 			= 771;
+const def_CN_Atk9A 			= 772;
+//const def_CN_AtkC 			= 780;
+//const def_CN_AtkB 			= 781;
+//const def_CN_AtkA 			= 782;
+
+const def_CN_AtkJ1C 			= 800;
+const def_CN_AtkJ1B 			= 801;
+const def_CN_AtkJ1A 			= 802;
+const def_CN_AtkJ2C 			= 810;
+const def_CN_AtkJ2B 			= 811;
+const def_CN_AtkJ2A 			= 812;
+const def_CN_AtkJ3C 			= 820;
+const def_CN_AtkJ3B 			= 821;
+const def_CN_AtkJ3A 			= 822;
+const def_CN_AtkJ4C 			= 830;
+const def_CN_AtkJ4B 			= 831;
+const def_CN_AtkJ4A 			= 832;
+
+const def_CN_AtkJ6C 			= 840;
+const def_CN_AtkJ6B 			= 841;
+const def_CN_AtkJ6A 			= 842;
+const def_CN_AtkJ6C_Add		= 845;
+const def_CN_AtkJ6B_Add		= 846;
+const def_CN_AtkJ6A_Add		= 847;
+
+
+
+const def_CN_AtkJ7C 			= 850;
+const def_CN_AtkJ7B 			= 851;
+const def_CN_AtkJ7A 			= 852;
+const def_CN_AtkJ8C 			= 860;
+const def_CN_AtkJ8B 			= 861;
+const def_CN_AtkJ8A 			= 862;
+const def_CN_AtkJ9C 			= 870;
+const def_CN_AtkJ9B 			= 871;
+const def_CN_AtkJ9A 			= 872;
+//const def_CN_AtkJC 			= 880;
+//const def_CN_AtkJB 			= 881;
+//const def_CN_AtkJA 			= 882;
+
+const def_CN_HighJump_F		= 940;
+const def_CN_HighJump_N		= 941;
+const def_CN_HighJump_B		= 942;
+const def_CN_HighJumpCancel_F	= 943;
+const def_CN_HighJumpCancel_N	= 944;
+const def_CN_HighJumpCancel_B	= 945;
+
+const def_CN_Jump_F			= 950; //※
+const def_CN_Jump_N			= 951; //※
+const def_CN_Jump_B			= 952; //※
+const def_CN_JumpCancel_F		= 953; //※
+const def_CN_JumpCancel_N		= 954; //※
+const def_CN_JumpCancel_B		= 955; //※
+
+const def_CN_MultiJump_F		= 960;
+const def_CN_MultiJump_N		= 961;
+const def_CN_MultiJump_B		= 962;
+const def_CN_MultiJumpCancel_F	= 963;
+const def_CN_MultiJumpCancel_N	= 964;
+const def_CN_MultiJumpCancel_B	= 965;
+
+const def_CN_Atk_CroA_BSS		=  966; // スマートステアより優先度を高くする時用
+const def_CN_Atk_StdA_BSS		=  967; // スマートステアより優先度を高くする時用
+const def_CN_Atk_AirA_BSS		=  968; // スマートステアより優先度を高くする時用
+
+const def_CN_Skill_AddCommand1_BSS = 969;
+const def_CN_Skill_AddCommand2_BSS = 970;
+const def_CN_Skill_AddCommand3_BSS = 971;
+
+//def_CN_SmartSteer_00+nで生成しているだけで00以降の定数は使ってないので注意
+//立ち+00、しゃがみ+10、空中+20～からなのです
+const def_CN_SmartSteer_00		= 975;
+const def_CN_SmartSteer_01		= 976;
+const def_CN_SmartSteer_02		= 977;
+const def_CN_SmartSteer_03		= 978;
+const def_CN_SmartSteer_04		= 979;
+const def_CN_SmartSteer_05		= 980;
+const def_CN_SmartSteer_06		= 981;
+const def_CN_SmartSteer_07		= 982;
+const def_CN_SmartSteer_08		= 983;
+const def_CN_SmartSteer_09		= 984;
+const def_CN_SmartSteer_Cro_00	= 985;
+const def_CN_SmartSteer_Cro_01	= 986;
+const def_CN_SmartSteer_Cro_02	= 987;
+const def_CN_SmartSteer_Cro_03	= 988;
+const def_CN_SmartSteer_Cro_04	= 989;
+const def_CN_SmartSteer_Cro_05	= 990;
+const def_CN_SmartSteer_Cro_06	= 991;
+const def_CN_SmartSteer_Cro_07	= 992;
+const def_CN_SmartSteer_Cro_08	= 993;
+const def_CN_SmartSteer_Cro_09	= 994;
+const def_CN_SmartSteer_Air_00	= 995;
+const def_CN_SmartSteer_Air_01	= 996;
+const def_CN_SmartSteer_Air_02	= 997;
+const def_CN_SmartSteer_Air_03	= 998;
+const def_CN_SmartSteer_Air_04	= 999;
+const def_CN_SmartSteer_Air_05	= 1000;
+const def_CN_SmartSteer_Air_06	= 1001;
+const def_CN_SmartSteer_Air_07	= 1002;
+const def_CN_SmartSteer_Air_08	= 1003;
+const def_CN_SmartSteer_Air_09	= 1004;
+
+//必殺技の追加コマンド系（優先度は必殺技やＡ連より低い）
+const def_CN_Skill_AddCommand1	= 1005;
+const def_CN_Skill_AddCommand2	= 1006;
+const def_CN_Skill_AddCommand3	= 1007;
+const def_CN_Skill_AddCommand4	= 1008;
+const def_CN_Skill_AddCommand5	= 1009;
+const def_CN_Skill_AddCommand6	= 1010;
+const def_CN_Skill_AddCommand7	= 1011;
+const def_CN_Skill_AddCommand8	= 1012;
+const def_CN_Skill_AddCommand9	= 1013;
+const def_CN_Skill_AddCommand10	= 1014;
+const def_CN_Skill_AddCommand11	= 1015;
+const def_CN_Skill_AddCommand12	= 1016;
+const def_CN_Skill_AddCommand13	= 1017;
+const def_CN_Skill_AddCommand14	= 1018;
+const def_CN_Skill_AddCommand15	= 1019;
+const def_CN_Skill_AddCommand16	= 1020;
+const def_CN_Skill_AddCommand17	= 1021;
+const def_CN_Skill_AddCommand18	= 1022;
+const def_CN_Skill_AddCommand19	= 1023;
+const def_CN_Skill_AddCommand20	= 1024;
+
+const def_CN_StdSkill_AddCommand1	= 1050;
+const def_CN_StdSkill_AddCommand2	= 1051;
+const def_CN_StdSkill_AddCommand3	= 1052;
+
+const def_CN_Atk_Std6CThrow		= 1070; // 6Cでの通常投げ（6Cよりも優先度を↑に）
+
+// 通常技
+const def_CN_Atk_CroC			= 1100; //※
+const def_CN_Atk_CroB			= 1101; //※
+const def_CN_Atk_CroA			= 1102; //※
+const def_CN_Atk_StdC			= 1110;
+const def_CN_Atk_StdB			= 1111;
+const def_CN_Atk_StdA			= 1112;
+const def_CN_Atk_AirC			= 1120;
+const def_CN_Atk_AirB			= 1121;
+const def_CN_Atk_AirA			= 1122;
+
+//通常技の追加コマンド（通常技より優先度低い）
+const def_CN_Atk_A_A			= 1130; // 595
+const def_CN_Atk_B_B			= 1131; // 600
+const def_CN_Atk_6B_6B			= 1132; // 601
+const def_CN_Atk_C_C			= 1133; // 610
+const def_CN_Atk_2A_2A			= 1134; // 618
+const def_CN_Atk_2B_2B			= 1135; // 620
+const def_CN_Atk_2C_2C			= 1136; // 630
+const def_CN_Atk_JB_JB			= 1137; // 640
+const def_CN_Atk_JC_JC			= 1138; // 650
+
+const def_CN_Atk_AddCommand1	= 1140;
+const def_CN_Atk_AddCommand2	= 1141;
+const def_CN_Atk_AddCommand3	= 1142;
+const def_CN_Atk_AddCommand4	= 1143;
+const def_CN_Atk_AddCommand5	= 1144;
+const def_CN_Atk_AddCommand6	= 1145;
+const def_CN_Atk_AddCommand7	= 1146;
+const def_CN_Atk_AddCommand8	= 1147;
+const def_CN_Atk_AddCommand9	= 1148;
+
+
+
+const def_CN_CallSupport4or6	= 1306;
+const def_CN_CallSupport		= 1307;
+
+
+const def_CN_Crouch			= 1520;
+const def_CN_Walk_F			= 1521;
+const def_CN_Walk_B			= 1522;
+
+const def_CN_ConvertCharge		= 1908; //コンセントレーション　※番号変更
+
+const def_CN_CallEscapeSupportKirifuda	= 1950; // エスケープサポート（切り札状態）
+const def_CN_CallEscapeSupport	= 1951; // エスケープサポート
+
+const def_CN_Debug00	= 2000;
+const def_CN_Debug01	= 2001;
+const def_CN_Debug02	= 2002;
+const def_CN_Debug03	= 2003;
+const def_CN_Debug04	= 2004;
+const def_CN_Debug05	= 2005;
+const def_CN_Debug06	= 2006;
+const def_CN_Debug07	= 2007;
+const def_CN_Debug08	= 2008;
+
+//SPCost
+const def_SC_SpGauge_Max		= 50000;	// SPゲージ最大値
+const def_SC_Liberate_Minus	= 20; 	// Liberate状態での減少値 ver1.02:20 ver1.03loc:60
+const def_SC_OverLiberate_Minus	= 20;	// OverLiberate状態での減少値
+const def_SC_SkillInit_Plus	= 0;	// 必殺技発動時のSP増加量基本値(100で1%)
+
+
+//CmdTmplFlags
+// スマートステアのアナウンスを出してボーナスを与えるタイミングの技かどうか
+const def_CMDFlags_AnnounceSmaetSteer = 1;
+const def_CMDFlags_AnnounceSmaetSteerCro = 2;
+const def_CMDFlags_AnnounceSmaetSteerAir = 4;
+
+//なんかゲームバランスに影響ありそうなやつ
+//Battle_Std.GRD_AddValue({ val=def_GRD_ReversalBackDash, pressure=0, boundplus=1 });
+//GRD増減値
+const def_GRD_Guard_Frame					= 150;		//ガード時毎フレーム
+const def_GRD_Guard_Frame_Vorpal			= -75;		//ガード時毎フレーム（ヴォーパル側）
+const def_GRD_GuardSP_Frame				= 300;		//シールド成功時毎フレーム　↑と加算はされない
+const def_GRD_GuardSP_Frame_Vorpal			= 150;		//シールド成功時毎フレーム　↑と加算はされない（ヴォーパル側）
+const def_GRD_NiceGuard_Gedan				= 1000;		//成功ガード発生時（下段をしゃがみガード※ヴォーパル時は無し）
+const def_GRD_NiceGuard_GedanSyodan			= 1000;		//成功ガード発生時（下段をしゃがみガード※ヴォーパル時は無し）
+const def_GRD_NiceGuard_Tyudan				= 5000;		//成功ガード発生時（中段を立ちガード※ヴォーパル時は無し）
+const def_GRD_NiceGuard_TyudanSyodan			= 10000;		//成功ガード発生時（中段を立ちガード※ヴォーパル時は無し）
+const def_GRD_NiceGuard_NoboriTyudan			= 5000;		//成功ガード発生時（のぼり中段を立ちガード※ヴォーパル時は無し）
+const def_GRD_DamageSyodan					= -10000;	//ダメージ初段時
+const def_GRD_BoundFU						= 0;			//やられ中毎フレーム (1.03)-50
+const def_GRD_BoundFU_Vorpal				= 0;			//やられ中毎フレーム（ヴォーパル側）(1.03)-200
+const def_GRD_Liberate_AttackImpactInit		= 500;		//１００％ヴェールオフ中に攻撃をガードさせた時
+const def_GRD_OverLiberate_AttackImpactInit	= 1000;		//２００％ヴェールオフ中に攻撃をガードさせた時
+const def_GRD_ThrowHit						= -20000;	//投げられた時
+const def_GRD_ThrowMiss					= -10000;	//投げスカり時
+const def_GRD_DashAtk_Init					= 1000;		//ダッシュ攻撃を出したとき
+const def_GRD_BackDash						= -5000;		//バクステ発動時
+const def_GRD_ReversalBackDash				= -10000;	//リバサバクステ発動時
+const def_GRD_Recover						= 0;		//受身成功毎 (1.03)5000
+const def_GRD_AutoRecoverLv0				= 0;			//オートリカバー(x0.5)時（def_GRD_Recoverと重ねて呼ばれる）
+const def_GRD_AutoRecoverLv1				= 0;			//オートリカバー(x1.0)時（def_GRD_Recoverと重ねて呼ばれる）
+const def_GRD_AutoRecoverLv2				= 5000;		//オートリカバー(x1.5)時（def_GRD_Recoverと重ねて呼ばれる）
+const def_GRD_AutoRecoverLv3				= 15000;		//オートリカバー(x2.0)時（def_GRD_Recoverと重ねて呼ばれる）
+const def_GRD_Assault_Init					= 10000;		//アサルトを出したとき
+const def_GRD_BackGroundRecover				= -10000;	//後ろ受け身時
+
+//コンセントレーション中（自分の増減値）
+const def_GRD_Convert_Frame					= 300;	//通常
+const def_GRD_Convert_Frame_EnemyisDamage		= 200;	//相手がやられ中
+const def_GRD_Convert_Frame_NoEXS				= 200;	//自分のEXSが空
+const def_GRD_Convert_Frame_VeilOff				= 500;	//ヴェールオフ中
+
+//コンセントレーション中（相手の増減値）
+const def_GRD_Convert_Frame_Enemy				= -300;	//通常
+const def_GRD_Convert_Frame_EnemyisDamage_Enemy	= -150;	//相手がやられ中
+const def_GRD_Convert_Frame_NoEXS_Enemy			= -100;	//自分のEXSが空
+const def_GRD_Convert_Frame_VeilOff_Enemy		= -800;	//自分がヴェールオフ中
+
+const def_GRD_BarrierS_Frame				= 40;		//シールドモーション中
+const def_GRD_BarrierC_Frame				= 20;		//シールドモーション中
+const def_GRD_BarrierA_Frame				= 10;		//シールドモーション中
+const def_GRD_Shield_Success				= 2500;		//シールド成功時
+const def_GRD_Shield_Success_Enemy			= -20000;		//シールド成功時相手に対して
+
+const def_GRD_ThrowTech_Success				= 20000;		//投げ抜け成功時
+const def_GRD_ThrowTech_Success_Enemy			= -20000;		//投げ抜け成功時（相手に）
+
+const def_GRD_BMThrowTech_Success			= 30000;		//強引投げの投げ抜け成功時
+const def_GRD_BMThrowTech_Success_Enemy			= -30000;		//強引投げの投げ抜け成功時（相手に）
+
+const def_GRD_GuardShieldCost					= 1;	//ガードシールド発動コスト（失敗時に減少）
+const def_GRD_GuardShieldNotEnough_Enemy			= 10000;	//↑のコストが足りないとき（相手に）
+
+//GRD自動増加のフレーム
+const def_GRD_Superiority_JudgeFrame			= 15;	//優勢だと判断され効果が出始めるフレーム
+const def_GRD_Inferiority_JudgeFrame			= 45;	//劣勢だと判断され効果が出始めるフレーム
+
+
+//SP増減値
+const def_SP_Convert_Frame		= 0;	//コンバート毎フレーム
+const def_SP_EXConvert_Frame	= 0;	//EXコンバート毎フレーム
+const def_SP_Convert_Init		= 0;	//コンバート
+const def_SP_EXConvert_Init	= 0;//EXコンバート
+const def_SP_Convert_GRDCount	= 2000; //GRD１個につきいくつ増えるか
+const def_SP_Assault_Init		= -1000;	//アサルトを出したとき
+
+const def_SP_GuardShield_Init	= -1000;	// ガードシールド発動時
+
+const def_SP_BarrierS_Frame	= -10;	//シールドモーション中
+const def_SP_BarrierC_Frame	= -15;	//シールドモーション中
+const def_SP_BarrierA_Frame	= -12;	//シールドモーション中
+const def_SP_ConvertCharge_Frame	= -4;	//シールドモーション中
+
+const def_SP_AutoRecoverLv0	= 500;	//オートリカバー(x0.5)時 105Fまで
+const def_SP_AutoRecoverLv1	= 500;	//オートリカバー(x1.0)時 210Fまで
+const def_SP_AutoRecoverLv2	= 1000;	//オートリカバー(x1.5)時 420Fまで
+const def_SP_AutoRecoverLv3	= 3000;	//オートリカバー(x2.0)時 それ以上
+
+const def_SP_SmartSteerBonus	= 0; // スマートステアアナウンス発生時のボーナス（ダメージ時のみ、１コンボで１回のみ）
+
+//SP増減係数
+const def_SP_Barrier_Frame_BreakVal		= 150;	//ブレイク中消費増加係数
+const def_SP_Barrier_Frame_OverBreakVal	= 200;	//ブレイク中消費増加係数
+
+
+//ベクトル係数
+const def_VEC_GuardSP_Xmax		= -4500;	//↓をかけた結果の加減値
+const def_VEC_GuardSP_Xvec		= 100;	//バリアガード時ののガードベクトル係数 Ver.1.044:350
+const def_VEC_GuardSP_Xmax_Air	= -2500;	//↓をかけた結果の加減値
+const def_VEC_GuardSP_Xvec_Air	= 100;	//バリアガード時ののガードベクトル係数（空中シールドのとき）  Ver.1.044:150
+
+const def_VEC_DashAtk_Xmax		= 4000; //ダッシュ攻撃のベクトル最大値
+const def_VEC_DashAtk_Xmin		= 2500; //ダッシュ攻撃のベクトル最低値
+
+//特殊な補正
+const def_HOSEI_NoboriTyudan		= 40; //のぼり中段での上書き補正値
+const def_HOSEI_BoundMutekiCapture	= 80; //強引な投げつかみ（バウンドか無敵中）での乗算補正値
+const def_HOSEI_ChainShift			= 110; //チェインシフトの乗算補正値（回復値）
+const def_HOSEI_ChainShiftMax		= 75; //チェインシフトでの補正回復限界値
+const def_HOSEI_BreakFatalThrow		= 130; // ブレイク投げ（def_MC_GRDBreak_FatalDmgHosei属性のみ）
+const def_HOSEI_AssaultHit			= 85; // アサルトから出した技で通常ヒット
+const def_HOSEI_ExDamageHosei		= 85; // Def_Sys_CancelAirAtk_GuardCrouch の def_MC_ExDamageHosei での補正値 バティスタにも適用
+const def_HOSEI_ReversalKirifuda	= 80; // リバサ覚醒切り札でスカした補正
+const def_HOSEI_SukasiKirifuda		= 88; // 覚醒切り札でスカした補正(↑が優先されるので補正値注意)
+
+const def_CPH_ChainShift			= 130; //チェインシフトのCPの乗算補正値（回復値）
+const def_CPH_SuperChainShift		= 150; //チェインシフトのCPの乗算補正値（回復値）
+const def_CPH_CounterHit			= 120; // カウンター
+const def_CPH_LowCounterHit		= 105; // Low属性の技でカウンター（ほぼない）
+const def_CPH_BreakHit				= 130; // GRDブレイクした
+
+const def_CPH_AssaultHit			= 60; // アサルトから出した技で通常ヒット
+
+const def_BGM_IWExist				= 90; //インフィニットワースイグジストの処刑ＢＧＭ
+
+//const table def_test = {"a"=10, };
+//GRDブレイクのフレーム
+const def_GRDBF_IWE				= 600; // 10秒 イグジスト発動
+const def_GRDBF_GuardCancel		= 900; // 20秒 ガーキャン発動
+const def_GRDBF_GuardCancel_Max = 720; // 15秒 ガーキャン発動、200%orVO時
+const def_GRDBF_LowAtkDmg		= 490; // 7秒 lowbreakの技
+const def_GRDBF_NormalAtkDmg	= 600; // 10秒 通常の攻撃
+const def_GRDBF_ThrowAtkDmg		= 900; // 15秒 投げでのブレイク
+const def_GRDBF_VeilOffDmg		= 600; // 10秒 VOでのブレイク
+
+//AttackInfoStringWord	
+//BMvEff.AttackInfoString_Set({ word=def_AISW_NeppaRecover,} );	
+//const def_AISW_GroundRecover	= "GroundRecover 0123456" //この辺がギリギリ
+//とりあえず単語は要差し替えで定義だけしていく
+const def_AISW_AutoRecover		= "AUTO RECOVER";
+const def_AISW_TechHit			= "DODGE"; // "TECH HIT"; // ＤＯＤＧＥ
+const def_AISW_Convert			= "CHAIN SHIFT";
+const def_AISW_EXConvert		= "CHAIN SHIFT";
+const def_AISW_EXSkill			= "EX SKILL";
+const def_AISW_WorthSkill		= "WORTH SKILL";
+const def_AISW_SPGuard			= "SHIELD";
+const def_AISW_FaultGuard		= "FAULT GUARD";
+const def_AISW_GRDBreak		= "GRD BREAK";
+const def_AISW_Reversal		= "REVERSAL";
+const def_AISW_SmartSteer		= "QUICK COMBINATION"; // "QUICK COMBINATION"; //EXより１つ前のA連発動時
+const def_AISW_GuardCancel		= "GUARD CANCEL";
+const def_AISW_SupportCancel	= "CANCEL SUPPORT";
+const def_AISW_GuardCancelSupport	= "CANCEL SUPPORT";
+const def_AISW_ReverseBeat		= "REVERSE LINK"; // パッシングリンクのリバビ
+const def_AISW_NeppaRecover		= "RECOVER";
+const def_AISW_GRDAction		= "GRD SKILL"; // 仮
+const def_AISW_AdvanceGuard	= "REFLECTION GUARD"; // ＲＥＦＬＥＣＴＩＯＮ　ＧＵＡＲＤ
+const def_AISW_AutoAdvanceGuard	= "AUTO REFLECTION"; // ＲＥＦＬＥＣＴＩＯＮ　ＧＵＡＲＤ
+const def_AISW_Blast_PowerUp	= "POWERUP BLAST";
+const def_AISW_Blast_Combo		= "COMBO BLAST";
+const def_AISW_Blast_Escape	= "ESCAPE BLAST";
+// const def_AISW_SousaiSkill		= "IMPACT SKILL"; //ＩＭＰＡＣＴ　ＳＫＩＬＬ
+
+const def_AIST_VisiblePotential= 0; // ポテンシャルの効果をアナウンス出すか
+
+
+print("\n[btl_Define読み込み完了]");

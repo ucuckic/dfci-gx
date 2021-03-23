@@ -1,0 +1,2843 @@
+_dp("\n[mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+// def_BLS_Tmk_Goal = 0;
+// def_BLS_Tmk_Hina = 1;
+// def_BLS_Tmk_Saki = 2;
+// def_BLS_Tmk_Maho = 3;
+// def_BLS_Tmk_Airi = 4;
+// def_BLS_Tmk_Ball = 9;
+
+//-----------------------------------------------------------------------------
+// 固有関数
+//-----------------------------------------------------------------------------
+
+local chrfunc = {};
+
+// 自分目標のボールが触れていたらファイナライズ
+// ゴールからチェックして、Ｍｖが一致したボールだったら、自分とボールをファイナライズする
+chrfunc.MyBallFinalize <- function( _mvname, _myfincode=100, _ballfincode=0, _score=0, _miss=0, _mytruemissfincode=300 )
+{
+	local hanteiobj = BMvEff.CCheckRect(); // オブジェクト作成
+
+	// 設定
+	hanteiobj.SetPlayer(); //プレイヤー情報設定
+	hanteiobj.SetSrc( [ _Hantei_Etc, 0, 1 ] ); //自分の情報設定
+	hanteiobj.SetDst( [ _Hantei_Etc, 0, 1 ] ); //相手の情報設定
+	hanteiobj.SetFlags( _HC_FavourObj ); //検索条件設定
+
+	while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
+	{
+		local ball = hanteiobj.GetCharaData(); // 見つかったオブジェクト取得
+		if( ball.push() )
+		{
+			local ball_mvname = BMvTbl.GetMvName();
+			ball.pop();
+
+			if( ball_mvname == _mvname ) // 一致したボールだった
+			{
+				// まずボールを消滅させる
+				if( ball.push() )
+				{
+					BMvTbl.SetFinalize( _ballfincode ); // 消滅へ
+					
+					ball.pop();
+				}
+					
+				if( _miss ) // 外したときの処理
+				{
+					// あいりが出せる状況ならあいり攻撃へ。出せないなら失敗ゴールだけを出す
+					local airi_tobi = BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, type=_ValGet } );
+					if( airi_tobi == 0 )
+					{
+						BMvTbl.SetFinalize( _myfincode ); // あいりの攻撃へ
+					}
+					else
+					{
+						BMvTbl.SetFinalize( _mytruemissfincode ); // 完全な失敗へ
+					}
+				}
+				else // ナイッシュー
+				{
+					if( _score )
+					{
+						_dp("\n スコア:"+(BMvTbl.GetPP(def_PP_Tmk_Score)+_score)+"(+"+ _score+")" )
+						BMvTbl.AddPP( def_PP_Tmk_Score, _score ); // スコア加算
+					}
+					BMvTbl.SetFinalize( _myfincode ); // 攻撃へ
+				}
+				
+				return 1;			
+			}
+		}
+	}
+	return 0;
+}
+
+// パスの場合
+// パスを受け取る側からチェックして、ＭＶが一致したボールだったら、自分とボールをファイナライズする
+chrfunc.MyPassBallFinalize <- function( _mvname, _myfincode=100, _ballfincode=0 )
+{
+	local hanteiobj = BMvEff.CCheckRect(); // オブジェクト作成
+
+	// 設定
+	hanteiobj.SetPlayer(); //プレイヤー情報設定
+	hanteiobj.SetSrc( [ _Hantei_Etc, 0, 1 ] ); //自分の情報設定
+	hanteiobj.SetDst( [ _Hantei_Etc, 0, 1 ] ); //相手の情報設定
+	hanteiobj.SetFlags( _HC_FavourObj ); //検索条件設定
+
+	while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
+	{
+		local ball = hanteiobj.GetCharaData(); // 見つかったオブジェクト取得
+		if( ball.push() )
+		{
+			local ball_mvname = BMvTbl.GetMvName();
+			
+			ball.pop();
+
+			if( ball_mvname == _mvname ) // Ｍｖが一致したボールだった
+			{
+				if( ball.push() )
+				{
+					BMvTbl.SetFinalize( _ballfincode ); // ボールを消滅させる
+					ball.pop();
+				}
+				BMvTbl.SetFinalize( _myfincode ); // パスを受け取ったので攻撃へ
+				
+				return 1;			
+			}
+		}
+	}
+	return 0;
+}
+
+
+chrfunc.DamageFinalize_CheckParam1 <- function( _dmgfincode=200, _escfincode=300, _param1=10 )
+{
+	local mvs = BMvTbl.GetMvStatus();
+	if( mvs.Param1 != _param1 ) return;
+	
+	DamageFinalize( _dmgfincode, _escfincode );
+}
+
+chrfunc.DamageFinalize <- function( _dmgfincode=200, _escfincode=300 )
+{
+	if( Battle_Std.CheckObjectisYarare() )
+	{
+		BMvTbl.SetFinalize( _dmgfincode );
+	}
+	// 親がやられていたら止まる(テスト)
+	if( Battle_Std.CheckPlayerisDamage() )
+	{
+		BMvTbl.SetFinalize( _escfincode );
+	}
+}
+
+// オブジェクト呼び出しのX座標にステージ端の補正をかけて返す
+chrfunc.XLen_StageHosei <- function( _xlen, _offx = (-200<<7) )
+{
+	if( _xlen >= 0 )
+	{
+		local hazilen = Battle_Std.GetGamenHajiDistance();
+		hazilen += _offx; // 端よりちょっと手前にする
+		if( _xlen > hazilen )
+		{
+			return hazilen; 
+		}	
+	}
+	else
+	{
+		local h_hazilen = Battle_Std.GetHaimenGamenHajiDistance();
+		h_hazilen += _offx; // 端よりちょっと手前にする
+		if( _xlen < 0 && _xlen < -h_hazilen ) // 後ろに出そうとしてる
+		{
+			return -h_hazilen; 
+		}
+	}
+	return _xlen;
+}
+
+chrfunc.InitTeamMember <- function( _flag )
+{
+	// メンバー出現共通処理
+	Battle_Std.PP_AddFlag( def_PP_Tmk_MemberFlag, _flag );
+	
+	if( Def_Dbg_LocalDebugMode )
+	{
+		local hina = (Battle_Std.PP_CheckFlag( def_PP_Tmk_MemberFlag, def_PP_Tmk_MF_Hina ))? "◯" : "×";
+		local saki = (Battle_Std.PP_CheckFlag( def_PP_Tmk_MemberFlag, def_PP_Tmk_MF_Saki ))? "◯" : "×";
+		local maho = (Battle_Std.PP_CheckFlag( def_PP_Tmk_MemberFlag, def_PP_Tmk_MF_Maho ))? "◯" : "×";
+		local airi = (Battle_Std.PP_CheckFlag( def_PP_Tmk_MemberFlag, def_PP_Tmk_MF_Airi ))? "◯" : "×";
+		local str = hina + saki + maho + airi;
+		_dp("\n メンバー登場済み:"+str );
+	}
+	
+	if( Battle_Std.PP_CheckFlag( def_PP_Tmk_MemberFlag, def_PP_Tmk_MF_All ) == def_PP_Tmk_MF_All )
+	{
+		_dp("\n 全員いる！");
+		// ポテンシャル発揮
+		Battle_Std.PP_DelFlag( def_PP_Tmk_MemberFlag, def_PP_Tmk_MF_All );
+		
+		tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_ChraFlag1 ); // キャラ固有の回数
+	}
+}
+
+local call_winfriends = function()
+{
+	// 仲間を呼び出す
+	// 着地するとポーズを取る
+	local call_friend = function( param={} )
+	{
+		//param: x:目標となる親からみたオフセットX座標
+		local pos = BMvTbl.GetPosition(0); // 目標は操作親
+		pos.x += ( (param.goal_x<<7) * param.oya_muki ); // そこからのオフセット
+		
+		local eff = BMvEff.CreateObject( { start_pat=param.pat, x=param.start_x<<7, y=param.start_y<<7 } );
+		if( eff.push() )
+		{
+			local posst = BMvEff.GetPointStatus( { position=pos } ); // 位置情報取得
+			local frame = param.frame; // 到着時間（パターン依存）
+			local move_xvector = posst.pos_x * param.oya_muki / frame; // んで結局のベクトル
+			local move_yvector = posst.pos_y / frame; // んで結局のベクトル
+			
+
+			BMvTbl.SetVector( { x=move_xvector, y=move_yvector, flags=_Vector_Normal } );
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 影を表示する
+
+			eff.pop();
+		}
+	}
+	
+	local muki = BMvTbl.GetMuki(); // 今の向きを記憶
+	
+	call_friend( { pat="win_maho", start_x=-300, start_y=-250, goal_x = -150, frame=15, oya_muki = muki } );
+	call_friend( { pat="win_saki", start_x=-450, start_y=-100, goal_x = -330, frame=20, oya_muki = muki } );
+	call_friend( { pat="win_hina", start_x=-500, start_y= -32, goal_x = -240, frame=25, oya_muki = muki } );
+	call_friend( { pat="win_airi", start_x=-380, start_y= -50, goal_x = -270, frame=22, oya_muki = muki } );
+	
+	// 勝利ボイスも再生する
+	if( BMvEff.Random_Limit(2) )
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[60], delay=20+40 } ); // （ひなた）お～
+		BSound.SE_Play( { type=_SeType_Player, num=[61], delay=20+10 } ); // （愛莉）くすくす！
+	}
+	else
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[62], delay=20+0 } ); // （真帆）いぇい！
+		BSound.SE_Play( { type=_SeType_Player, num=[63], delay=20+25 } ); // （紗季）ナイスプレイ！
+	}
+	
+}
+
+// キメポーズ呼び出し関数
+local set_pvdummy = function( _pat, _x, _y, _reverse, _move, _xpos, _xvec  )
+{
+	local eff = BMvEff.CreateObject( { start_pat=_pat, x=_x, y=_y } );
+	if( eff.push() )
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_RenderShadow } );
+		
+		if( _move )
+		{
+			BMvTbl.SetPosition( { x=_y/2000*_xpos, flags=_Position_Add|_Position_ChangeMuki } );
+			BMvTbl.SetVector( { x=_xvec, y=2000 } );		
+		}
+		
+		if( _reverse ) BMvTbl.SetMuki( _Direction_Reverse );
+		eff.pop();
+	}		
+}
+
+local set_pvlogo_voice = function( _isRareMode )
+{
+	// ロゴとか適当に出す
+	if( _isRareMode )
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[667] } ); // 小学生は最高だぜ
+	}
+	else
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[665,666], delay=15 } ); // やったぁ！
+	}
+
+	// ロゴ
+	local eff = BMvEff.CreateObject( { start_pat=256 } );
+	if( eff.push() )
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_NoCamera|_ObjFlags_EraseParentPatChange } );
+		BMvTbl.SetMuki( _Direction_Right ); // 右向き固定
+		BMvTbl.SetPosition( { x=0, y=-350<<7 } );
+		eff.pop();
+	}		
+}
+
+local set_shootpvfinish = function( _isRareMode=0 ) : (set_pvdummy, set_pvlogo_voice)// SHOOT!のキメポーズの方
+{
+	local ypos = -200<<7; // 一応変えれるけど、正確じゃない
+	
+	set_pvdummy( 260,       0,    0, 0, 0,     0,     0 ); // ともか
+	set_pvdummy( 264, -340<<7, ypos, 0, 1,  1000,  1000 ); // あいり
+	set_pvdummy( 262,  175<<7, ypos, 1, 1, -1000, -1000 ); // さき
+	set_pvdummy( 261, -165<<7, ypos, 0, 1,  1000,  1000 ); // まほ
+	set_pvdummy( 263,  340<<7, ypos, 1, 1, -1000, -1000 ); // ひなた
+	
+	set_pvlogo_voice( _isRareMode );
+	
+	local sixmen = ( Battle_Std.GS_CheckFlag( def_PP_GS_CAB_Support ) && !tDDC.Support_IsUse() );
+	if( sixmen )
+	{
+		local eff = BMvEff.CreateObject( { datatype=2, mvname="Mv_SupportROKYUBU1" } );
+		_dp("\n シックスメン呼んだのでトロフィーゲット1");
+		BMvTbl.Achievement_Unlock( _eAchievement_TMK );
+	}
+}
+
+local set_shootpvfinish2 = function( _isRareMode=0 ) : (set_pvdummy, set_pvlogo_voice)
+{
+	local ypos = -200<<7; // 一応変えれるけど、正確じゃない
+	local move = 1;
+	
+	set_pvdummy( 250,       0,    0, 0, 0,     0,     0 ); // ともか
+	set_pvdummy( 254, -190<<7, ypos, 0, 1,  1000,  1000 ); // あいり
+	set_pvdummy( 252,  -95<<7, ypos, 0, 1,  1000,  1000 ); // さき
+	set_pvdummy( 251,  125<<7, ypos, 1, 1, -1000, -1000 ); // まほ
+	set_pvdummy( 253,  185<<7, ypos, 1, 1, -1000, -1000 ); // ひなた	
+	
+	set_pvlogo_voice( _isRareMode );
+	
+	local sixmen = ( Battle_Std.GS_CheckFlag( def_PP_GS_CAB_Support ) && !tDDC.Support_IsUse() );
+	if( sixmen )
+	{
+		local eff = BMvEff.CreateObject( { datatype=2, mvname="Mv_SupportROKYUBU2" } );
+		_dp("\n シックスメン呼んだのでトロフィーゲット2");
+		BMvTbl.Achievement_Unlock( _eAchievement_TMK );
+	}	
+}
+
+local func_EnemyChangeBall = function( _x, _y, _frame )
+{
+	// 変身エフェクトを出しながらボール化処理開始
+	BMvEff.ThrowParam( { pattern=345, x=_x, y=_y, } ); // 透明なパターンで掴む
+
+	local eff = BMvEff.CreateObject( { start_pat=110, x=_x<<7, y=_y<<7 } );
+	if( eff.push() )
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_MoveTimeStopAll } );
+		eff.pop();
+	}
+	local enemy = BMvCore.GetEnemyCharaData();
+	if( enemy.push() )
+	{
+		// つかみ中の自分より前に表示する
+		BMvTbl.SetPrio( _CharaPrio_Near );
+
+		// ボールのダミー表示
+		Battle_Std.BallBound.CallDummy( { x=0, y=0, stoptime=_frame } );
+		
+		enemy.pop();
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 通常投げ
+//-----------------------------------------------------------------------------
+
+t.Mv_Throw_F_Hit <- 
+{
+	function Init_After()
+	{
+		// 無敵で相手をつかみ開放の初期設定
+		Battle_Std.MutekiThrowRelease_Init();
+	}
+	function FrameUpdate_After()
+	{
+		// 無敵で相手を掴み開放
+		Battle_Std.MutekiThrowRelease( { FrameID=300, x=150, y=0, type="腹やられ強" } );
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+// イベント
+//-----------------------------------------------------------------------------
+t.Mv_TeamIconWait <-
+{
+	function Init()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround|_ObjFlags_NoCamera|_ObjFlags_NoRenderOrder|_ObjFlags_NoRenderBlackOut } );
+		 
+		BMvTbl.SetMuki( _Direction_Right ); //常に右向き
+		
+		// 座標を決めうちに変更
+		local pl = BMvTbl.GetPlayerSide(); //1P:0 2P:1
+		local posst = { x=-340<<7, y=50<<7, width=70<<7 } ;
+		
+		local pos = { x=0, y=posst.y };
+		if( pl==0 )
+		{
+			pos.x = posst.x;
+		}
+		else
+		{
+			pos.x = -posst.x;
+		}
+		
+		//LP0 : 場所とか
+		//LP1 : おまいが見る飛び道具番号
+		//LP2 : 今の状態
+		
+		local id = BMvTbl.GetLP(0);
+		switch( id )
+		{
+		case 4: //ゴール
+			pos.x -= posst.width*2.5;
+			break;			
+		case 0: //まほ
+			pos.x -= posst.width*1.5;
+			break;
+		case 1: //サキ
+			pos.x -= posst.width*0.5;
+			break;
+		case 2: //ひな
+			pos.x += posst.width*0.5;
+			break;
+		case 3: //あいり
+			pos.x += posst.width*1.5;
+			break;
+		case 5: //ボール
+			pos.x += posst.width*2.5;
+			break;			
+		}
+		BMvTbl.SetPosition( { x=pos.x, y=pos.y } ); // 座標指定
+		BMvTbl.SetPrio( _CharaPrio_Parent_BG ); // プライオリティを設定
+		
+	}
+	function Update()
+	{
+		local rs = BMvTbl.GetMvRoundStatus();
+		local hs = BMvTbl.GetMvHitStatus();
+		local mvs = BMvTbl.GetMvStatus();
+
+		if( rs.CharaMoveMode!=_CharaMoveMode_Disable && mvs.FrameID==0 )
+		{
+			BMvTbl.JumpFrameID(1); // フェード開始
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetNextMoveTable( "Mv_TeamIcon" );
+	}
+}
+
+t.Mv_TeamIcon <-
+{
+	function Init()
+	{
+		// LP1 : チェックする飛び道具番号
+		// LP2 : アイコンの状態 1:使える　2:使えない
+		// FrameID : 0:最初 1:出現アニメ 100:使える待機 200:使えない待機 300:使えるようになったフラッシュ→100へ
+		BMvTbl.SetLP(2,1); // 使える状態にセット
+		BMvTbl.JumpFrameID(100); // 開始の絵に変える
+	}
+	function Update()
+	{
+		local iconst = BMvTbl.GetLP(2);
+		local ballslot = BMvTbl.TobiParam_Func( { slot=BMvTbl.GetLP(1), type=_ValGet } );
+		// _dp("\n ballslot:"+ballslot +" iconst:"+iconst );
+		if( iconst == 1 && ballslot > 0 )
+		{
+			// 使える状態で飛び道具制限を発見
+			BMvTbl.SetLP(2,2); // 使えない状態にセット
+			BMvTbl.JumpFrameID(200); // 使えない絵へジャンプ
+		}
+		else if( iconst == 2 && ballslot == 0 )
+		{
+			// 使えない状態で飛び道具制限が無かった
+			BMvTbl.SetLP(2,1); // 使える状態にセット
+			BMvTbl.JumpFrameID(300); // 使える絵へジャンプ
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}	
+}
+
+local call_TeamIcon = function( _pat, _mv, _id, _slot )
+{
+	local eff = BMvEff.CreateObject( { start_pat=_pat, mvname=_mv } );
+	if( eff.push() )
+	{
+		BMvTbl.SetLP(0,_id);
+		BMvTbl.SetLP(1,_slot);
+		eff.pop();
+	}
+}
+
+t.Mv_Startup <-
+{
+	function Init_After() : (call_TeamIcon)
+	{
+		if( Def_Dbg_DebugGauge )
+		{
+			call_TeamIcon( "IconGoal", "Mv_TeamIconWait", 4, def_BLS_Tmk_Goal );
+			call_TeamIcon( "IconMaho", "Mv_TeamIconWait", 0, def_BLS_Tmk_Maho );
+			call_TeamIcon( "IconSaki", "Mv_TeamIconWait", 1, def_BLS_Tmk_Saki );
+			call_TeamIcon( "IconAiri", "Mv_TeamIconWait", 3, def_BLS_Tmk_Airi );
+			call_TeamIcon( "IconHina", "Mv_TeamIconWait", 2, def_BLS_Tmk_Hina );
+			call_TeamIcon( "IconBall", "Mv_TeamIconWait", 5, def_BLS_Tmk_Ball );
+		}
+	}
+}
+
+t.Mv_Standby <-
+{
+	function FrameUpdate_After()
+	{
+	}
+
+}
+
+t.Mv_RoundWinPattern <-
+{
+	function FrameUpdate_After()
+	{
+	}
+}
+
+
+// メンバーがだめなら１
+local memch = function( _memberslot )
+{
+	if( BMvTbl.TobiParam_Func( { slot=_memberslot, type=_ValGet } ) >0 ) return 1;
+	return 0;
+}
+
+t.Mv_WinPattern <-
+{
+	function Init_After()
+	{
+		// 自分の背後に中間を呼ぶ
+		// 自分の背後に十分な余裕が無い場合は反対を向く
+		if( Battle_Std.GetHaimenStageHajiDistance() < 32768 ) // 余裕が無い
+		{
+			BMvTbl.SetMuki( _Direction_Reverse );
+		}
+	}
+	function FrameUpdate_After() : (call_winfriends, memch)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50: // 手を上げ始める
+			break;
+		case 100: // 手を上げる
+			call_winfriends(); // 勝利の仲間を呼び出す処理
+			break;
+		}
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.FrameID == 25 )
+		{
+			// チームメンバーが揃うまで待機
+			// def_BLS_Tmk_Hina = 1;
+			// def_BLS_Tmk_Saki = 2;
+			// def_BLS_Tmk_Maho = 3;
+			// def_BLS_Tmk_Airi = 4;
+			if( memch(def_BLS_Tmk_Hina) || memch(def_BLS_Tmk_Saki) || memch(def_BLS_Tmk_Maho) || memch(def_BLS_Tmk_Airi) )
+			{
+			}
+			else
+			{
+				BMvTbl.JumpFrameID( 50 );
+			}
+		}
+	}
+}
+
+t.Mv_Neutral <-
+{
+	function Init_After()
+	{
+	}
+	function FrameUpdate_After()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.FrameID == 500 )
+		{
+			if( BMvEff.Random_Limit(100)<30 ) BMvTbl.JumpFrameID( 510 );
+		}
+	}
+}
+
+t.Mv_CallSupport <-
+{
+	function Init_After()
+	{
+		if( tDDC.Support_GetCharaNo() + 100 == Def_ChrNo_Ino_s ) // Def_ChrNoとの比較は100足さないとダメ
+		{
+			Battle_Std.TypeSE_Play({ type="サポート呼び出し_Ino" });
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+// 通常技
+//-----------------------------------------------------------------------------
+t.Mv_Atk_StdA <-
+{
+	function Init_After()
+	{
+	}
+	function FrameUpdate_After()
+	{
+	}
+}
+
+t.Mv_Atk_StdB <-
+{
+	function Init_After()
+	{
+	}
+	function FrameUpdate_After()
+	{
+	}
+}
+
+
+t.Mv_Atk_StdC <-
+{
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			Battle_Std.AddToolShift_NoSurinuke(50); // すり抜けないように座標加算
+			break;
+		}
+	}
+}
+
+
+t.Mv_Atk_CroA <-
+{
+	function FrameUpdate_After()
+	{
+	}
+}
+
+t.Mv_Atk_CroB <-
+{
+	function Init_After()
+	{
+		Battle_Std.MoveCode.DelFlag( def_MC_NoJumpCansel ); // 「通常ＣでもＪＣ不可」を消す
+	}
+	function FrameUpdate_After()
+	{
+	}
+}
+
+t.Mv_Atk_CroC <-
+{
+	function FrameUpdate_After()
+	{
+	}
+}
+
+
+t.Mv_Atk_AirA <-
+{
+	function FrameUpdate_After()
+	{
+	}
+}
+
+t.Mv_Atk_AirB <-
+{
+	function FrameUpdate_After()
+	{
+	}
+}
+
+t.Mv_Atk_AirC <-
+{
+	function FrameUpdate_After()
+	{
+	}
+}
+
+
+
+
+//-----------------------------------------------------------------------------
+// 236攻
+//-----------------------------------------------------------------------------
+
+chrfunc.CallBallandGoal <- function( param ={} )
+{
+	local frame = param.frame; // 相手に到達する時間
+	local xlen = XLen_StageHosei( param.xlen<<7 ); // 呼び出し位置＆ボールの移動距離
+	local ball_offset = { x=param.x<<7, y=param.y<<7 }; // 投げる開始位置
+	local ball_vec = { x=xlen/frame, y=param.yvec, addy=param.addyvec }; // ボールのベクトル
+		
+	// ボール呼び出し
+	if( "isFireBall" in param && param.isFireBall == 1 )
+	{
+		local eff = Battle_Std.CreateFireBall( { x=param.x, y=param.y, mv=param.ballmv } );
+		if( eff.push() )
+		{
+			_dm("親にヒットを伝えたい");
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentHitStatus } );
+			
+			BMvTbl.SetVector( { x=ball_vec.x, y=ball_vec.y, addy=ball_vec.addy, flags=_Vector_Normal } );
+			eff.pop();
+		}	
+	}
+	else
+	{
+		local eff = BMvEff.CreateObject( { mvname=param.ballmv, x=ball_offset.x, y=ball_offset.y } );
+		if( eff.push() )
+		{
+			_dm("親にヒットを伝えたい");
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentHitStatus } );
+			
+			BMvTbl.SetVector( { x=ball_vec.x, y=ball_vec.y, addy=ball_vec.addy, flags=_Vector_Normal } );
+			eff.pop();
+		}
+	}
+
+	local fr = frame;
+	local ypos = (-ball_vec.y * fr) - (ball_vec.addy * fr * fr )/2;
+	
+	// ゴール呼び出し
+	local goal = BMvEff.CreateObject( { mvname=param.goalmv, x=xlen + ball_offset.x, y=-ypos + ball_offset.y } );
+	if( "goalflags" in param )
+	{
+		if( goal.push() )
+		{
+			BMvEff.SetObjectFlags( { flags=param.goalflags } );
+			goal.pop();
+		}
+	}
+}
+
+local maketmpl_Skill236 = function( param={} ) : (chrfunc)
+{
+	local ret_tmpl = {};
+	
+	local ball_param =
+	{
+		xlen = 400,
+		frame = 30,
+		yvec = -2500,
+		// mv = "Mv_Ball236",
+		mv = "Mv_FireBall_236",
+		goalmv = "Mv_Obj_TomoGoalWait",
+		isfireball = 1,
+	};
+	switch( param.type )
+	{
+	case "A":
+		ball_param.xlen = 200;
+		break;
+	case "B":
+		ball_param.xlen = 500;
+		break;
+	case "C":
+		ball_param.xlen = 800;
+		break;
+	case "EX":
+		ball_param.xlen = 800;
+		ball_param.mv = "Mv_FireBall_236EX";
+		ball_param.goalmv = "Mv_Obj_TomoEXGoalWait";
+		ball_param.isfireball = 1;
+		break;
+	case "AirA":
+		ball_param.xlen = 200;
+		ball_param.yvec = -2000;
+		break;
+	case "AirB":
+		ball_param.xlen = 500;
+		ball_param.yvec = -2000;
+		break;
+	case "AirC":
+		ball_param.xlen = 800;
+		ball_param.yvec = -2000;
+		break;
+	case "AirEX":
+		ball_param.xlen = 800;
+		ball_param.yvec = -2000;
+		ball_param.mv = "Mv_FireBall_236EX";
+		ball_param.goalmv = "Mv_Obj_TomoEXGoalWait";
+		ball_param.isfireball = 1;
+		break;		
+	}
+	
+	ret_tmpl.Init_After <- function()
+	{
+	}
+	
+	ret_tmpl.FrameUpdate_After <- function() : (chrfunc, ball_param)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // 放る
+			chrfunc.CallBallandGoal( { x=61, y=-311, xlen=ball_param.xlen, frame=ball_param.frame, // ボール座標, 飛距離, 移動フレーム(ゴールフレームではない)
+			yvec=ball_param.yvec, addyvec=150, // ボールのベクトル
+			ballmv=ball_param.mv, goalmv=ball_param.goalmv, isFireBall=ball_param.isfireball } ); // ボールMv, ゴールMv, 飛び道具扱いにする
+			break;
+		}
+	}
+	
+	if( param.type == "EX" || param.type == "AirEX" )
+	{
+		ret_tmpl.HitInterrupt_After <- function()
+		{
+			Battle_Std.SetThrowHitFinalize(256); // ヒット分岐ファイナライズ
+		}
+		ret_tmpl.Finalize <- function()
+		{
+			Battle_Std.SwitchNextMoveTable("Mv_Neutral", [256,"Mv_Skill_236EX_Hit"]); //デフォ,[code,mv]...
+		}
+	}
+	
+	return ret_tmpl;
+}
+
+t.Mv_Skill_236A <- maketmpl_Skill236( { type="A" } );
+t.Mv_Skill_236B <- maketmpl_Skill236( { type="B" } );
+t.Mv_Skill_236C <- maketmpl_Skill236( { type="C" } );
+t.Mv_Skill_236EX <- maketmpl_Skill236( { type="EX" } );
+
+t.Mv_Skill_J236A <- maketmpl_Skill236( { type="AirA" } );
+t.Mv_Skill_J236B <- maketmpl_Skill236( { type="AirB" } );
+t.Mv_Skill_J236C <- maketmpl_Skill236( { type="AirC" } );
+t.Mv_Skill_J236EX <- maketmpl_Skill236( { type="AirEX" } );
+
+
+
+
+t.Mv_Skill_236EX_Hit <-
+{
+	flags = def_TmplFlags_NoAddComboRate, // コンボレートを加算しない
+	function Init_After() : (func_EnemyChangeBall)
+	{
+		func_EnemyChangeBall( -19, -316, 16 ); // 敵ボール化 X座標, Y座標, 停止時間
+		
+		BMvEff.ThrowChara_SetJoint( 1 ); // 投げているキャラを自分の移動にくっつけるかどうか
+		BMvEff.ThrowChara_SetCamera( 1 ); // 投げているキャラをカメラ処理に含めるかどうか
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50:
+			// 相手を非表示にする？
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				// つかみ中の自分より前に表示する
+				BMvTbl.SetPrio( _CharaPrio_Near );
+
+				enemy.pop();
+			}
+			// 座標指定するとカメラの挙動が変なのでしない
+			break;
+		case 100:
+			local ball_param =
+			{
+				xlen = 400,
+				frame = 30,
+				yvec = -2500,
+				mv = "Mv_Ball236EX_Hit",
+				goalmv = "Mv_Obj_TomoEXHitGoalWait",
+			};
+			chrfunc.CallBallandGoal( { x=61, y=-311, xlen=ball_param.xlen, frame=ball_param.frame, // ボール座標, 飛距離, 移動フレーム(ゴールフレームではない)
+			yvec=ball_param.yvec, addyvec=150, // ボールのベクトル
+			ballmv=ball_param.mv, goalmv=ball_param.goalmv } ); // ボールMv, ゴールMv
+			break;
+		}
+	}
+}
+
+// 236ボール
+t.Mv_FireBall_236 <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetPattern( "BallGrp236" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_FireBall_236_Hit <-
+{
+	function Init_After()
+	{
+		// 消滅アニメへ
+		BMvTbl.JumpFrameID( 900 );
+	}
+}
+
+t.Mv_FireBall_236_Blocked <- t.Mv_FireBall_236_Hit;
+t.Mv_FireBall_236_Sousai  <- t.Mv_FireBall_236_Hit;
+
+t.Mv_FireBall_236EX <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetPattern( "BallGrp236EX" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_FireBall_236EX_Hit <-
+{
+	function Init_After()
+	{
+		// 消滅アニメへ
+		BMvTbl.JumpFrameID( 900 );
+	}
+}
+
+t.Mv_FireBall_236EX_Blocked <- t.Mv_FireBall_236EX_Hit;
+t.Mv_FireBall_236EX_Sousai  <- t.Mv_FireBall_236EX_Hit;
+
+//236EX本体がヒットした時の投げ判定ボール
+//投げの親なのでFireBallは使わない
+t.Mv_Ball236EX_Hit <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "BallGrp236EX_Hit" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+		
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			// つかみ中の自分より前に表示する
+			BMvTbl.SetPrio( _CharaPrio_Near );
+			
+			enemy.pop();
+		}		
+		
+		// つかみを引き受ける
+		local player = BMvCore.GetPlayerCharaData();
+		if( player.isdone() )
+		{
+			BMvEff.ThrowChara_Transfer( { target=player } ); // 引き受ける
+		}
+		BMvEff.ThrowChara_SetJoint( 1 ); // 投げているキャラを自分の移動にくっつけるかどうか		
+		BMvEff.ThrowChara_SetCamera( 1 ); // 投げているキャラをカメラ処理に含めるかどうか
+		BMvEff.ThrowParam( { x=0, y=0, pattern=342 } ); // 中心にする
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+		// つかみ開放
+		BMvEff.ThrowParam( { x=0, y=200 } );
+		local eff = BMvEff.CreateObject( { start_pat=110, x=0<<7, y=200<<7 } );
+		BMvEff.ThrowRelease( { type="無声ダウン", flags = _ThrowRelease_NoGroundRecover } );	
+
+		// 発光しつつ開放
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			BMvEff.SetCharaFlash( { color = 0xFFFFFF, type = 3, time = 6, intime = 0 } );
+			enemy.pop();
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// バスケットゴール
+//-----------------------------------------------------------------------------
+
+local maketmpl_GoalWait = function( param={} ) : (chrfunc)
+{
+	local ret_tmpl = {};
+	
+	ret_tmpl.Init_After <- function()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } );
+		BMvTbl.SetPattern( "GoalWait" ); // ゴール見た目は共通
+	}
+	
+	ret_tmpl.FrameUpdate_After <- function() : (param, chrfunc)
+	{
+		// チェックするボールMv, 触れていたときのFinCode, 触れていたときのボールのFinCode, 外す確率, 外したときのFinCode, アイリ無しで外した時のFinCode
+		if( param.checkballmv )
+		{
+			chrfunc.MyBallFinalize( param.checkballmv, 100, 0, 2, param.miss, 300 );
+		}
+	}
+	
+	ret_tmpl.Finalize <- function() : (param)
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // 共通で減らしておくとか？
+		Battle_Std.SwitchNextMoveTable( "", [100,param.atkmv], [300,"Mv_Obj_GoalMiss"] ); //デフォ,[code,mv]...
+	}
+	
+	return ret_tmpl;
+}
+
+// 出現するゴール作成
+
+// A+Bからのシュート用ゴール
+t.Mv_Obj_TomoSouAddGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_TomoSouAddGoalAtk", checkballmv="Mv_BallSousaiAdd", miss=0 } );
+t.Mv_Obj_TomoSouJuAddGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_TomoSouJuAddGoalAtk", checkballmv="Mv_BallSousaiAdd", miss=0 } );
+t.Mv_Obj_TomoSouAddGoalMissWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_TomoAiriGoalWait", checkballmv="Mv_BallSousaiAdd", miss=1 } );
+
+t.Mv_Obj_TomoSouAddGoalAtk <- {
+	function Init_After()
+	{
+		// ナイッシューボイス再生
+		BSound.SE_Play( { type=_SeType_Player, num=[770,780,790,800], avg=30 } );
+	}
+}
+
+// ジャストタイミングのもの
+t.Mv_Obj_TomoSouJuAddGoalAtk <- {
+	function Init_After()
+	{
+		// ナイッシューボイス再生
+		BSound.SE_Play( { type=_SeType_Player, num=[770,780,790,800], avg=50 } );
+	}
+}
+
+t.Mv_Obj_TomoGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_TomoGoalAtk", checkballmv="Mv_FireBall_236", miss=0 } );
+t.Mv_Obj_TomoEXGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_TomoEXGoalAtk", checkballmv="Mv_FireBall_236EX", miss=0 } );
+t.Mv_Obj_TomoEXHitGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_TomoEXGoalAtk", checkballmv="Mv_Ball236EX_Hit", miss=0 } );
+
+t.Mv_Obj_TomoGoalAtk <- {
+	function Init_After()
+	{
+		// ナイッシューボイス再生
+		BSound.SE_Play( { type=_SeType_Player, num=[770,780,790,800], avg=30 } );
+		// BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
+	}
+	function LastUpdate_After()
+	{
+		// BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
+	}	
+}
+t.Mv_Obj_TomoEXGoalAtk <- {
+	function Init_After()
+	{
+		// ナイッシューボイス再生
+		BSound.SE_Play( { type=_SeType_Player, num=[775,785,795,805], avg=80 } );
+		// BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
+	}
+	function LastUpdate_After()
+	{
+		// BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
+	}	
+};
+
+// 214Bのゴール
+t.Mv_Obj_SakiGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_SakiGoalAtk", checkballmv="Mv_FireBall_214Saki", miss=0 } );
+t.Mv_Obj_SakiGoalAtk <- {
+	function Init_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=1, type=_ValAdd } ); // ゴールでてる間サキだせないように
+		BMvEff.EraseObjectFlags( { flags=_ObjFlags_NoGround } ); // 地面判定復活
+		
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } ); // サキ回復
+	}
+};
+
+// エクステンド214Bのゴール
+t.Mv_Obj_SakiEXGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_SakiEXGoalAtk", checkballmv="Mv_FireBall_214Saki", miss=0 } );
+t.Mv_Obj_SakiEXGoalAtk <- {
+	function Init_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=1, type=_ValAdd } ); // ゴールでてる間サキだせないように
+		BMvEff.EraseObjectFlags( { flags=_ObjFlags_NoGround } ); // 地面判定復活
+
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } ); // サキ回復
+	}
+};
+
+// 214B＞Cのゴール
+t.Mv_Obj_SakiMissGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_SakiAiriGoalWait", checkballmv="Mv_FireBall_214Saki", miss=1 } );
+
+// エクステンド214B＞Cのゴール
+t.Mv_Obj_SakiEXMissGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_SakiAiriTMGoalWait", checkballmv="Mv_FireBall_214Saki", miss=1 } );
+
+// 214Aのゴール
+t.Mv_Obj_HinaGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_HinaGoalAtk", checkballmv="Mv_Ball214Hina", miss=0 } );
+t.Mv_Obj_HinaGoalAtk <- {
+	function Init_After()
+	{
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=1, type=_ValAdd } ); // ゴールでてる間ひなだせないように
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=-1, type=_ValAdd } ); // ひな回復
+	}	
+};
+// 214A＞Cのゴール（未使用）
+t.Mv_Obj_HinaMissGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_SakiAiriGoalWait", checkballmv="Mv_Ball214Hina", miss=1 } );
+
+// 214C＞Bのゴール
+t.Mv_Obj_MahoSakiGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_MahoSakiGoalAtk", checkballmv="Mv_Ball214Maho", miss=0 } );
+t.Mv_Obj_MahoSakiGoalAtk <- {
+	function Init_After()
+	{
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=1, type=_ValAdd } ); // ゴールでてる間まほだせないように
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=1, type=_ValAdd } ); // ゴールでてる間サキだせないように
+		BMvEff.EraseObjectFlags( { flags=_ObjFlags_NoGround } ); // 地面判定復活
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } ); // まほ回復
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } ); // サキ回復
+	}
+};
+// 214C＞Cのゴール
+t.Mv_Obj_MahoSakiMissGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_MahoAiriGoalWait", checkballmv="Mv_Ball214Maho", miss=1 } );
+
+// 214C＞Aのゴール
+t.Mv_Obj_MahoHinaGoalWait <- maketmpl_GoalWait( { atkmv="Mv_Obj_MahoHinaGoalAtk", checkballmv="Mv_Ball214Maho", miss=0 } );
+t.Mv_Obj_MahoHinaGoalAtk <- {
+	function Init_After()
+	{
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=1, type=_ValAdd } ); // ゴールでてる間まほだせないように
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=1, type=_ValAdd } ); // ゴールでてる間ひなだせないように
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } ); // まほ回復
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=-1, type=_ValAdd } ); // ひな回復
+	}
+};
+
+
+t.Mv_Obj_214AiriWait <-
+{
+	function Init_After() : (chrfunc)
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[520,521,522,523] } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=1, type=_ValAdd } );
+
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_FromParentStop|_ObjFlags_RenderShadow|_ObjFlags_ToParentStop } );
+		BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseParentNull } ); // 親の引継ぎ無し（LP書き換えるから）
+		
+		local oya = BMvCore.GetParentCharaData();
+		if( oya.push() )
+		{
+			local pos = BMvTbl.GetPosition( 0 );
+			oya.pop();
+			
+			// アイリの子でボールを呼ぶ
+			local eff = BMvEff.CreateObject( { start_pat="MissBallGrp" } );
+			if( eff.push() )
+			{
+				BMvTbl.SetPosition( { x=pos.x, y=pos.y } ); // ゴールの座標に移動
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_FromParentStop } );
+				BMvTbl.SetVector( { x=0, y=-1725, addy=150 } ); // 23Fで落ちてくる
+				eff.pop();
+			}
+		}
+		
+		chrfunc.InitTeamMember( def_PP_Tmk_MF_Airi ); // キャラ登場済みフラグ
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		chrfunc.DamageFinalize( 200, 300 ); // やられ時のFinCode
+	}
+	function Finalize()
+	{
+		Battle_Std.SwitchNextMoveTable( "Mv_Obj_214AiriAtk", [200,"Mv_Obj_214AiriDmg"], [300,"Mv_Obj_214AiriEsc"]); //デフォ,[code,mv]...
+	}	
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_Obj_214AiriAtk <-
+{
+	function Init_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=1, type=_ValAdd } );
+		if( BMvTbl.CheckMvUniqueID( { datatype=_DataType_Parent } ) != 0 )
+		{
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				_dp("\n あいりがゴールを攻撃に書き換え");
+				BMvTbl.SetLP(0,100); // 攻撃に進めよ
+				oya.pop();
+			}
+		}
+	}
+	function FrameUpdate_After() 
+	{
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );		
+	}
+}
+
+t.Mv_Obj_214AiriDmg <-
+{
+	function Init_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=1, type=_ValAdd } );
+		BSound.SE_Play( { type=_SeType_Player, num=[715] } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );		
+	}
+}
+
+t.Mv_Obj_214AiriEsc <-
+{
+	function Init_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=1, type=_ValAdd } );
+		BSound.SE_Play( { type=_SeType_Player, num=[718] } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+// 子のあいりからファイナライズコードを操作される
+local maketmpl_AiriGoalObj = function( _atkmv )
+{
+	local ret_tmpl = {};
+	ret_tmpl.Init_After <- function()
+	{
+		BMvTbl.SetPattern( "AiriGoalWait" ); // 共通
+		local eff = BMvEff.CreateObject( { mvname="Mv_Obj_214AiriWait", x=-50<<7, y=200<<7 } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } );
+		BMvTbl.SetLP(0,0); // あいりから受け取るファイナライズコード	
+	}
+	ret_tmpl.FrameUpdate_After <- function()
+	{
+		local fincode = BMvTbl.GetLP(0);
+		if( fincode )
+		{
+			BMvTbl.SetFinalize( fincode );
+		}	
+	}
+	ret_tmpl.Finalize <- function() : (_atkmv)
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // 共通で減らしておくとか？
+		Battle_Std.SwitchNextMoveTable( "Mv_Obj_AiriGoalEnd", [100,_atkmv] ); //デフォ,[code,mv]...	
+	}
+	ret_tmpl.LastUpdate_After <- function()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } );
+	}
+	return ret_tmpl;
+}
+
+t.Mv_Obj_TomoAiriGoalWait <- maketmpl_AiriGoalObj( "Mv_Obj_TomoAiriGoalAtk" ); // ともか＞あいり
+t.Mv_Obj_SakiAiriGoalWait <- maketmpl_AiriGoalObj( "Mv_Obj_SakiAiriGoalAtk" ); // さき＞あいり
+t.Mv_Obj_SakiAiriTMGoalWait <- maketmpl_AiriGoalObj( "Mv_Obj_SakiAiriTMGoalAtk" ); // さき＞あいりのタメバージョン
+t.Mv_Obj_MahoAiriGoalWait <- maketmpl_AiriGoalObj( "Mv_Obj_MahoAiriGoalAtk" ); // まほ＞（さき）＞あいり
+
+local maketmpl_AiriAtkGoalObj = function( _hoseionce=0 )
+{
+	local ret_tmpl = {};
+	ret_tmpl.Init_After <- function() : (_hoseionce)
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=1, type=_ValAdd } );
+		
+		if( _hoseionce )
+		{
+			// 各種補正は最初の１ヒットのみ
+			BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+		}
+	}
+	ret_tmpl.LastUpdate_After <- function()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Airi, val=-1, type=_ValAdd } );
+	}
+	return ret_tmpl;
+}
+
+t.Mv_Obj_AiriGoalEnd <- maketmpl_AiriAtkGoalObj( 0 );
+
+t.Mv_Obj_TomoAiriGoalAtk <- maketmpl_AiriAtkGoalObj( 0 );
+t.Mv_Obj_SakiAiriGoalAtk <- maketmpl_AiriAtkGoalObj( 0 );
+t.Mv_Obj_SakiAiriTMGoalAtk <- maketmpl_AiriAtkGoalObj( 0 );
+
+// 214C＞C
+t.Mv_Obj_MahoAiriGoalAtk <- maketmpl_AiriAtkGoalObj( 1 );
+t.Mv_Obj_GoalMiss <- maketmpl_AiriAtkGoalObj();
+
+
+//-----------------------------------------------------------------------------
+// 214攻
+//-----------------------------------------------------------------------------
+
+t.Mv_Skill_214A <- 
+{
+	function FrameUpdate_After() : (chrfunc)
+	{
+		local up_FrameID = Battle_Std.GetUpdateFrameID();
+		if( up_FrameID == 100 || up_FrameID == 200 )
+		{
+			// 呼び出しとボール投げるタイミングの座標がズレているとちょっとおかしくなる
+			local frame = 20; // 相手に到達する時間
+			local xlen = chrfunc.XLen_StageHosei( 600<<7 ); // 呼び出し位置＆ボールの移動距離
+			local ball_offset = { x=115<<7, y=-133<<7 }; // 投げる開始位置
+			
+			switch( up_FrameID )
+			{
+			case 100: // ヒナ呼び出し
+				local eff = BMvEff.CreateObject( { mvname="Mv_Obj_214HinaWait", x=xlen+ball_offset.x, y=0 } );
+				if( eff.push() )
+				{
+					BMvTbl.SetLP(1,0); // パスタイプ 0:ともかからのパス 1:まほからのパス
+					eff.pop();
+				}
+				break;
+			case 200: // 放る
+				local eff = BMvEff.CreateObject( { mvname="Mv_Ball214A", start_pat="214ABall", x=ball_offset.x, y=ball_offset.y } );
+				if( eff.push() )
+				{
+					BMvTbl.SetVector( { x=xlen/frame, y=2000, addy=150, flags=_Vector_Normal } );
+					eff.pop();
+				}
+				break;
+			}
+		}
+	}
+}
+
+t.Mv_Obj_214HinaWait <-
+{
+	function Init_After() : (chrfunc)
+	{
+		BMvTbl.SetMuki( _Direction_Reverse );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 影を表示する
+		
+		// 弾制限
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+
+		// BMvTbl.SetLP(1,0); // パスタイプを記憶　0:ともかから 1:マホから	
+		
+		BSound.SE_Play( { type=_SeType_Player, num=[540] } );
+
+		chrfunc.InitTeamMember( def_PP_Tmk_MF_Hina ); // キャラ登場済みフラグ
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		// チェックするボールMv, 触れていたときのFinCode, 触れていたときのボールのFinCode
+		chrfunc.MyPassBallFinalize( "Mv_Ball214A", 100, 0 );
+		chrfunc.DamageFinalize( 200, 300 ); // やられ時のFinCode
+	}
+	function Finalize()
+	{
+		local def_func = function()
+		{
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=-1, type=_ValAdd } );
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+			BMvTbl.SetDeleteMoveTable();
+		}
+		Battle_Std.SwitchNextMoveTable( def_func, [100,"Mv_Obj_214HinaAtk"], [200,"Mv_Obj_214HinaDmg"], [300,"Mv_Obj_214HinaEsc"]); //デフォ,[code,mv]...
+	}
+}
+
+t.Mv_Obj_214HinaAtk <-
+{
+	function Init_After()
+	{
+		
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		chrfunc.DamageFinalize_CheckParam1( 200, 300, 10 ); // ダメージ, 親ダメージ, チェックするParam1
+	
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 200: // 放る
+			BSound.SE_Play( { type=_SeType_Player, num=[541,543] } );
+			local goalmvname = "Mv_Obj_HinaGoalWait";
+			local ballmvname = "Mv_Ball214Hina";
+			if( BMvTbl.GetLP(1) == 1 ) // マホからのパスだったら処理を変える
+			{
+				goalmvname = "Mv_Obj_MahoHinaGoalWait";
+				ballmvname = "Mv_Ball214Maho";
+			}
+			chrfunc.CallBallandGoal( { x=-53, y= -314, xlen=-250, frame=24, // ボール座標, 飛距離, 移動フレーム(ゴールフレームではない)
+			yvec=-3000, addyvec=150, // ボールのベクトル
+			ballmv=ballmvname, goalmv=goalmvname, goalflags=_ObjFlags_ToParentStop } ); // ボールMv, ゴールMv
+			break;
+		}
+	}
+	function Finalize()
+	{
+		local def_func = function()
+		{
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=-1, type=_ValAdd } );
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+			BMvTbl.SetDeleteMoveTable();
+		}
+		Battle_Std.SwitchNextMoveTable( def_func, [200,"Mv_Obj_214HinaDmg"], [300,"Mv_Obj_214HinaEsc"]); //デフォ,[code,mv]...
+	}	
+}
+
+t.Mv_Obj_214HinaDmg <-
+{
+	function Init_After()
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[710] } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );		
+	}
+}
+
+t.Mv_Obj_214HinaEsc <-
+{
+	function Init_After()
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[712] } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_Ball214Maho <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "BallGrp214Maho" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_Ball214Hina <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "BallGrp214Hina" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+
+
+t.Mv_Skill_214B <- 
+{
+	function Init_After()
+	{
+		// 0:未入力 1:ロングあいり 2:ロング 3:通常 4:通常あいり
+		BMvTbl.SetPP(def_PP_Tmk_Add214B,0); // 214Bの追加コマンド記憶
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		Battle_Std.JumpFrameID_NotHoldButton( { mask=(1<<1), checkid=50, jumpid=51 } ); // ボタンホールドしてなかったらフレームジャンプ
+		
+		// サキへコマンドを伝える処理
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.Param1 == 10 && BMvTbl.GetPP(def_PP_Tmk_Add214B) == 0 )
+		{
+			local command = BMvTbl.CheckCommandString( [ "6+C","6+B","B","C","6+A","A"] );
+			if( command )
+			{
+				local setcommand = command; // 仮
+				switch( command )
+				{
+				case 1: // 6+C
+					setcommand = 1; // ロングあいり
+					break;
+				case 2: // 6+B
+				case 5: // 6+A
+					setcommand = 2; // ロング
+					break;
+				case 3: // B
+				case 6: // A
+					setcommand = 3; // 通常
+					break;
+				case 4: // C
+					setcommand = 4; // 通常あいり
+					break;
+				}
+				BMvTbl.SetPP(def_PP_Tmk_Add214B, setcommand );
+				_dp("\n 214Bのコマンドを受け付けました:"+setcommand );
+			}
+		}
+		
+		local up_FrameID = Battle_Std.GetUpdateFrameID();
+		if( up_FrameID == 100 || up_FrameID == 200 || up_FrameID == 110 || up_FrameID == 210)
+		{
+			// 呼び出しとボール投げるタイミングの座標がズレているとちょっとおかしくなる
+			local frame = 15; // 相手に到達する時間
+			local xlen = chrfunc.XLen_StageHosei( -240<<7 ); // 呼び出し位置＆ボールの移動距離
+			local ball_offset = { x=-113<<7, y=-211<<7 }; // 投げる開始位置
+			
+			switch( up_FrameID )
+			{
+			case 100: // サキ呼び出し
+				local eff = BMvEff.CreateObject( { mvname="Mv_Obj_214SakiWait", x=xlen+ball_offset.x, y=0 } );
+				if( eff.push() )
+				{
+					BMvTbl.SetLP(1,0); // パスタイプ 0:ともかからのパス 1:まほからのパス
+					BMvTbl.SetLP(3,0); // 通常ver
+					eff.pop();
+				}
+				break;
+			case 200: // 放る
+				local eff = BMvEff.CreateObject( { mvname="Mv_Ball214B", x=ball_offset.x, y=ball_offset.y } );
+				if( eff.push() )
+				{
+					BMvTbl.SetVector( { x=xlen/frame, y=-1000, addy=150, flags=_Vector_Normal } );
+					eff.pop();
+				}
+				break;
+			case 110: // ためサキ呼び出し
+				local eff = BMvEff.CreateObject( { mvname="Mv_Obj_214SakiWait", x=xlen+ball_offset.x, y=0 } );
+				if( eff.push() )
+				{
+					BMvTbl.SetLP(1,0); // パスタイプ 0:ともかからのパス 1:まほからのパス
+					BMvTbl.SetLP(3,1); // タメver
+					eff.pop();
+				}
+				break;
+			case 210: // ため放る
+				local eff = BMvEff.CreateObject( { mvname="Mv_Ball214B", x=ball_offset.x, y=ball_offset.y } );
+				if( eff.push() )
+				{
+					BMvTbl.SetVector( { x=xlen/frame, y=-1000, addy=150, flags=_Vector_Normal } );
+					eff.pop();
+				}
+				break;
+			}
+		}
+	}
+}
+
+t.Mv_Obj_214SakiWait <-
+{
+	function Init_After() : (chrfunc)
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 影を表示する
+
+		// 弾制限
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+		
+		// BMvTbl.SetLP(1,0); // パスタイプを記憶　0:ともかから 1:マホから
+		// BMvTbl.SetLP(3,0); // 214Bのためから出されたかどうか
+		
+		chrfunc.InitTeamMember( def_PP_Tmk_MF_Saki ); // キャラ登場済みフラグ
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		// チェックするボールMv, 触れていたときのFinCode, 触れていたときのボールのFinCode
+		chrfunc.MyPassBallFinalize( "Mv_Ball214B", 100, 0 );
+		chrfunc.DamageFinalize( 200, 300 ); // やられ時のFinCode
+	}
+	function Finalize()
+	{
+		local def_func = function()
+		{
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } );
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+			
+			BMvTbl.SetDeleteMoveTable();
+		}
+		Battle_Std.SwitchNextMoveTable( def_func, [100,"Mv_Obj_214SakiAtk"], [200,"Mv_Obj_214SakiDmg"], [300,"Mv_Obj_214SakiEsc"]); //デフォ,[code,mv]...
+	}
+}
+
+t.Mv_Obj_214SakiAtk <-
+{
+	function Init_After()
+	{
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( BMvTbl.GetLP(1) == 0 )
+		{
+			// ともかパスからの処理　タメ214Bから出されてなかったらジャンプ
+			if( mvs.FrameID == 50 && BMvTbl.GetLP(3)==0 ) BMvTbl.JumpFrameID( 51 );
+		}
+		else
+		{
+			// マホパスからの処理 タメ処理無し
+			if( mvs.FrameID == 50 )
+			{
+				BMvTbl.JumpFrameID( 51 );
+			}
+		}
+		
+		chrfunc.DamageFinalize_CheckParam1( 200, 300, 10 ); // ダメージ, 親ダメージ, チェックするParam1
+	
+		local up_frameid = Battle_Std.GetUpdateFrameID();
+		switch( up_frameid )
+		{
+		case 200: // 放る
+			BSound.SE_Play( { type=_SeType_Player, num=[551,552], delay=4 } );
+			local goalxlen = 700;
+			local goalmvname = "Mv_Obj_SakiGoalWait";
+			local ballmvname = "Mv_FireBall_214Saki";
+			local isfireball = 1;
+			// ■ともかパス時
+			// レバー前でロング
+			// Cでミス
+			// Bホールドでタメ
+
+			// ■マホパス時
+			// 通常は -> マホ
+			// Cでミス
+			// チャージパス -> ＥＸマホ
+			
+			// パスタイプでの分岐
+			switch( BMvTbl.GetLP(1) )
+			{
+			case 0: // ともかパス
+				// シュートタイプでの分岐
+				// _dp("\n BMvTbl.GetPP(def_PP_Tmk_Add214B):"+BMvTbl.GetPP(def_PP_Tmk_Add214B));
+				switch( BMvTbl.GetPP(def_PP_Tmk_Add214B) ) // 0:未入力 1:ロングあいり 2:ロング 3:通常 4:通常あいり
+				{
+				case 0:
+				case 3: // 通常
+					break;
+				case 2: // ロング
+					goalxlen = 1400;
+					break;
+				case 4: // 通常ミス
+					goalmvname = "Mv_Obj_SakiMissGoalWait";
+					break;
+				case 1: // ロングミス
+					goalxlen = 1400;
+					goalmvname = "Mv_Obj_SakiMissGoalWait";
+					break;
+				}
+				break;
+			case 1: // マホパス
+				// シュートタイプでの分岐
+				if( BMvTbl.GetPP(def_PP_Tmk_Add214C) == 3 ) // あいり指定があったら変える
+				{
+					//Mv_Obj_MahoAiriGoalWait
+					goalmvname = "Mv_Obj_MahoSakiMissGoalWait";
+					ballmvname = "Mv_Ball214Maho";
+					isfireball = 0;
+				}
+				else
+				{
+					goalxlen = 500;
+					goalmvname = "Mv_Obj_MahoSakiGoalWait";
+					ballmvname = "Mv_Ball214Maho";
+					isfireball = 0;
+				}
+				break;
+			}			
+			chrfunc.CallBallandGoal( { x=87, y= -330, xlen=goalxlen, frame=35, // ボール座標, 飛距離, 移動フレーム(ゴールフレームではない)
+			yvec=-3500, addyvec=150, // ボールのベクトル
+			ballmv=ballmvname, goalmv=goalmvname, goalflags=_ObjFlags_ToParentStop, isFireBall=isfireball } ); // ボールMv, ゴールMv, 飛び道具扱いにするか
+			break;
+		case 300: // 放る （ため）
+			BSound.SE_Play( { type=_SeType_Player, num=[553,554] } );
+			local goalxlen = 700;
+			local goalmvname = "Mv_Obj_SakiEXGoalWait";
+			local ballmvname = "Mv_FireBall_214Saki";
+			//シュートタイプでの分岐
+			switch( BMvTbl.GetPP(def_PP_Tmk_Add214B) ) // 0:未入力 1:ロングあいり 2:ロング 3:通常 4:通常あいり
+			{
+			case 0:
+			case 3: // 通常
+				break;
+			case 2: // ロング
+				goalxlen = 1400;
+				break;
+			case 4: // 通常ミス
+				goalmvname = "Mv_Obj_SakiEXMissGoalWait";
+				break;
+			case 1: // ロングミス
+				goalxlen = 1400;
+				goalmvname = "Mv_Obj_SakiEXMissGoalWait";
+				break;
+			}
+			chrfunc.CallBallandGoal( { x=87, y= -330, xlen=goalxlen, frame=35, // ボール座標, 飛距離, 移動フレーム(ゴールフレームではない)
+			yvec=-3500, addyvec=150, // ボールのベクトル
+			ballmv=ballmvname, goalmv=goalmvname, goalflags=_ObjFlags_ToParentStop, isFireBall=1 } ); // ボールMv, ゴールMv
+			break;
+		}
+	}
+	function Finalize()
+	{
+		local def_func = function()
+		{
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } );
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+			
+			BMvTbl.SetDeleteMoveTable();
+		}
+		Battle_Std.SwitchNextMoveTable( def_func, [200,"Mv_Obj_214SakiDmg"], [300,"Mv_Obj_214SakiEsc"]); //デフォ,[code,mv]...
+	}	
+}
+
+t.Mv_FireBall_214Saki <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetPattern( "BallGrp214Saki" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_FireBall_214Saki_Hit <- 
+{
+	function Init_After()
+	{
+		// 消滅アニメへ
+		BMvTbl.JumpFrameID( 900 );	
+	}
+}
+
+t.Mv_FireBall_214Saki_Sousai <- t.Mv_FireBall_214Saki_Hit;
+
+t.Mv_Obj_214SakiDmg <-
+{
+	function Init_After()
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[705] } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_Obj_214SakiEsc <-
+{
+	function Init_After()
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[707] } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_Skill_214C <- 
+{
+	function Init_After()
+	{
+		BMvTbl.SetPP(def_PP_Tmk_Add214C,0); // 214Cの追加コマンド記憶
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		// まほへコマンドを伝える処理
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.Param1 == 10 && BMvTbl.GetPP(def_PP_Tmk_Add214C) == 0 )
+		{
+			local command = BMvTbl.CheckCommandString( [ "A","B","C"] ); // 0:未入力 1:ひなた 2:さき 3:あいり
+			if( command )
+			{
+				BMvTbl.SetPP(def_PP_Tmk_Add214C, command );
+				_dp("\n 214Cのコマンドを受け付けました:"+command );
+			}
+		}
+	
+		local up_FrameID = Battle_Std.GetUpdateFrameID();
+		if( up_FrameID == 100 || up_FrameID == 200 )
+		{
+			// 呼び出しとボール投げるタイミングの座標がズレているとちょっとおかしくなる
+			local frame = 15; // 相手に到達する時間
+			local xlen = chrfunc.XLen_StageHosei( 350<<7 ); // 呼び出し位置＆ボールの移動距離
+			local ball_offset = { x=80<<7, y=-262<<7 }; // 投げる開始位置
+			
+			switch( up_FrameID )
+			{
+			case 100: // マホ呼び出し
+				local eff = BMvEff.CreateObject( { mvname="Mv_Obj_214MahoWait", x=xlen+ball_offset.x, y=0 } );
+				if( eff.push() )
+				{
+					BMvTbl.SetMuki( _Direction_Reverse ); // こっちを向く
+					BMvTbl.SetPosition( { y=0 } );
+					eff.pop();
+				}
+				break;
+			case 200: // 放る
+				local eff = BMvEff.CreateObject( { mvname="Mv_Ball214C", x=ball_offset.x, y=ball_offset.y } );
+				if( eff.push() )
+				{
+					BMvTbl.SetVector( { x=xlen/frame, y=0, addy=150, flags=_Vector_Normal } );
+					eff.pop();
+				}
+				break;
+			}
+		}
+	}
+}
+
+t.Mv_Obj_214MahoWait <-
+{
+	function Init_After() : (chrfunc)
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 影を表示する
+		
+		// 弾制限
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+		
+		chrfunc.InitTeamMember( def_PP_Tmk_MF_Maho ); // キャラ登場済みフラグ
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		// チェックするボールMv, 触れていたときのFinCode, 触れていたときのボールのFinCode
+		chrfunc.MyPassBallFinalize( "Mv_Ball214C", 100, 0 );
+		chrfunc.DamageFinalize( 200, 300 ); // やられ時のFinCode
+	}
+	function Finalize()
+	{
+		local def_func = function()
+		{
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } );
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+			BMvTbl.SetDeleteMoveTable();
+		}
+		Battle_Std.SwitchNextMoveTable( def_func, [100,"Mv_Obj_214MahoAtk"], [200,"Mv_Obj_214MahoDmg"], [300,"Mv_Obj_214MahoEsc"]); //デフォ,[code,mv]...
+	}
+}
+
+t.Mv_Obj_214MahoAtk <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetLP(1,0); // チャージ無し
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		chrfunc.DamageFinalize_CheckParam1( 200, 300, 10 ); // ダメージ, 親ダメージ, チェックするParam1
+		
+		switch( BMvTbl.GetPP(def_PP_Tmk_Add214C) )
+		{
+		case 0: // 未指定
+		case 1: // ひな
+			// 呼び出しとボール投げるタイミングの座標がズレているとちょっとおかしくなる
+			local frame = 15; // 相手に到達する時間
+			local xlen = chrfunc.XLen_StageHosei( 450<<7 ); // 呼び出し位置＆ボールの移動距離
+			local ball_offset = { x=66<<7, y=-246<<7 }; // 投げる開始位置
+			
+			switch( Battle_Std.GetUpdateFrameID() )
+			{
+			case 100: // ヒナ呼び出し
+				BMvTbl.SetLP(0,1); // 0のままだとまずいのでヒナ操作で固定
+				local eff = BMvEff.CreateObject( { mvname="Mv_Obj_214HinaWait", x=xlen+ball_offset.x, y=0 } );
+				if( eff.push() )
+				{
+					BMvTbl.SetLP(1,1); // パスタイプ 0:ともかからのパス 1:まほからのパス
+					eff.pop();
+				}				
+				break;
+			case 200: // 放る
+				BSound.SE_Play( { type=_SeType_Player, num=[561,734] } );
+				local eff = BMvEff.CreateObject( { mvname="Mv_Ball214A", start_pat="214CABall", x=ball_offset.x, y=ball_offset.y } );
+				if( eff.push() )
+				{
+					BMvTbl.SetVector( { x=xlen/frame, y=-700, addy=150, flags=_Vector_Normal } );
+					eff.pop();
+				}
+				break;
+			}
+			break;
+		case 2: // さき
+		case 3: // さき（あいり）
+			// 呼び出しとボール投げるタイミングの座標がズレているとちょっとおかしくなる
+			
+			local frame = 15; // 相手に到達する時間
+			local xlen = chrfunc.XLen_StageHosei( 700<<7 ); // 呼び出し位置＆ボールの移動距離
+			local ball_offset = { x=66<<7, y=-246<<7 }; // 投げる開始位置
+			switch( Battle_Std.GetUpdateFrameID() )
+			{
+			case 100: // サキ呼び出し
+				local eff = BMvEff.CreateObject( { mvname="Mv_Obj_214SakiWait", x=xlen+ball_offset.x, y=0 } );
+				if( eff.push() )
+				{
+					BMvTbl.SetLP(1,1); // パスタイプ 0:ともかからのパス 1:まほからのパス
+					BMvTbl.SetMuki( _Direction_Reverse );
+					eff.pop();
+				}
+				break;
+			case 200: // 放る
+				BSound.SE_Play( { type=_SeType_Player, num=[561,733] } );
+				local eff = BMvEff.CreateObject( { mvname="Mv_Ball214B", x=ball_offset.x, y=ball_offset.y } );
+				if( eff.push() )
+				{
+					BMvTbl.SetVector( { x=xlen/frame, y=-1000, addy=150, flags=_Vector_Normal } );
+					eff.pop();
+				}
+				break;
+			}
+			break;
+		}
+	}
+	function Finalize()
+	{
+		local def_func = function()
+		{
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } );
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+			BMvTbl.SetDeleteMoveTable();
+		}
+		Battle_Std.SwitchNextMoveTable( def_func, [200,"Mv_Obj_214MahoDmg"], [300,"Mv_Obj_214MahoEsc"]); //デフォ,[code,mv]...
+	}
+}
+
+t.Mv_Obj_214MahoDmg <-
+{
+	function Init_After()
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[700] } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_Obj_214MahoEsc <-
+{
+	function Init_After()
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[702] } );
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+// ひなたへのパスボール
+t.Mv_Ball214A <-
+{
+	function Init()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+// さきへのパスボール
+t.Mv_Ball214B <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "214BBall" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+// まほへのパスボール
+t.Mv_Ball214C <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "214CBall" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+
+// EX
+
+t.Mv_Skill_214EX <- 
+{
+	function FrameUpdate_After() : (chrfunc)
+	{
+		local up_FrameID = Battle_Std.GetUpdateFrameID();
+		if( up_FrameID == 100 || up_FrameID == 200 )
+		{
+			// 呼び出しとボール投げるタイミングの座標がズレているとちょっとおかしくなる
+			local frame = 15; // 相手に到達する時間
+			local xlen = chrfunc.XLen_StageHosei( 700<<7 ); // 呼び出し位置＆ボールの移動距離
+			local ball_offset = { x=80<<7, y=-262<<7 }; // 投げる開始位置
+			
+			switch( up_FrameID )
+			{
+			case 100: // マホ呼び出し
+				local eff = BMvEff.CreateObject( { mvname="Mv_Obj_214EXMahoWait", x=xlen+ball_offset.x, y=0 } );
+				if( eff.push() )
+				{
+					BMvTbl.SetMuki( _Direction_Reverse ); // こっちを向く
+					BMvTbl.SetPosition( { y=0 } );
+					eff.pop();
+				}
+				break;
+			case 200: // 放る
+				local eff = BMvEff.CreateObject( { mvname="Mv_Ball214EX", x=ball_offset.x, y=ball_offset.y } );
+				if( eff.push() )
+				{
+					BMvTbl.SetVector( { x=xlen/frame, y=0, addy=150, flags=_Vector_Normal } );
+					eff.pop();
+				}
+				break;
+			}
+		}
+	}
+}
+
+t.Mv_Obj_214EXMahoWait <-
+{
+	function Init_After() : (chrfunc)
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 影を表示する
+
+		BSound.SE_Play( { type=_SeType_Player, num=[562] } );
+
+		// 弾制限
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+		
+		chrfunc.InitTeamMember( def_PP_Tmk_MF_Maho ); // キャラ登場済みフラグ
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		// チェックするボールMv, 触れていたときのFinCode, 触れていたときのボールのFinCode
+		chrfunc.MyPassBallFinalize( "Mv_Ball214EX", 100, 0 );
+		chrfunc.DamageFinalize( 200, 300 ); // やられ時のFinCode
+	}
+	function Finalize()
+	{
+		local def_func = function()
+		{
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } );
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+			BMvTbl.SetDeleteMoveTable();
+		}
+		Battle_Std.SwitchNextMoveTable( def_func, [100,"Mv_Obj_214EXMahoAtk"], [200,"Mv_Obj_214EXMahoDmg"], [300,"Mv_Obj_214EXMahoEsc"]); //デフォ,[code,mv]...
+	}
+}
+
+t.Mv_Obj_214EXMahoAtk <-
+{
+	function Init_After()
+	{
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_Obj_214EXMahoDmg <-
+{
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+t.Mv_Obj_214EXMahoEsc <-
+{
+	function LastUpdate_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+// EXまほへのパスボール
+t.Mv_Ball214EX <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "214EXBall" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentHitStatus } ); // ヒットを親に伝える
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// J214攻
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 相殺攻
+//-----------------------------------------------------------------------------
+
+t.Mv_Skill_Sousai <-
+{
+	flags = def_TmplFlags_DoujiCancelOK, // 同時押しでキャンセル可にする
+	function Init_After()
+	{
+		Battle_Std.ImpactSkill_Init(); // LP9使用
+		
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );
+		
+		// 始動補正適用をＭｖ変化後に
+		BMvEff.ChangeStartCorrectTiming();		
+	}
+	function FrameUpdate_After()
+	{
+		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+	}
+	function HitInterrupt_After()
+	{
+		Battle_Std.ImpactSkill_HitInterrupt( def_MC1_AtkLow|def_MC1_AtkBall ); // LP9使用
+		Battle_Std.SetThrowHitFinalize(256); // ヒット分岐ファイナライズ
+	}
+	function Finalize()
+	{
+		Battle_Std.SwitchNextMoveTable("Mv_Neutral", [256,"Mv_Skill_Sousai_Hit"]); //デフォ,[code,mv]...
+	}
+}
+
+t.Mv_Skill_Sousai_Hit <-
+{
+	flags = def_TmplFlags_NoAddComboRate, // コンボレートを加算しない
+	function Init_After() : (func_EnemyChangeBall)
+	{
+		func_EnemyChangeBall( 70, -80, 0 ); // 敵ボール化 X座標, Y座標, 停止時間
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // つかみ開始
+			break;
+		case 500:
+			// つかみ中の自分より前に表示する
+			local enemy = BMvCore.GetCaptureCharaData();
+			if( enemy.push() )
+			{
+				BMvTbl.SetPrio( _CharaPrio_Near );
+				enemy.pop();
+			}
+			break;
+		case 900:
+			// つかみ開放
+			BMvEff.ThrowParam( { x=20, y=-80 } );
+			local eff = BMvEff.CreateObject( { start_pat=110, x=20<<7, y=-280<<7 } );
+			BMvEff.ThrowRelease( { type="無声ダウン", flags = _ThrowRelease_NoGroundRecover } );	
+			// 非表示を戻す
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				// 非表示なのを戻す
+				BMvEff.SetCharaFlash( { color = 0xFFFFFF, type = 0, time = 10, intime = 0 } );
+				enemy.pop();
+			}
+			break;
+		}
+	}
+	function LastUpdate_After()
+	{
+	}
+}
+
+
+t.Mv_Skill_SousaiHit_Add <-
+{
+	flags = def_TmplFlags_NoAddComboRate, // コンボレートを加算しない
+	function Init_After()
+	{
+		BMvEff.ThrowChara_SetJoint( 1 ); // 投げているキャラを自分の移動にくっつけるかどうか
+		BMvEff.ThrowChara_SetCamera( 1 ); // 投げているキャラをカメラ処理に含めるかどうか
+		
+		BMvTbl.SetLP(0,0); // ジャストフレームとなるMvを記憶
+		BMvTbl.SetLP(1,0); // 追加コマンド入れたかどうか 0:入れてない 1:いれた
+	}
+	function FrameUpdate_After() : (chrfunc)
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		local mvcount = mvs.MvCount;
+		local justtiming_mvcount = BMvTbl.GetLP(0);
+
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 10:
+			// つかみ中の自分より前に表示する
+			local enemy = BMvCore.GetCaptureCharaData();
+			if( enemy.push() )
+			{
+				BMvTbl.SetPrio( _CharaPrio_Near );
+				enemy.pop();
+			}		
+			break;
+		case 30:
+			// ジャンプシュート開始
+			// 30フレームでちょうどなのだよ
+			local frame = 20;
+			local yvec = -2000;
+			BMvTbl.SetVector( { y=yvec, addy=-yvec/frame, flags=_Vector_Normal } );
+			local justmvcount = mvs.MvCount + frame; // ズレるので1F調整
+			BMvTbl.SetLP(0,justmvcount); // ジャストタイミングを記憶
+			break;
+		case 100:
+			// シュートうつところ
+			BMvTbl.SetLP(1,1); // 追加を入れたことにして追加をだせなくする
+			local zure = mvcount - justtiming_mvcount; // 早いとマイナス、遅いとプラス
+			if( zure < 0 ) zure *= -1; // 正の値に
+			local shoot_par = 100; // シュートが入る確率
+			if( zure >= 10 ) // かなりズレている
+			{
+				shoot_par = 0;
+			}
+			else if( zure >= 8 )
+			{
+				shoot_par = 35;
+			}
+			else if( zure >= 6 )
+			{
+				shoot_par = 50;
+			}
+			else if( zure >= 4 )
+			{
+				shoot_par = 75;
+			}
+			else
+			{
+				shoot_par = 100;
+			}
+			_dp("\n シュート成功確率:"+shoot_par+" タイミングズレF:"+zure+" "+mvcount+"/"+justtiming_mvcount );
+			local shoot_success = ( BMvEff.Random_Limit( 100 ) < shoot_par );
+			if( shoot_success )
+			{
+				// シュートが入るときの音声
+				BSound.SE_Play( { type=_SeType_Player, num=[513] } );
+			}
+			else
+			{
+				// シュート外すときの音声
+				BSound.SE_Play( { type=_SeType_Player, num=[725], delay=5 } ); // あいり！
+			}
+			
+			local goalmv = (shoot_success)? "Mv_Obj_TomoSouAddGoalWait" : "Mv_Obj_TomoSouAddGoalMissWait";
+			if( shoot_par == 100 )
+			{
+				goalmv = "Mv_Obj_TomoSouJuAddGoalWait";
+				local eff = BMvEff.CreateObject( { start_pat="souadd_justwing" } );
+				if( eff.push() )
+				{
+					BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_ParentMove|_ObjFlags_EraseParentDamage|_ObjFlags_FromParentStop } );
+					eff.pop();
+				}
+			}
+			
+			local ball_param =
+			{
+				xlen = 400,
+				frame = 30,
+				yvec = -2500,
+				mv = "Mv_BallSousaiAdd",
+				goalmv = goalmv,
+			};
+			chrfunc.CallBallandGoal( { x=61, y=-311, xlen=ball_param.xlen, frame=ball_param.frame, // ボール座標, 飛距離, 移動フレーム(ゴールフレームではない)
+			yvec=ball_param.yvec, addyvec=150, // ボールのベクトル
+			ballmv=ball_param.mv, goalmv=ball_param.goalmv } ); // ボールMv, ゴールMv
+			break;
+		}
+
+		if( justtiming_mvcount != 0 )
+		{
+			if( mvcount == justtiming_mvcount )
+			{
+				// 光る
+				BMvEff.SetCharaFlash( { color = 0xFFFFFF, type = 0, time = 4 } );
+			}
+				
+			// 飛んでからの処理
+			local frameid = mvs.FrameID;
+			if( BMvTbl.GetLP(1) == 0 && (frameid==30 || frameid==50) ) // まだシュートをうっていない
+			{
+				// 追加コマンドでのシュートを受け付ける
+				if( BMvTbl.CheckCommandString( { command = "A+B", lastdelay = 1 } ) )
+				{
+					BMvTbl.SetLP(1,1); // 追加を入れた
+					
+					BMvTbl.JumpFrameID( 100 ); // シュートへ
+				}
+			}
+		}
+		
+	}
+}
+
+//236EX本体がヒットした時の投げ判定ボール
+t.Mv_BallSousaiAdd <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "BallGrp236EX_Hit" );
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
+		
+		// つかみを引き受ける
+		local player = BMvCore.GetPlayerCharaData();
+		if( player.isdone() )
+		{
+			BMvEff.ThrowChara_Transfer( { target=player } ); // 引き受ける
+		}
+		BMvEff.ThrowChara_SetJoint( 1 ); // 投げているキャラを自分の移動にくっつけるかどうか		
+		BMvEff.ThrowChara_SetCamera( 1 ); // 投げているキャラをカメラ処理に含めるかどうか
+		BMvEff.ThrowParam( { x=0, y=0, pattern=342 } ); // 中心にする
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
+		// つかみ開放
+		BMvEff.ThrowParam( { x=0, y=200 } );
+		local eff = BMvEff.CreateObject( { start_pat=110, x=0<<7, y=200<<7 } );
+		BMvEff.ThrowRelease( { type="無声ダウン", flags = _ThrowRelease_NoGroundRecover, airrecover=35 } );	
+
+		// 発光しつつ開放
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			BMvEff.SetCharaFlash( { color = 0xFFFFFF, type = 3, time = 6, intime = 0 } );
+			enemy.pop();
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+t.Mv_Skill_Sousai2 <-
+{
+	flags = def_TmplFlags_DoujiCancelOK, // 同時押しでキャンセル可にする
+	function Init_After()
+	{
+		Battle_Std.ImpactSkill_Init(); // LP9使用
+		
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );
+		
+		// 始動補正適用をＭｖ変化後に
+		BMvEff.ChangeStartCorrectTiming();		
+	}
+	function FrameUpdate_After()
+	{
+		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+	}
+	function HitInterrupt_After()
+	{
+		Battle_Std.ImpactSkill_HitInterrupt( def_MC1_AtkLow|def_MC1_AtkJump ); // LP9使用
+	}
+}
+
+t.Mv_Skill_Sousai4 <-
+{
+	flags = def_TmplFlags_DoujiCancelOK, // 同時押しでキャンセル可にする
+	function Init_After()
+	{
+		Battle_Std.ImpactSkill_Init(); // LP9使用
+		Battle_Std.HitKakuninLP8.MvInit(); // LP8使用　ヒット確認フレームチェック
+		BMvTbl.SetVirtualGuardFlag( { val=15, time=30, flag=_ClearFlag_ChangeMv } ); // 特殊判定15を空振りガード判定にする
+	}
+	function FrameUpdate_After()
+	{
+		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+	}
+	function HitInterrupt_After()
+	{
+		Battle_Std.ImpactSkill_HitInterrupt( def_MC1_AtkLow ); // LP9使用
+		Battle_Std.HitKakuninLP8.MvHit(); // LP8使用　ヒット確認フレームチェック
+	}
+}
+
+t.Mv_Skill_Sousai4_JAdd <-
+{
+	flags = def_TmplFlags_NoAddComboRate|def_TmplFlags_ChangeStatusOnly // コンボレートを加算しない, 状態の移行のみ行う
+	function Init_After()
+	{
+	}
+	function FrameUpdate_After()
+	{
+		Battle_Std.HitKakuninLP8.JAddMvFU(); // 追加MvのFU処理
+	}
+	function Finalize()
+	{
+		Battle_Std.HitKakuninLP8.JAddMvFin(); // 追加MvのFin処理
+	}
+}
+
+t.Mv_Skill_Sousai4_Add <-
+{
+	function Init_After()
+	{
+		Battle_Std.HitKakuninLP8.AddMvInit(); // LP8使用　ヒット確認フレームに応じて性能変化
+	}
+	function FrameUpdate_After()
+	{
+	}
+	function HitInterrupt_After()
+	{
+		Battle_Std.HitKakuninLP8.AddMvHit( { offx=25, offy=-50, FrameID=0 } ); // LP8参照　ヒット確認フレームに応じて演出変化
+	}
+	function Finalize()
+	{
+		Battle_Std.HitKakuninLP8.AddMvFin();
+	}	
+}
+
+//-----------------------------------------------------------------------------
+// キリフダ
+//-----------------------------------------------------------------------------
+
+t.Mv_Skill_Kirifuda <- 
+{
+	flags = def_TmplFlags_DoujiCancelOK, // 同時押しでキャンセル可にする
+	function Init_After()
+	{
+		Battle_Std.Init_Kirifuda(); // 切り札開始処理
+
+		// 各種補正は最初の１ヒットのみ		
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+	}
+	function HitInterrupt_After()
+	{
+		if( Battle_Std.SetKirifudaHitEffect( { frameid=100, offx=100, offy=-100 } ) ) // 切り札ヒット時の演出処理
+		{
+			// 時間制切り札効果をつける
+			tDDC.Kirifuda_TimeClear(); // 重ねがけができるのでリセット
+			
+			tDDC.Kirifuda_TimeAdd( 0, Def_Rule_KirifudaTime_Attack ); // 発動時にカウントは減らさない
+			tDDC.Kirifuda_TimeDamageMinus( Def_Rule_KirifudaTimeDmgMinus_Attack ); // ダメージでの減少値
+			if( Def_Rule_KirifudaAttack_PowerUpAtk ) tDDC.Kirifuda_SetTimeValue( _TimeEffect_Attack , Def_Rule_KirifudaAttack_PowerUpAtk ); // 攻撃力アップ
+		}
+	}	
+	function LastUpdate_After()
+	{
+		Battle_Std.SetKirifudaKaraburiEffect(); // 空振りorやられ用に切り札の効果をセット
+		tDDC.Kirifuda_FinalizeProc(); // 切り札の消費と効果の予約を消去
+	}
+}
+
+// カメラが注目するオブジェクト
+t.Mv_Null_KirifudaCamera <-
+{
+	function Init_After()
+	{
+		BMvEff.SetCamera_Focus( { charapos=1, zoom=2.0, time=[4,22,6] } );
+	}
+	function FrameUpdate_After()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.MvCount>20 ) // 時間で適当に消滅
+		{
+			BMvTbl.SetFinalize(0);
+		}
+		else if( Battle_Std.CheckPlayerisDamage() || !Battle_Std.CheckEnemyisDamage() ) // 相打ちか相殺の時はカメラ寄せない
+		{
+			BMvEff.SetCamera_Focus( { time=[0,0,0] } );
+			BMvTbl.SetFinalize(0);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 超必殺技
+//-----------------------------------------------------------------------------
+
+
+t.Mv_Skill_41236SP <-
+{
+	function Init_After()
+	{
+	}
+	function FrameUpdate_After()
+	{
+	}	
+	function HitInterrupt_After()
+	{		
+		Battle_Std.SetThrowHitFinalize(256);
+	}
+	function Finalize()
+	{
+		Battle_Std.SwitchNextMoveTable("Mv_Neutral", [256,"Mv_Skill_41236SP_Hit"]); //デフォ,[code,mv]...	
+	}	
+}
+
+t.Mv_Skill_41236SP_Hit <-
+{
+	flags = def_TmplFlags_NoAddComboRate // コンボレートを加算しない
+	function Init_After() : (func_EnemyChangeBall)
+	{
+		BMvEff.ThrowChara_SetCamera( 0 ); //投げているキャラをカメラ処理に含めるかどうか
+		BMvEff.ThrowChara_SetJoint( 1 ); // 投げているキャラを自分の移動にくっつけるかどうか
+		
+		BMvEff.FadeProc_Set( { type=0, time=[0,1,4] color=0xFFFFFF } ); // 一番手前をフラッシュ
+		
+		BMvEff.SetCamera_Clipping( 0 ); //画面端のクリッピング補正を切る
+		
+		// 自分にカメラ集中
+		BMvEff.SetCamera_Focus( { charapos=1, zoom=2.0, time=[0,300,20] } );
+
+		func_EnemyChangeBall( 130, -150, 20 ); // 敵ボール化 X座標, Y座標, 停止時間
+	}
+	function FrameUpdate_After()
+	{
+		// 毎フレーム相手を手前にし続ける
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			// つかみ中の自分より前に表示する
+			BMvTbl.SetPrio( _CharaPrio_Near );
+
+			enemy.pop();
+		}
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			break;
+		case 150:
+			break;
+		case 450:
+			break;
+		case 500:
+			// ジャンプ
+			local pos = BMvTbl.GetPosition( 0 );
+			BMvEff.SetCamera_Focus( { num=0, time=[0,999,30] } );
+			BMvEff.SetCamera_Focus( { num=1, x=pos.x, y=0, zoom=1.0, time=[10,999,30], type_in=2 } );
+			break;
+		case 700:
+			// シュート
+			break;
+		case 800:
+			// 羽開いた
+			break;
+		case 900:
+			// 判定でてすこし後
+			// FadeはSlowmotionの影響を受けないので、パターンはここから46F/2=23Fぐらいのフレームしかない
+			BMvEff.FadeProc_Set( { type=0, time=[46,999,15] color=0xFFFFFF } ); // ホワイトアウト
+			BMvEff.Slowmotion_Set( { type=0, time=100, power=5000 } );
+			break;
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetNextMoveTable( "Mv_Skill_41236SP_End" );
+	}	
+	function LastUpdate_After()
+	{
+		BMvEff.SetCamera_Focus( { num=0, time=[0,0,10] } );
+		BMvEff.SetCamera_Focus( { num=1, time=[0,0,10] } );
+		BMvEff.SetCamera_FocusKeep( 0 ); // カメラ戻す
+		BMvEff.ResetViewCamera();
+
+		BMvEff.FadeProc_Set( { type=0, time=[0,10,15] color=0xFFFFFF } ); // 白を戻す
+		BMvEff.Slowmotion_Set( { type=1 } );
+		
+		BMvEff.SetCamera_Quake( { clear=1, } ); //揺らしを消す
+		BMvEff.SetCamera_Clipping( 1 ); //画面端のクリッピング補正をかける
+		
+		//つかみ開放
+		BMvEff.ThrowParam( { x=400, y=-600, } );
+		BMvEff.ThrowRelease( { type="バウンド強", airrecover=0, flags=_ThrowRelease_NoGroundRecover|_ThrowRelease_NoAttackHit } );
+	}
+}
+
+t.Mv_Skill_41236SP_End <-
+{
+	flags = def_TmplFlags_NoAddComboRate // コンボレートを加算しない
+	function Init_After()
+	{
+		Battle_Std.MvAction.AddFlag( def_MC_NoBursted ); // バーストされない行動	
+	}
+}
+
+t.Mv_Skill_63214SP <- 
+{
+	function Init_After()
+	{
+		//発動時の無敵を設定 ※暗転60Fがあるから注意（def_FL_SPCutinStopTime）
+		local muteki = 16 + def_FL_SPCutinStopTime;
+		BMvEff.SetPlayerTimer( { muteki_nage=muteki, muteki_dage=muteki, muteki_dageX=muteki, muteki_nageX=muteki } );
+
+		BMvTbl.SetFinalizeCode(0); //初期状態が0でない＋GetFinalizeCodeで分岐してるので初期化
+		Battle_Std.AddBlast_SPSkill(); // 発動によるブラスト回復
+	}
+	function HitInterrupt_After()
+	{
+		Battle_Std.SetThrowHitFinalize(256);
+	}
+	function Finalize()
+	{
+		local code = BMvTbl.GetFinalizeCode();
+		if( code!=256 )
+		{
+			BMvEff.CutInProc_Erase(); //カットインがあったら消去する
+		}
+		Battle_Std.SwitchNextMoveTable("Mv_Neutral", [256,"Mv_Skill_63214SP_Hit"]); //デフォ,[code,mv]...	
+	}	
+	
+}
+
+t.Mv_Skill_63214SP_Hit <- 
+{
+	flags = def_TmplFlags_NoAddComboRate // コンボレートを加算しない
+	function Init_After()
+	{
+		BMvEff.SetCamera_Clipping( 0 ); //画面端のクリッピング補正を切る	
+
+		BMvEff.ThrowParam( { pattern=304, x=100, y=0, } );
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			BMvEff.ThrowParam( { pattern=304, x=100, y=0, } );
+			BMvEff.ThrowRelease( { type="特大のけぞり頭", airrecover=0, flags=_ThrowRelease_NoVecTimeHosei } );
+			break;
+		}
+	}
+	function HitInterrupt_After()
+	{		
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
+		{
+			Battle_Std.SetPosition_DamageHanteiRect( { power=50 } );
+		}
+		Battle_Std.SetThrowHitFinalize(256);
+	}
+	function Finalize()
+	{
+		Battle_Std.SwitchNextMoveTable("Mv_Skill_63214SP_End", [256,"Mv_Skill_63214SP_Hit2"]); //デフォ,[code,mv]...	
+	}	
+}
+
+// このMv名みてシックスメンが残るので注意
+t.Mv_Skill_63214SP_Hit2 <- 
+{
+	flags = def_TmplFlags_NoAddComboRate // コンボレートを加算しない
+	function Init_After() : (set_shootpvfinish, set_shootpvfinish2)
+	{
+		// どのＰＶを見るか選べるようにする
+		local pv_type = BMvEff.Random_Limit( 2 );
+		local isRareMode = (BMvEff.Random_Limit(100)<50)? 1 : 0;
+		
+		// pv_type = 1; // 1:SHOOT 0:RO-KYU-BU!
+		// isRareMode = 1; // 1:ＭＳＳ
+		
+		if( BMvTbl.CheckButtonHold( (1<<0)|(1<<1)|(1<<2) ) )
+		{
+			isRareMode = 1;
+			_dp("\n レアモードにした");
+		}
+		if( BMvTbl.CheckStickHold( (1<<4) ) )
+		{
+			pv_type = 0;
+			_dp("\n PV指定あり:"+pv_type);
+		}
+		else if( BMvTbl.CheckStickHold( (1<<6) ) )
+		{
+			pv_type = 1;
+			_dp("\n PV指定あり:"+pv_type);
+		}
+		
+		local change_muki = 0;
+		if( BMvTbl.GetMuki() == -1 ) change_muki = 1;
+		
+		if( change_muki ) BMvTbl.SetMuki( _Direction_Reverse );
+		if( pv_type )
+		{
+			set_shootpvfinish( isRareMode ); // SHOOT!
+		}
+		else
+		{
+			set_shootpvfinish2( isRareMode ); // RO-KYU-BU!
+		}
+		if( change_muki ) BMvTbl.SetMuki( _Direction_Reverse );
+
+		BMvEff.FadeProc_Set( { type=0, time=[0,1,6] color=0xFFFFFF } ); // 一番手前をフラッシュ
+		// BMvEff.SetCamera_Clipping( 0 ); //画面端のクリッピング補正を切る
+        local pos = BMvTbl.GetPosition( 0 );
+        BMvEff.SetCamera_Focus( { x=pos.x, y=pos.y, zoom=1.0, time=[10,999,10] } );		
+
+		BMvEff.ThrowChara_SetCamera( 1 ); //投げているキャラをカメラ処理に含めるかどうか
+		BMvEff.ThrowParam( { x=0, y=-200, pattern=345 } ); // 適当な位置に透明で出す
+		
+		BMvEff.Cockpit_SetView( { mode=0 } ); // ゲージ非表示
+		if( isRareMode )
+		{
+			BMvEff.FadeProc_Set( { type=2, time=[0,250,10] color=0x000000 } );
+			// BMvEff.FadeProc_Set( { type=2, time=[0,250,10] color=0xFFFFFF } );
+		}
+		else
+		{
+			BMvEff.FadeProc_Set( { type=2, time=[0,250,10] color=0x000000 } );
+		}
+		
+	}
+	function Finalize()
+	{
+		BMvTbl.SetNextMoveTable( "Mv_Skill_63214SP_End" );
+	}
+	function LastUpdate_After() : (chrfunc)
+	{
+		BMvEff.FadeProc_Set( { type=2, time=[0,15,0] color=0xFFFFFF } ); // 白を戻す
+		BMvEff.FadeProc_Set( { type=0, time=[0,15,0] color=0xFFFFFF } ); // 
+		
+		BMvEff.SetCamera_Quake( { clear=1, } ); //揺らしを消す
+		BMvEff.SetCamera_Clipping( 1 ); //画面端のクリッピング補正をかける	
+        BMvEff.SetCamera_Focus( { time=[0,0,3] } );	
+		
+		BMvEff.Cockpit_SetView( { mode=1 } ); // ゲージ表示
+		// BMvEff.FadeProc_Set( { type=2, time=[0,0,10] color=0xFFFFFF } );		
+		
+		//つかみ開放
+		BMvEff.ThrowParam( { x=0, y=-1400, } );
+		BMvEff.ThrowRelease( { type="バウンド強", airrecover=0, flags=_ThrowRelease_NoGroundRecover|_ThrowRelease_NoAttackHit } );
+	}
+}
+
+t.Mv_Skill_63214SP_End <- 
+{
+	flags = def_TmplFlags_NoAddComboRate // コンボレートを加算しない
+	function Init_After()
+	{
+		BMvEff.SetCamera_Clipping( 1 ); //画面端のクリッピング補正をかける
+		Battle_Std.MvAction.AddFlag( def_MC_NoBursted ); // バーストされない行動
+	}
+	function LastUpdate_After() : (chrfunc)
+	{
+		chrfunc.InitTeamMember( def_PP_Tmk_MF_All ); // 全員でてきた
+	}
+}
+
+
+
+TMK_MoveTable <- Battle_Std.MakeMoveTable( t, TMK_CommandTable, Def_ChrNo_Tmk );
+
+__dofile__("./data/Tmk_0/Tmk_0_selist.txt"); //ＳＥ定義
+
+_dp(" -> Load OK");

@@ -1,0 +1,290 @@
+btl_debPrint2( "\n>>> [btl_Std_BattleStatusTbl]" );
+
+//標準バトルステータステーブル
+//キャラ毎SCで読み込む
+
+Battle_Std.GetStd_BattleStatusTable <- function()
+{
+	local tbl = {};
+	
+	tbl = 
+	{	
+		StartPosition = 320,	// スタート位置、中心からの距離
+
+		
+		GuardEffName = "", // ガード default Eff_Hit_Guard
+	//	FailedGuardEffName = "Eff_Hit_FaultGuard", // 失敗ガード default Eff_Hit_Guard	
+		FailedGuardEffName = "Eff_Hit_Guard", // 失敗ガード default Eff_Hit_Guard	
+
+		AttackRate = 100, // 最終攻撃力修正係数
+		ComboRate = 100,// １ヒット毎の乗算係数 基本値９６ ツールのヒット数修正が無かった場合使われる値（0-255）
+		
+		SeedGaugeCorrectValue_Plus = 100, // seedgaugeプラス方向の変動補正値
+		SeedGaugeCorrectValue_Minus = 100, // seedgaugeマイナス方向の変動補正値
+
+		ScratchDamageVal_Atk = 100, // 削りダメージ、攻撃時
+		ScratchDamageVal_Def = 100, // 削りダメージ、防御時
+		ScratchDamageVal_ExDef = 100, // 削りダメージ、ジャストディフェンス
+		
+		SpGauge_PlusVal = 100, // EXSゲージ「増加」係数　全部だとゲージ消費量とかにも影響してしまうので、とりあえず加算だけ
+		Swing_ExsPlusVal = 0, // 空振り時のEXS増加係数、要ツール設定
+
+		// HP分割値と総体力（上位から見る）
+		HpDivValue = [ 10000 ],
+
+		// HPゲージ上の配分（足した値は 100 であること）
+		HpDivRatio = [ 100 ],
+
+		// 自動ガード距離
+		GuardRange = (128 << 7),
+
+		// 固有能力
+		IsKoArmor = false,  // default[false] KO耐性、１回だけ耐える
+		
+		SpGauge_Max			= def_SC_SpGauge_Max, // ゲージ最大値
+		Liberate_Minus		= def_SC_Liberate_Minus, // Liberate状態での減少値
+		OverLiberate_Minus	= def_SC_OverLiberate_Minus, // OverLiberate状態での減少値
+		
+		// きりふだ
+		Kirifuda_PointMax = 2, // 切り札最大値（基本値３）
+		Kirifuda_Type = 0, // 切り札タイプ（現状アイコンの色のみ変更）（0:攻撃的赤 1:防御的青）
+		
+		// Blast
+		// 15000 1
+		Blast_PlusPowerUp = 40, // パワーアップ、1Fでの増加量（100000でチャージ）
+		Blast_PlusBound = 15, // バウンド（エスケープ）
+		Blast_PlusCombo = 40, // コンボ
+		Blast_PlusVal_HP = [ 300, 220, 150, 100 ], // 残りHPによるブラスト回復量係数 [ 25%未満、50%未満、75%未満、100%以下 ] 配列は[4]固定
+		
+        // 未指定
+		subsp0_Blast_PlusVal_HP = [ 300, 220, 150, 100 ], // ブラストキャラ（未指定）のイグニッション時の回復量係数
+        subsp0_Blast_PlusPowerUp = 40,
+        subsp0_Blast_PlusBound = 25,
+        subsp0_Blast_PlusCombo = 40,
+        subsp0_Blast_PlusRound0 = 50, // イグニッション
+        subsp0_Blast_PlusRound1 = 50, // ダブルイグニッション
+
+        // POWER
+		subsp1_Blast_PlusVal_HP = [ 300, 220, 150, 100 ], // ブラストキャラ（POWER）のイグニッション時の回復量係数
+        subsp1_Blast_PlusPowerUp = 40,
+        subsp1_Blast_PlusBound = 25,
+        subsp1_Blast_PlusCombo = 40,
+        subsp1_Blast_PlusRound0 = 50, // イグニッション
+        subsp1_Blast_PlusRound1 = 50, // ダブルイグニッション
+
+        // COMBO
+		subsp2_Blast_PlusVal_HP = [ 300, 220, 150, 100 ], // ブラストキャラ（COMBO）のイグニッション時の回復量係数
+        subsp2_Blast_PlusPowerUp = 40,
+        subsp2_Blast_PlusBound = 25,
+        subsp2_Blast_PlusCombo = 40,
+        subsp2_Blast_PlusRound0 = 50, // イグニッション
+        subsp2_Blast_PlusRound1 = 50, // ダブルイグニッション
+
+        // ESCAPE
+		subsp3_Blast_PlusVal_HP = [ 300, 220, 150, 100 ], // ブラストキャラ（ESCAPE）のイグニッション時の回復量係数
+        subsp3_Blast_PlusPowerUp = 40,
+        subsp3_Blast_PlusBound = 25,
+        subsp3_Blast_PlusCombo = 40,
+        subsp3_Blast_PlusRound0 = 50, // イグニッション
+        subsp3_Blast_PlusRound1 = 50, // ダブルイグニッション
+		
+		// イグニッション時のブラスト回復量
+		// subsp0_Blast_PlusRound = 50, // P
+		// subsp1_Blast_PlusRound = 50, // C
+		// subsp2_Blast_PlusRound = 50, // E
+
+		// サポート
+		Support_GaugeMax = 10000, // サポートゲージ最大値（基本値10000）
+		Support_RecastCostBase = 0, // １回呼ばれる毎の再使用時間修正値（基本値0、+で加速 -で減速、100で倍速、-50で1/2倍速）
+		
+
+		// Jem_0 = 1001, // 体力が３割未満になったら、２０秒間攻撃力が２０％アップ
+		Jem_0 = 1005,	// 体力が３割未満になったら、２０秒間攻撃力が１０％アップ
+		Jem_1 = 1004,	// 自分だけが１本取られると負けになるラウンドで体力が３割未満になったら、２０秒間攻撃力が２０％アップ
+		
+		Jem_3 = 19011413, // ホロ＆竜児用
+		// 1A(Slot)BB(回数)C(時間)D(効果)E(効果値)F(消滅回数)
+		Jem_4 = 18012433, // イリヤ用LV3
+
+		// Jem_2 =    1, // 攻撃を１０回当てたら２０秒間攻撃力が１０％アップ
+		// Jem_2 =    2, // 攻撃を３０回当てたら１０秒間攻撃力が20％アップ
+		// Jem_2 =    3, // 攻撃を１０回当てたら１０秒間攻撃力が１０％アップ、２回で消滅
+		// Jem_2 =    4, // 攻撃を２０回当てたら３０秒間攻撃力が１０％アップ
+		
+		// Jem_2 =  100, // 攻撃を１０回当てたら0.5ゲージ増加、２回で消滅 CX-GAUGE+ LV1
+		// Jem_2 =  101, // 攻撃を１０回当てたら１ゲージ増加（１回で消滅） CX-GAUGE+ LV2
+		// Jem_2 =  102, // 攻撃を２０回当てたら1.5ゲージ増加（１回で消滅） CX-GAUGE+ LV3
+		// Jem_2 =  103, // 攻撃を３０回当てたら２ゲージ増加（１回で消滅） CX-GAUGE+ LV4
+		
+		// Jem_2 = 1001, // 体力が３割未満になったら、２０秒間攻撃力が２０％アップ
+		// Jem_2 = 1002, // １本取られても負けにならないラウンドで体力が３割未満になったら、２０秒間攻撃力が１０％アップ
+		// Jem_2 = 1003, // １本取られると負けになるラウンドで体力が３割未満になったら、２０秒間攻撃力が２０％アップ
+		// Jem_2 = 1004, // 自分だけが１本取られると負けになるラウンドで体力が３割未満になったら、２０秒間攻撃力が２０％アップ
+		// Jem_2 = 1005, // 体力が３割未満になったら、２０秒間攻撃力が１０％アップ
+		// ※※MEMO:↑の番号をキメうちでピンチボイスを振り分けているので追加時注意
+		
+		// Jem_2 = 2001, // リバーサルを５回したら、トラストゲージが０．５本増加、２回で消滅
+		// Jem_2 = 2002, // リバーサルを20回したら、トラストゲージが１本増加
+		// Jem_2 = 3001, // 攻撃を５回受けたら２０秒間防御力が１０％アップ
+		// Jem_2 = 3002, // 攻撃を２０回受けたら１０秒間防御力が２０％アップ
+		// Jem_2 = 3003, // 攻撃を２０回受けたら１０秒間防御力が１０％アップ
+		// Jem_2 = 3004, // 攻撃を４０回受けたら１０秒間防御力が２０％アップ
+		
+		// Jem_2 = 4001, // 攻撃を１０回ガードしたらトラストゲージが１本増加
+		// Jem_2 = 5001, // サポートを４回呼び出したら１０秒間攻撃力が１０％アップ、２回で消滅
+		// Jem_2 = 5002, // サポートを１０回呼び出したら１０秒間攻撃力が２０％アップ
+		// Jem_2 = 5003, // サポートを６回呼び出したら２０秒間攻撃力が１０％アップ
+		
+		// これで司波深雪と同じ性能
+		// Jem_2 = 15012391, // 固有を１回発生させたら２０秒間サポ呼び出しが30+30*9倍にアップ
+	
+		// Jem_2 = 6001, // EXを３回使うと、２０秒間サポート呼び出し性能アップ(３倍)
+		// Jem_2 = 6003, // EXを３回使うと、３０秒間サポート呼び出し性能アップ(３倍)
+		
+		// コンボレート
+		ComboRate_HitCount = 1, // 乗算係数のかかるヒット数、０だと無効
+		ComboRate_CorrectVal = 78, // 乗算係数 IGから80から変更
+	
+		// Liberate_EXSPlusVal	= 100, // Liberate状態でのEXS増加係数（ゲージが共通なので意味がない）
+		Liberate_AttackPlusVal	= 100, // Liberate状態での攻撃力増加係数
+		
+		Liberate_SpMinusVal	= 350, // ゲージ使用技での減少、Liberate_Minus いくつぶん減らすか
+		// OverLiberate時には、OverLiberate_Minus が参照される
+		// 例：Liberate時 に 15000 減る技だった場合
+		// 減少量＝ (Liberate_Minus * Liberate_SpMinusVal * 15000) / 10000;
+
+		GRD =
+		{
+			Liberate_AutoPlusVal = 150, // Liberate状態でのGRD自動増加係数
+
+			AutoFramePlus = [ 0,0,0,0,0,0, 0,0,0,0,0,0 ], // 12個ぶん マイナスがあると押し込みで勝ってるほど減るのでダメよ
+			ShieldFramePlus = 10,
+			JustShieldPlus = 10000,
+			PassiveMovePlus = 5000,
+
+			PressureVal_Min = 50, // 押し込み係数最低値 100=1.0
+			PressureVal_Max = 700, // 押し込み係数最大値 100=1.0
+
+			TimeResultVal = 100, // 時間強化係数 100=1.0
+
+			MaxKeepTime = 10*60, // 最大状態持続時間
+			BreakTime = 10*60,
+			OverBreakTime = 10*60,
+
+			JustShieldMinus = 1,
+			FaildGuardMinus = 1,
+			
+			ReduceSuccessPlus = 0, // レデュース成功時の増加量（廃止）
+
+			// Judgement
+			//ヴォーパル時
+			JudgeWin_ExsPlusVal = 105, // GRD判定勝ち時、EXS増加係数 100=1.0
+			JudgeWin_AttackPlusVal = 110, // GRD判定勝ち時、攻撃力増加係数 100=1.0		
+		}	
+		
+		HpSource_StopFrame = 120, // 回復領域を残してHPが削られた際の停止時間
+		HpSource_Heal = 2, // 回復量/Frame
+		
+		// イグニッション
+		PowUp_HpSource_StopFrame = 120, // 回復領域を残してHPが削られた際の停止時間
+		PowUp_HpSource_Heal = 3, // 回復量/Frame
+		
+		// ダブルイグニッション
+		PowUpD_HpSource_StopFrame = 60, // 回復領域を残してHPが削られた際の停止時間
+		PowUpD_HpSource_Heal = 4, // 回復量/Frame
+		
+		PowUp_AttackRate=104, //
+		PowUp_DefenseRate=93, //
+		PowUpD_AttackRate=107, //
+		PowUpD_DefenseRate=90, // 
+		
+	}//
+	
+	local p;
+	
+	Battle_Status.CP_VecMinus_Ground <- []; // コンボポイントによる地上のけぞり補正テーブル（減算値）
+	Battle_Status.CP_VecMinus_Air <- []; // コンボポイントによる空中受け身時間補正テーブル（減算値）
+	Battle_Status.CP_VecMinus_AirBound <- []; // コンボポイントによる空中のけぞり補正テーブル（減算値）
+	Battle_Status.CP_Time_Val <- []; // コンボ時間でのコンボポイント修正テーブル（減算値）
+	
+	// p.append( { num=80, minus=0 } ); // 80ポイント「以上」では0
+	// p.append( { num=50, minus=2 } ); // 79-50ポイントでは2
+	
+	p = Battle_Status.CP_VecMinus_Ground; // コンボポイントによる地上のけぞり補正テーブル（減算値）
+	// ポイント100から、 補正なしの状況は必要ない
+	p.append( { num=32, minus=0  } ); // 
+	p.append( { num=26, minus=2  } ); // 
+	p.append( { num=22, minus=3  } ); // 
+	p.append( { num=17, minus=4  } ); // 
+	p.append( { num=12, minus=5  } ); // 
+	p.append( { num= 8, minus=7  } ); // 
+	p.append( { num= 4, minus=10 } ); // 
+	p.append( { num= 2, minus=14 } ); // 
+	p.append( { num= 0, minus=99 } ); // 
+	
+	p = Battle_Status.CP_VecMinus_Air; // コンボポイントによる空中受け身時間補正テーブル（減算値）
+	p.append( { num=65, minus=0  } ); // 
+	p.append( { num=35, minus=2  } ); // 
+	p.append( { num=28, minus=3  } ); // 
+	p.append( { num=21, minus=4  } ); // 
+	p.append( { num=15, minus=5  } ); // 
+	p.append( { num=10, minus=6  } ); // 
+	p.append( { num= 8, minus=8  } ); // 
+	p.append( { num= 5, minus=10 } ); // 
+	p.append( { num= 2, minus=15 } ); // 
+	p.append( { num= 0, minus=99 } ); // 	
+	
+	p = Battle_Status.CP_VecMinus_AirBound; // コンボポイントによる空中のけぞり補正テーブル（減算値）
+	p.append( { num=65, minus=0  } ); // 
+	p.append( { num=35, minus=2  } ); // 
+	p.append( { num=28, minus=3  } ); // 
+	p.append( { num=21, minus=4  } ); // 
+	p.append( { num=15, minus=5  } ); // 
+	p.append( { num=10, minus=6  } ); // 
+	p.append( { num= 8, minus=8  } ); // 
+	p.append( { num= 5, minus=10 } ); // 
+	p.append( { num= 2, minus=15 } ); // 
+	p.append( { num= 0, minus=99 } ); // 	
+
+	// コンボ時間でのコンボポイント修正テーブル（乗算値）
+	// 時間経過後の攻撃のタイミングで修正
+	p = Battle_Status.CP_Time_Val;
+	// TSで見る 一周840F 半周420F 210F　
+	p.append( { num=210, val=100 } ); // 通常
+	p.append( { num=420, val=90 } ); // 
+	p.append( { num=630, val=90 } ); // 
+	p.append( { num=840, val=90 } ); // 
+	p.append( { num=1260, val=80 } ); // （この辺からは救済措置用すっぽ抜け注意）
+	p.append( { num=1680, val=80 } ); // 
+	p.append( { num=9999, val=80 } ); // 
+	
+	// 被ダメージによるブラスト加算値リスト
+	Battle_Status.Blast_DamagePlus <- []; // 
+
+	p = Battle_Status.Blast_DamagePlus;
+	// 配列数で等分に分割される、１０以上は無効
+	// 以下の例の場合だと25%未満、50%未満、75%未満、100%未満、100%時、となる
+	p.append( { val=200 } ); // 25%未満
+	p.append( { val=150 } ); // 50%未満
+	p.append( { val=100 } ); // 75%未満
+	p.append( { val=50 } ); // 100%未満
+	p.append( { val=0 } ); // 最後が満タン時となる
+	
+	
+// 廃止
+// ???_sc.txt
+// Battle_Status.ComboVecMinus_Ground <- []; // 地上のけぞり補正
+// Battle_Status.ComboVecMinus_Air <- []; // 空中受け身時間補正
+// Battle_Status.ComboVecMinus_AirBound <- []; // 空中のけぞり補正
+// Battle_Status.ComboTime_Val <- []; // コンボ時間修正
+
+// 追加
+// ???_sc.txt
+// Battle_Status.CP_VecMinus_Ground <- []; // コンボポイントによる地上のけぞり補正テーブル（減算値）
+// Battle_Status.CP_VecMinus_Air <- []; // コンボポイントによる空中受け身時間補正テーブル（減算値）
+// Battle_Status.CP_VecMinus_AirBound <- []; // コンボポイントによる空中のけぞり補正テーブル（減算値）
+// Battle_Status.CP_Time_Val <- []; // コンボ時間でのコンボポイント修正テーブル（減算値）
+	
+	
+	return tbl;
+}

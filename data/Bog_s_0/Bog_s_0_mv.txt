@@ -1,0 +1,517 @@
+_dp("\n[s_Bog_0_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <-
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 );
+		
+		Battle_Std.AddXPos_CheckFrontStage( 0, 150 ); // X移動距離, ステージ端とこれ以上近づかない距離
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[121,122] } );
+			local eff = BMvEff.CreateObject( { mvname="Mv_Sup00AtkObj", start_pat="sup10atk", x=410<<7, y=-250<<7  } );
+			break;
+		}
+	}	
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } ); // やられ音声		
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } ); // 撤退音声		
+	}
+}
+
+t.Mv_Sup00AtkObj <-
+{
+	function Init()
+	{
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=255, flag=_ClearFlag_ChangeMv } ); // 弾無敵にスカる
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+	}
+	function FrameUpdate()
+	{
+		if( Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Sousai_MySubSuccess ) )
+		{
+			BMvTbl.SetFinalize(0); // 相殺したら消える
+		}
+		Battle_Std.CheckSousai(); // def_MC_Sousai と触れたら相殺し合う
+	}
+	function HitInterrupt()
+	{
+		if( Battle_Std.CheckGuardTiming() )
+		{
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				// 確定で凄く削る
+				BMvEff.SetHpGauge( { value=-100, valuetype=3 } ); // 実削り
+				BMvEff.SetHpGauge( { value=-300, valuetype=1 } ); // 白削り
+				
+				enemy.pop();
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		
+		//位置決定
+		BMvTbl.SetPosition( { y=0 } ); // 出現高さ決定
+		
+		local pos = BMvEff.GetCameraRect( { flags=_GetPos_TrueCamera } );
+		BMvTbl.SetPosition( { x= (pos.sx + pos.ex) / 2 + (-100<<7)*BMvTbl.GetMuki()  } ); // 中央へ
+			
+		BMvEff.CreateObject( { mvname="Mv_EffBlackOut" } ); // タイムラインオブジェクト
+		
+		BMvTbl.SetLP(9,0); // ダメージ状態か？　0:なし 1:やられ　ブラックアウトエフェクトから見る
+		
+		// BGM開始
+		BSound.SE_Play( { type=_SeType_Player, num=50 } );
+		
+		// FrameID
+		// 900 消滅
+		// 100 ふりむき
+		// 150 ふりむき待機
+		// 200 ふりむきからの攻撃
+		// 300 ふりむきからの消滅
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50:
+			BSound.SE_Play( { type=_SeType_Player, num=[170,171,172,173] } );
+			break;
+		}
+	}	
+	function LastUpdate_After()
+	{
+		BSound.SE_Stop( { type=_SeType_Player, num=50, fadetime=20 } );
+	}
+}
+
+//サポートキャラがダメージを受けると入る行動
+//無敵だけど念のため定義
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After()
+	{
+		BMvTbl.JumpFrameID( 900 ); // フェードアウト
+		BMvTbl.SetLP(9,1); // ダメージということにする
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//ブギーポップは無敵だけど親が殴られると入る
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After()
+	{
+		BMvTbl.JumpFrameID( 900 ); // フェードアウト
+		BMvTbl.SetLP(9,1); // ダメージということにする
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+// タイムラインオブジェクト
+// 画面を暗くするオブジェクト
+// 親のブギーの振り向きタイミングや攻撃判定オブジェクトを出すのもここ
+
+local pat_num_Eff_BlackOut = BMvEff.GetPatternNum( { datatype=0, pat="Eff_BlackOut" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Atk_thread_HIT_Enshutu = BMvEff.GetPatternNum( { datatype=0, pat="Atk_thread_HIT_Enshutu" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_EffBlackOut <-
+{
+	function Init() : (pat_num_Eff_BlackOut)
+	{
+		BMvTbl.SetPattern( pat_num_Eff_BlackOut );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_NoGround } );
+		BMvTbl.SetPosition( { x=0, y=0 } );
+		BMvTbl.SetPrio( _CharaPrio_Parent_BG ); // BG手前
+		
+		BMvTbl.SetLP(0,0); // 消滅へ進んだかどうか 0:まだ 1とか:消滅アニメに進んだ
+		
+		Battle_Std.BackScreenBlack_Start( 999 ); // 背景を指定レーム黒くする
+		
+		BMvTbl.SetLP(1,0); // ポテンシャル発揮中か 0:まだ 1:発揮中 -1:終わり
+	}
+    function Update()
+    {
+		if( BMvTbl.GetLP(1) != 1 ) return;
+		
+		// 以下ポテンシャルの処理のみ
+        local rs = BMvTbl.GetMvRoundStatus();
+
+        // 暗転中はタイマー停止するので増えない
+        if( rs.TimeUpdate ) // TimeUpdate:タイマーが動いているか 0 or 1、開始前とかKO状態も0 
+        {
+            local player = BMvCore.GetMainCharaData(); // PLではなくする
+            local enemy = BMvCore.GetEnemyCharaData();
+
+            local sp_addvalue = 0; // このフレーム増加させるＳＰ値
+
+            // 相手との距離によって増加値を変える
+            local sp_frameadd_posi = 2; // ネガポジ判定での増加値（毎フレームの加算値）
+            local sp_frameadd_blast = 0; // パワーアップブラストでの増加値（↑たちと加算）
+            local isPowBlastMode = 0; // パワーアップブラスト中かどうか
+
+            // 相手キャラがやられ時はネガポジ判定しない
+            // ガードの上からダッシュするのはポジティブだよ
+            if( enemy.isdone() && player.push() )
+            {
+                if( tDDC.Blast_GetUseMode() == 0 ) // パワーアップブラスト中
+                {
+                    isPowBlastMode = 1;
+                }
+				
+                if( Battle_Std.MoveCode.CheckFlag( def_MC_PositiveAction ) )
+                {
+                    // _dp1p("\n ポジティブ！");
+                    sp_frameadd_posi = 6;
+                }
+                else if( Battle_Std.MoveCode.CheckFlag( def_MC_NegativeAction ) )
+                {
+                    // _dp1p("\n ネガティブ！");
+                    sp_frameadd_posi = 0;                    
+                }
+
+                local posst = BMvEff.GetPointStatus( { target=enemy } ); // 位置情報取得
+                player.pop();
+
+                // 以下は基本値算出後の処理
+                // 相手との距離に応じて係数をかける
+                local sp_par = 100; // 割合
+
+                local xlen = posst.distance_x;
+                if( xlen >= (768<<7) )
+                {
+                    sp_par = 60;
+                }
+                else if( xlen >= (512<<7) )
+                {
+                    sp_par = 80;
+                }
+                else
+                {
+                    sp_par = 100;
+                }
+                sp_frameadd_posi = sp_frameadd_posi * sp_par / 100; // 係数つける
+
+				// ブラスト中は逆に増やさない
+                if( !isPowBlastMode )
+                {
+                    sp_frameadd_blast = sp_frameadd_posi * 350 / 100; // 倍率上昇
+                    // 最低の自動増加で＋１は確定する（500フレームならね）
+                    if( sp_frameadd_blast <= 20 )
+                    {
+                        sp_frameadd_blast = 20; // パワーアップブラスト中は最低保障値あり
+                    }
+                }
+            }
+            if( Battle_Std.CheckEnemyisDamage() )
+            {
+                // やられ中は自動増加しないがブラストの補正はかかる
+                sp_addvalue += sp_frameadd_blast;
+            }
+            else
+            {
+                sp_addvalue += (sp_frameadd_blast + sp_frameadd_posi);
+            }
+
+            //
+            if( Def_Rule_StopEXSAutoRecover_EXSPAct ) // ＥＸ必殺・ＳＰ必殺中は自動増加しない == 1
+            {
+                if( player.push() )
+                {
+                    local exspmove = 0;
+
+                    if( Battle_Std.MvAction.CheckFlag( def_MC_EXAction ) ) exspmove = 1;
+                    if( Battle_Std.MvAction.CheckFlag( def_MC_SPAction ) ) exspmove = 1;
+
+                    local skillmove = ( Battle_Std.MoveCode.CheckFlag( def_MC_Skill ) );
+                    player.pop();
+
+                    if( skillmove )
+                    {
+                        if( exspmove )
+                        {
+                            // print("\n EXかSP中！");
+                            sp_addvalue = 0;
+                        }
+                    }
+
+                }
+            }
+			
+			if( player.push() )
+			{
+				BMvEff.SetSpGauge( { value=sp_addvalue } );
+				
+				player.pop();
+			}
+        }
+    }	
+	function FrameUpdate()
+	{
+		
+		if( BMvTbl.GetLP(0) != 0 ) return; // 消滅アニメに進んでるので何もしない
+
+		// 以下消滅アニメに進んでいない時の処理
+		local oya = BMvCore.GetParentCharaData(); // ブギーポップ
+		if( oya.push() )
+		{
+			// ブギーがやられたら消滅する
+			local oya_yarare = BMvTbl.GetLP(9); // ブギーがやられかチェック
+
+			oya.pop();
+
+			if( oya_yarare )
+			{
+				BMvTbl.JumpFrameID( 900 ); // 消滅アニメへ
+				BMvTbl.SetLP(0,1); // 消滅アニメに進んだ
+			}
+		}
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 10: // 登場したぐらい
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				tDDC.ExJem_Attack( 115, 600 ); // 攻撃力アップポテンシャルみたいな
+				tDDC.Jem_SetMessageEx( 1, -1, "", -1 ); // ポテンシャルカットイン
+				
+				main.pop();
+			}
+			BMvTbl.SetLP(1,1); // ポテンシャル発揮開始
+			break;
+		case 100: // 暗くなった
+			// 親のアニメ変更
+			if( oya.push() )
+			{
+				BMvTbl.JumpFrameID( 100 ); // 振り向きアニメへ
+				
+				oya.pop();
+			}
+			break;
+		case 200: // 完全に真っ黒
+			if( oya.push() )
+			{
+				BMvTbl.JumpFrameID( 200 ); // 攻撃用アニメへ
+				
+				oya.pop();
+			}
+
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				local muki = (BMvTbl.GetMuki()==1)? _Direction_Right : _Direction_Left;
+				
+				main.pop();
+
+				Battle_Std.SupportSetMuki( muki );
+			}
+			break;
+		case 300: // 攻撃演出開始
+			// 時間停止する
+			BMvEff.SetStopTime( { time=60 } ); // ちょっと長めに取る
+			BMvTbl.SetLP(1,-1); // ポテンシャル発揮終わり
+			// 時間停止で終わりにしないと、停止中にモリモリ増えちゃう
+			break;
+		case 555: // 攻撃の1F前
+			BMvEff.SetStopTime( { time=0 } ); // 時間停止終了
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				tDDC.ExJem_Attack( 100, 0 ); // 攻撃力アップポテンシャルみたいな
+				
+				main.pop();
+			}
+			break;
+		case 666: // 攻撃F　ここから明るい
+			break;
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		Battle_Std.BackScreenBlack_End( 0 ); // 背景を指定レームで元に戻す
+		
+		local main = BMvCore.GetMainCharaData();
+		if( main.push() )
+		{
+			tDDC.ExJem_Attack( 100, 0 ); // 攻撃力アップポテンシャルみたいな
+			
+			main.pop();
+		}
+	}
+	function HitInterrupt() : (pat_num_Atk_thread_HIT_Enshutu)
+	{
+		// ブギーポップの攻撃が成功した場合、画面を停止して、
+		// 相手の座標に Atk_thread_HIT_Enshutu エフェクトを発生させる
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				local pos = BMvTbl.GetPosition(0);
+				
+				enemy.pop();
+			
+				if( pos.y <= 0 ) // 埋まっていたりしたら出さない
+				{
+					local eff = BMvEff.CreateObject( { start_pat=pat_num_Atk_thread_HIT_Enshutu } );
+					if( eff.push() )
+					{
+						Battle_Std.SetPos_MarkingTarget( enemy ); // 相手の重なりに出す
+						BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_NoGround } );
+						BMvEff.ObjProcFlags_Set( { flags =_ObjProcFlags_EraseChangeParentMv  } );
+						eff.pop();
+					}
+				}
+			}
+		}
+		else if( Battle_Std.CheckGuardTiming() )
+		{
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				// 確定で凄く削る
+				// BMvEff.SetHpGauge( { value=-800, valuetype=3 } ); // 実削り
+				// BMvEff.SetHpGauge( { value=-1400, valuetype=1 } ); // 白削り
+
+				// マスター向け案
+				BMvEff.SetHpGauge( { value=-500, valuetype=3 } ); // 実削り
+				BMvEff.SetHpGauge( { value=-1500, valuetype=1 } ); // 白削り
+
+				// BMvEff.SetHpGauge( { value=-3000, valuetype=3 } ); // 実削り 6/27ロケテはコレ
+				local pos = BMvTbl.GetPosition(0);
+				
+				enemy.pop();
+				
+				if( pos.y <= 0 ) // 埋まっていたりしたら出さない
+				{
+					local eff = BMvEff.CreateObject( { start_pat=pat_num_Atk_thread_HIT_Enshutu } );
+					if( eff.push() )
+					{
+						Battle_Std.SetPos_MarkingTarget( enemy ); // 相手の重なりに出す
+						BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_NoGround } );
+						BMvEff.ObjProcFlags_Set( { flags =_ObjProcFlags_EraseChangeParentMv  } );
+						eff.pop();
+					}
+				}
+			}
+			
+		}
+	}	
+}
+
+
+BOG_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Bog_s );
+
+_dp(" -> Load OK");

@@ -1,0 +1,26 @@
+[data]
+// vsKur00
+100 = Your outfit's so black! Just like Kirito's!
+
+// vsKrt00
+110 = Too bad cause I won't lose!
+
+// vsKrt01
+120 = So we've gotta...fight each other?
+
+// vsStm00
+130 = How about a cook-off? ...Could be fun.
+
+500 = I'll give it all I've got!
+501 = Well then...time to do battle!
+502 = Sub-leader Asuna reporting in!
+510 = Yui! Come here.
+507 = Whooh...
+508 = Yui!
+509 = Aww, Yui...
+512 = You were a worthy opponent...
+513 = Relax... There's no way I can lose!
+520 = Looking good!
+521 = Phew, we did it.
+530 = Time's up?!
+531 = I don't believe it...

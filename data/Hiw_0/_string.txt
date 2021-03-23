@@ -1,0 +1,24 @@
+[data]
+// vsMis00
+100 = Well, they ain't meant for kicking either!
+
+// vsTmk00
+110 = Come on, teach me how to throw stuff!
+
+// vsTgr00
+120 = I may look rough, but my heart's in the right place.
+
+// withIzy00
+200 = Back off, punk!
+
+500 = I don't like you.
+501 = You ready for a beating?
+502 = You got guts all right...
+510 = Pff...
+511 = You've gone and made me resort to violence...
+512 = Pff, what a waste of time...
+513 = That was easier than I thought.
+520 = You finished already?
+521 = I'm not done with you yet!
+530 = Huh?!
+531 = Crap!

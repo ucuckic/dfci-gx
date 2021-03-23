@@ -1,0 +1,74 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Kro_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Kro00_4900", type=0, category=1}; // いけるわ
+// クライマックスブースト発動
+st[81] = { path=1, file="Kro00_7003", type=0, category=1}; // 今の私は聖天使"神猫"よ！
+// ブラストＯＫ
+st[82] = { path=1, file="Kro00_4901", type=0, category=1}; // 私に任せて貰えるかしら？
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Kro00_2100", type=0, category=1}; // ……っふ……勝利などたやすい
+// st[101] = { path=1, file="Kro00_2101_c0", type=0, category=1}; // クククク…… フハハハ…… ハァーッハッハッハッ！（三段笑い）
+
+// ラウンド敗北	
+st[110] = { path=1, file="Kro00_2200", type=0, category=1}; // くっ……地獄に堕ちなさい……っ！
+st[111] = { path=1, file="Kro00_2201", type=0, category=1}; // このままでは終わらないわ……ッ
+
+// 通常攻撃	
+// st[120] = { path=1, file="Kro00_2500", type=0, category=1}; // はっ
+// st[121] = { path=1, file="Kro00_2501", type=0, category=1}; // ふっ
+// st[122] = { path=1, file="Kro00_2502", type=0, category=1}; // はぁっ！
+
+// 撤退	
+st[130] = { path=1, file="Kro00_4000", type=0, category=1}; // 戦略的撤退としりなさい……
+st[131] = { path=1, file="Kro00_4001", type=0, category=1}; // 引かせてもらうわ
+
+// ダメージ	
+// st[140] = { path=1, file="Kro00_4500", type=0, category=1}; // 痛っ！
+// st[141] = { path=1, file="Kro00_4501", type=0, category=1}; // だめっ！
+// st[142] = { path=1, file="Kro00_4502", type=0, category=1}; // きゃぁあーっ！
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Kro00_4600", type=0, category=1}; // ばかな…！
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Kro00_4900", type=0, category=1}; // いけるわ
+st[161] = { path=1, file="Kro00_4901", type=0, category=1}; // 私に任せて貰えるかしら？
+
+// 必殺技１	
+st[170] = { path=1, file="Kro00_7000", type=0, category=1}; // 神魔絶滅衝！（しんまぜつめつしょう）
+st[171] = { path=1, file="Kro00_7001", type=0, category=1}; // 煉獄の炎に焼かれなさい……
+st[172] = { path=1, file="Kro00_7002", type=0, category=1}; // 闇からは逃れられない……ッ！
+st[173] = { path=1, file="Kro00_7003", type=0, category=1}; // 今の私は聖天使"神猫"よ！
+
+st[174] = { path=1, file="Kro00_7002b", type=0, category=1}; // 闇に落ちよ……！
+st[175] = { path=1, file="Kro00_2101_c0_s0", type=0, category=1}; // ククク……
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	何かしら？
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	どうしたの？早くしなさい
+
+// キャラセレクト画面キャラクター決定
+// 1130	ふふふっ……我は千葉の堕天聖(せんようのだてんせい)……黒猫よ

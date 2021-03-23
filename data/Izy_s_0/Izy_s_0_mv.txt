@@ -1,0 +1,391 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+local pat_num = -1;
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00_Hit = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Hit" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00_ComboAtk = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_ComboAtk" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		
+		// Battle_Std.AddXPos_CheckFrontStage( 150, 150 ); // X移動距離, ステージ端とこれ以上近づかない距離
+
+		Battle_Std.Sousai.Init_NoHitFlag(); // ヒットフラグを与えない相殺
+		
+		BMvTbl.SetLP(0,0); // 相殺とったか
+	}
+	function FrameUpdate_After() : (pat_num_Sup00_Hit, pat_num_Sup00_ComboAtk)
+	{
+		if( BMvTbl.GetLP(0) == 0 ) Battle_Std.Sousai.FrameUpdate_NoHitFlag();
+		
+		local mvs = BMvTbl.GetMvStatus();
+		switch( Battle_Std.GetUpdateFrameID( mvs ) )
+		{
+		case 100: // 手をあげる開始
+			BSound.SE_Play( { type=_SeType_Player, num=[170,173,176] } );
+			break;
+		case 200: // 当身成功で通り抜ける
+			BSound.SE_Play( { type=_SeType_Player, num=[171,174,177,180] } );
+			break;
+		case 250: // 相手の位置にワープしてくる
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				local epos = BMvTbl.GetPosition( 0 );
+				enemy.pop();
+				
+				BMvTbl.SetPosition( { x=epos.x } ); // 相手座標にワープ
+			}
+			break;
+		case 400: // きめポーズちょい後
+			BSound.SE_Play( { type=_SeType_Player, num=[172,175,178,181] } );
+			break;
+		}
+		
+		// pat_num_Sup00_ComboAtk
+		if( mvs.Param1 == 32 )
+		{
+			// 追撃に備える
+			if( Battle_Std.CheckEnemyisDamage_ExceptDown() )
+			{
+				BMvTbl.SetPattern( pat_num_Sup00_ComboAtk );
+			}
+		}
+		
+	}
+	function HitInterrupt_After() : (pat_num_Sup00_Hit)
+	{
+		local mvhs = Battle_Std.Sousai.HitInterrupt( { noeffect=1, nosound=1, hitstop=4 } );
+		if( mvhs ) // 有効なら0以外
+		{
+			if( mvhs.isFirstUpdate )
+			{
+				Battle_Std.SupSt_AddFlag( def_PP_Success );
+				
+				BMvTbl.SetLP(0,1); // 相殺とった
+				
+				local mvs = BMvTbl.GetMvStatus();
+				BMvTbl.SetPattern( pat_num_Sup00_Hit ); // 当身成功へ
+				
+				// 時間停止して色々
+				// 弱攻撃だと時間停止短いようにする
+				local stopFrame = 30;
+				local enemy = BMvCore.GetLastHitCharaData( 0 ); // そのままの相手を取得
+				if( enemy.push() )
+				{
+					local enemy_exmvcode = BMvTbl.GetMoveCodeEx( 1 );
+					enemy.pop();
+					
+					if( enemy_exmvcode&def_MC1_AtkLow )
+					{
+						_dp("\n 弱攻撃なので弱い");
+						stopFrame = 18;
+					}
+				}
+				BMvEff.SetStopTime( { time=stopFrame } );
+			}
+			BMvTbl.SetFinalizeCode(0); // 同フレームに殴られていると撤退するので行動上書き
+		}
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+// 仕様案
+// 蹴って転ばす
+// ダウン中の相手にはヒットしない
+// ヒットしたらフラグが立つ
+// フラグがたっていたら、蹴りの後に踏みつけに入る
+// 単純にヒット分岐でよさそうだ
+// 最初の踏みつけ部分が投げ判定になっていて、掴みにいく
+// ダウンにしか当らない判定の仕様を作ってもらう
+// ダウン追い討ちで投げが当る分には、他の投げはダウン追い討ちで入らないからいいはず
+// このキャラだけの特例なので、この投げと他の投げがヒットすることは無いはず？
+// あとは投げが成立した後、撤退してしまうとそのまま進行不能だから
+// LastUpdateで必ず開放させれば安心か
+
+// 最初の打ち上げ
+t.Mv_AniSet_Fumituke <- Battle_Std.MakeMv.SetCaptureCharaAnime( { animation = [
+	{ Data = [348,0,12], },
+	{ Data = [348,1,6], },
+	{ Data = [348,2,6], },
+	{ Data = [290,0,255], },
+] } );
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup10_CAAtk = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_CAAtk" } ); // パターン文字列のパターン番号を事前取得
+
+local jumpfumi_enemy = function()
+{
+	local enemy = BMvCore.GetEnemyCharaData();
+	if( enemy.isdone() )
+	{
+		local posst = BMvEff.GetPointStatus( { target=enemy } );
+		local kyori = posst.pos_x*BMvTbl.GetMuki();
+		
+		local frame = 25;
+		local x_vec = kyori / frame;
+		if( x_vec > 3000 ) x_vec = 3000;
+		if( x_vec < -3000 ) x_vec = -3000;
+		
+		BMvTbl.SetVector( { x=0, flags=_Vector_Normal } );
+		BMvTbl.SetVector( { x=x_vec*2, addx=-(x_vec*2/frame), flags=_Vector_Div } );
+	}
+}
+
+local set_fumifumi = function()
+{
+	BMvEff.CreateObject( { mvname="Mv_AniSet_Fumituke" } );
+	local enemy = BMvCore.GetCaptureCharaData(); // 敵の情報をかえる
+	if( enemy.push() )
+	{
+		BMvTbl.SetPosition( { y=0, } ); //地面に埋める
+		
+		enemy.pop();
+	}
+}
+
+// MEMO:ダウン状態に見えるけど投げなので
+// クライマックスアーツとかが入ってかなり痛い
+// 超技が入るのは楽しい気がするので、超技を検知したら浮かせて当るようにするってのもありかも
+
+t.Mv_SupportChara2 <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 ); // 表示するパターンを設定
+		
+		// Battle_Std.AddXPos_CheckFrontStage( 350, 100 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		Battle_Std.AddXPos_NearEnemy( 300, 0 ); // 相手との距離が一定以下にならないように近づく
+		
+		BMvTbl.SetLP(0,0); // 踏み付けがヒットして投げの処理に移行したかどうか 0:投げがヒットしなかった 1:ロックしてふんで終わった 2:ロックしたけど途中で抜けた
+	}
+	function FrameUpdate_After() : (jumpfumi_enemy, set_fumifumi, pat_num_Sup10_CAAtk)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // 転ばすキック
+			BSound.SE_Play( { type=_SeType_Player, num=[185,188,191,194] } );
+			break;
+		case 300: // 最初のジャンプ
+			// 相手の真ん中に向かってジャンプする
+			jumpfumi_enemy(); // 敵に向かってジャンプ踏み
+			break;
+		case 500: // 投げ判定ヒット
+			// 投げ関係の処理をここで行う
+			BMvTbl.SetLP(0,1); // 投げに進んだよ
+			BMvEff.ThrowChara_SetCamera( 1 ); //投げているキャラをカメラ処理に含めるかどうか
+			BMvEff.ThrowChara_SetJoint( 0 ); // 投げているキャラを自分の移動にくっつけるかどうか
+			set_fumifumi(); // 敵に踏まれやられをセット
+			BSound.SE_Play( { type=_SeType_Player, num=[186,189,192,195] } );
+			break;
+		case 550:
+			jumpfumi_enemy(); // 敵に向かってジャンプ踏み
+			break;
+		case 600:
+			set_fumifumi(); // 敵に踏まれやられをセット
+			break;
+		case 700: // とどめダウン追い討ち
+			set_fumifumi(); // 敵に踏まれやられをセット
+			break;
+		case 1010: // 驚いて蹴り
+			// BSound.SE_Play( { type=_SeType_Player, num=[185,188,191,194] } );
+			break;
+		case 1015: // 驚いてバクステの前
+			// 驚いた先、メインキャラの方をふりむく
+			local main = BMvCore.GetMainCharaData();
+			if( main.isdone() )
+			{
+				local posst = BMvEff.GetPointStatus( { target=main } );
+				local kyori = posst.pos_x*BMvTbl.GetMuki();
+				// _dp("\n kyori:"+kyori );
+				if( kyori < 0 ) // 
+				{
+					BMvTbl.SetMuki( _Direction_Reverse );
+				}
+			}
+			break;
+		case 1020: // 驚いてけりの後の降参
+			BSound.SE_Play( { type=_SeType_Player, num=[179] } );
+			break;
+		}
+		
+		// 投げ掴み中の処理
+		if( BMvTbl.GetLP(0) == 1 )
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			if( mvs.Param1 == 32 ) // ふみふみループ部分
+			{
+				// 超技か切り札を出したらつかみを終了する
+				local main = BMvCore.GetMainCharaData();
+				if( main.push() )
+				{
+					local clamove = Battle_Std.MoveCode.CheckFlag( def_MC_Skill ) && Battle_Std.MvAction.CheckFlag( def_MC_SPAction );
+					local kirifuda = (Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Kirifuda ) && tDDC.Kirifuda_CheckStatus() != 1);
+					
+					main.pop();
+					
+					if( clamove || kirifuda )
+					{
+						BMvTbl.SetLP(0,2); // ロックしたけど途中で抜けたのを記憶
+						// BMvTbl.JumpFrameID( 900 ); // 抜ける
+						
+						BMvTbl.SetPattern( pat_num_Sup10_CAAtk ); // びっくり
+						
+						BMvEff.ThrowParam( { y=-64 } );
+						BMvEff.ThrowRelease( {type="浮き強", airrecover=0, flags=_ThrowRelease_NoGroundRecover } ); // 追撃可能のまま離す
+						
+						// 減りすぎワロスだから補正かける？
+						// 投げ扱いだからダメージに補正が入らなくて、ダウン追い討ちなのにめちゃ減るのが悪いようだ
+						// ダウン追い討ちはダメージ半分だから、それくらい補正をキツくしないとまずだめ
+						// ダウン状態にする、というフラグがあればそれでもいい気がする
+						// BMvEff.ComboView_Set( { val=70, type=1 } ); // 乗算
+					}
+				}
+			}
+		}
+	}
+	function HitInterrupt_After()
+	{
+	}
+	function LastUpdate_After()
+	{
+		BMvEff.ThrowChara_SetCamera( 1 ); //投げているキャラをカメラ処理に含めるかどうか
+		BMvEff.ThrowChara_SetJoint( 0 ); // 投げているキャラを自分の移動にくっつけるかどうか
+
+		local throw_type = BMvTbl.GetLP(0);
+		if( throw_type == 1 ) // 踏み付けがヒットして投げ処理をやった後
+		{
+			BMvEff.ThrowRelease( {type="あお向け起き上がり", airrecover=0, flags=_ThrowRelease_NoGroundRecover } ); // 追撃可能のまま離す
+			local enemy = BMvCore.GetNearEnemyCharaData(); // 敵の情報をかえる
+			if( enemy.push() )
+			{
+				BMvTbl.SetPosition( { y=0, } ); //念のため地面に埋める
+				
+				enemy.pop();
+			}
+		}
+		
+		// 何があるか分からないので、一応投げヒットしてなくても開放処理は入れておく
+		BMvEff.ThrowRelease( {type="浮き強", airrecover=0, flags=_ThrowRelease_NoGroundRecover } ); // 追撃可能のまま離す
+	}
+}
+
+// ※00を使う
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+
+IZY_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Izy_s );
+
+_dp(" -> Load OK");

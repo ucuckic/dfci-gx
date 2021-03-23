@@ -1,0 +1,332 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+// サポートキャラ 演出用 local関数
+//-----------------------------------------------------------------------------
+
+local pat_num_Eff_heeling = BMvEff.GetPatternNum( { datatype=0, pat="Eff_heeling" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Obj_Eff_heeling <-
+{
+	function Init() : (pat_num_Eff_heeling) // 回復エフェクト呼び出しを行います、このタイミングでは体力は回復しません
+	{
+		BMvTbl.SetPattern( pat_num_Eff_heeling );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_NoGround } );
+		BMvEff.ObjProcFlags_Set( { flags =_ObjProcFlags_EraseParentNull } ); // 親の管理から引き離す
+	}
+	function FrameUpdate()
+	{
+		local p_main = BMvCore.GetMainCharaData();
+		Battle_Std.SetPos_MarkingTarget( p_main ); // マーキング座標移動
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+
+}
+
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <-
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 );
+		
+		Battle_Std.AddXPos_CheckFrontStage( 250, 150 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		// Battle_Std.AddXPos_NearEnemy( 100, 400 ); // X移動距離, 相手とこれ以上近づかない距離
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			// 音声再生タイミング
+			if( BMvEff.Random_Limit(2) )
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[120], delay=20 } );
+			}
+			else
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[122] } );
+			}
+			break;
+		}
+	}
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } ); // やられ音声		
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } ); // 撤退音声		
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Eff_Mugi = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Mugi" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_EffMugiObject <-
+{
+	function Init() : (pat_num_Eff_Mugi)
+	{
+		BMvTbl.SetPattern( pat_num_Eff_Mugi );
+		
+		BMvTbl.SetLP(0,0); // 消滅へ進んだかどうか
+		
+	}
+	function FrameUpdate()
+	{
+		if( BMvTbl.GetLP(0) != 0 ) return;
+		// 以降消滅へ進む前の処理
+		
+		local hol = BMvCore.GetParentCharaData();
+		if( hol.push() )
+		{
+			local isDamage = BMvTbl.GetLP(2); // やられ扱いだと1
+			hol.pop();
+			
+			if( isDamage )
+			{
+				BMvTbl.JumpFrameID( 900 ); // 消滅へ
+				BMvTbl.SetLP(0,1); // 消滅へ進んだ
+			}
+		}
+
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		// 体力回復エフェクト表示用 0:回復エフェクト呼べる 1～25:回復エフェクト出した後で再呼び出ししないフレーム
+		BMvTbl.SetLP(0,0);
+		
+		BMvTbl.SetLP(2,0); // エフェクト操作用　0:通常 1:やられ。麦を消す
+		
+		// BMvTbl.SetLP(3,0); // 回復量を記憶（デバッグ用）
+
+		// ちょっと前の上空から落下してくる
+		Battle_Std.AddXPos_CheckFrontStage( 0, 600 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		
+		BMvTbl.AddPP(0,1); // 一度でも畑を出したかどうか
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )	// isFrameUpdateタイミングでの処理（判定ツールのFraが変化し終えた瞬間）
+		{
+		case 10: // 着地
+			// 音声タイミング
+			BSound.SE_Play( { type=_SeType_Player, num=[170,171,172,173] } );
+			break;
+		case 50: // 麦を設置
+			BMvEff.CreateObject( { mvname="Mv_EffMugiObject" } );
+			break;
+		case 200: // ポーズ取り終わり
+			BMvTbl.SetLP(2,1); // エフェクト操作用　0:通常 1:やられ。麦を消す
+			break;
+		}
+		
+		// ホロの特殊判定に触れていたら体力を回復する
+		
+		local mvs = BMvTbl.GetMvStatus();
+
+		if( mvs.CallCount == 0 )
+		{
+			local heeleff_create_cooltime = BMvTbl.GetLP(0);
+			if( heeleff_create_cooltime > 0 ) // 回復エフェクト表示制限中の場合
+			{
+				BMvTbl.AddLP( 0, -1 );	// 回復エフェクトを連続で呼ばない時間を減らす
+			}
+			
+			local hatakelv = BMvTbl.GetPP(0);
+			// メインキャラが触れているかチェック
+			local player = BMvEff.CheckHantei( { src=[ _Hantei_Etc, 9, 1 ], dst=[ _Hantei_Kurai , 0, -1 ], flags=_HC_FavourPc } );
+	
+			if( player.push() )
+			{
+				// _dp("\n 麦パワーに触れました");
+				local bs = BtlMvStd.GetBoundStatus();
+				
+				tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_StatusUp ); // ポテンシャル発揮
+				
+				if( bs.isDone == 0 ) // のけぞり中でない時
+				{
+					// 回復効果処理
+					// ホロの全体フレームによって回復量が変動する　※120F
+					// MEMO:valuetype=2の次にvaluetype=1を書かないと、回復量ズレるので注意
+					// _dp("\n 畑ＬＶ:"+hatakelv );
+					if( hatakelv == 1 ) // 初回
+					{
+						// _dp("\n 初回の畑");
+						BMvEff.SetHpGauge( { value = 5*5, valuetype=2 } ); // 5*120=600
+						BMvEff.SetHpGauge( { value = 2*5, valuetype=1 } ); // 回復量*全体フレーム=回復量
+						BMvEff.SetSpGauge( { value=20*3, correct=1, limitval=25 } ); // SP増加 20*120=2400
+
+						/*
+						// ブラストの回復はチャージ中の時だけにする
+						if( tDDC.Blast_GetUseMode() == -1 ) // -1 未使用orチャージ 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
+						{
+							tDDC.Blast_AddPoint( 100*3 ); // 100*120=12%
+						}
+						*/
+					}
+					else
+					{
+						// _dp("\n ２回目以降の畑");
+						
+						BMvEff.SetHpGauge( { value = 5, valuetype=2 } ); // 5*120=600
+						BMvEff.SetHpGauge( { value = 2, valuetype=1 } ); // 回復量*全体フレーム=回復量
+						BMvEff.SetSpGauge( { value=20, correct=1, limitval=25 } ); // SP増加 20*120=2400
+
+						/*
+						// ブラストの回復はチャージ中の時だけにする
+						if( tDDC.Blast_GetUseMode() == -1 ) // -1 未使用orチャージ 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
+						{
+							tDDC.Blast_AddPoint( 100 ); // 100*120=12%
+						}
+						*/
+					}
+				}
+				
+				player.pop();	
+				
+				// BMvTbl.AddLP(3,10); // 回復量加算
+				
+				if( heeleff_create_cooltime <= 0 ) // クールタイムが終わっている
+				{
+					// _dp("\n 麦パワーエフェクトを表示します");
+					BMvEff.CreateObject( { mvname="Mv_Obj_Eff_heeling" } );
+					BMvTbl.SetLP( 0, 25 );	// 回復エフェクトを再度呼べないフレームをセット
+				}
+
+			}
+		}
+
+	}
+	function LastUpdate_After()
+	{
+		// _dp("\n 回復量:"+BMvTbl.GetLP(3) );
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+		BMvTbl.SetLP(2,1); // エフェクト操作用　0:通常 1:やられ。麦を消す
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+		BMvTbl.SetLP(2,1); // エフェクト操作用　0:通常 1:やられ。麦を消す
+	}
+}
+
+
+
+HOL_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Hol_s );
+
+_dp(" -> Load OK");

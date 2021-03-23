@@ -1,0 +1,933 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+const CDef_Iry_s_PP_EatCount = 0; // 食べ終わった数　３食を食べ終わるとリセット
+const CDef_Iry_s_PP_LastEatNum = 5; // 何個目を食べていたか　0～2
+const CDef_Iry_s_PP_EatingType = 3; // 最後に食べた食べ物の種類 -1:まだ食べてないor食べ終わった
+const CDef_Iry_s_PP_CharaIsView = 4; // サポートMvが出てると1
+const CDef_Iry_s_PP_AllEatFinish = 6; // フィニッシュのパターン中は1
+
+const CDef_Iry_s_FoodChallengeMax = 3;
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+/*
+// デバッグ用変数チェック
+t.Mv_Neutral <-
+{
+	function Update_After()
+	{
+		_dp1p("\n"+
+		" 食終数:"+BMvTbl.GetPP(CDef_Iry_s_PP_EatCount)+
+		" 何個目:"+BMvTbl.GetPP(CDef_Iry_s_PP_LastEatNum)+
+		" 最後は:"+BMvTbl.GetPP(CDef_Iry_s_PP_EatingType)+
+		" 描画:"+BMvTbl.GetPP(CDef_Iry_s_PP_CharaIsView)+
+		" 完食:"+BMvTbl.GetPP(CDef_Iry_s_PP_AllEatFinish)
+		);
+	}
+}
+*/
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00_Fin = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Fin" } ); // パターン文字列のパターン番号を事前取得
+
+local checkEnableAtk = function()
+{
+	local ret =
+	{
+		isdone = 0, // 殴ったかどうか
+		muki = 0, // 攻撃の向き
+		type = 2, // 攻撃の種類
+	}
+	
+	local lefthitcount = BMvTbl.CalcHitValue(0);
+	local naguri_throw = Battle_Std.MvAction.CheckFlag( def_MC_ThrowRect );
+	local muki = BMvTbl.GetMuki();
+	
+	local isAtk = Battle_Std.MoveCode.CheckFlag( def_MC_Atk );
+	local isImpact = Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_AtkImpact ); // インパクトスキル
+	local isLow = Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_AtkLow ); // 弱攻撃レベル
+	
+	if( lefthitcount <= 0 )
+	{
+		return ret; // 残りヒット数が0の矩形は無視
+	}
+	if( naguri_throw )
+	{
+		return ret;// 投げ属性の矩形は無視
+	}
+	if( !isAtk && !isImpact )
+	{
+		return ret; // 通常技にしか反応しない
+	}
+	
+	// 返す値を作成
+	ret.isdone = 1;
+	ret.muki = muki;
+	if( isLow )
+	{
+		ret.type = 0;
+	}
+	return ret;
+}
+
+local checkMakizoe = function() : (checkEnableAtk)
+{
+	local ret =
+	{
+		isdone = 0, // 殴ったかどうか
+		muki = 0, // 攻撃の向き
+		type = 2, // 攻撃の種類
+	}
+	
+	local naguriPc = BMvEff.CheckHantei( { src=[ _Hantei_Etc, 4, 1 ], dst=[ _Hantei_Attack , 0, -1 ], flags=_HC_FavourPc } );
+	if( naguriPc.push() )
+	{
+		local atkPc = checkEnableAtk();
+		
+		naguriPc.pop();
+		
+		if( atkPc.isdone ) return atkPc;
+	}
+
+	local naguriObj = BMvEff.CheckHantei( { src=[ _Hantei_Etc, 4, 1 ], dst=[ _Hantei_Attack , 0, -1 ], flags=_HC_FavourObj } );
+	if( naguriObj.push() )
+	{
+		local lefthitcount = BMvTbl.CalcHitValue(0);
+		local naguri_throw = Battle_Std.MvAction.CheckFlag( def_MC_ThrowRect );
+		local muki = BMvTbl.GetMuki();
+		
+		local player = BMvCore.GetPlayerCharaData(); // 殴り判定の親を取りに行く
+		local oya_NoChangeMv = ( BMvTbl.CheckMvUniqueID( { datatype=_DataType_Player } )==1 );
+		
+		// _dp("\n oya_NoChangeMv:"+oya_NoChangeMv );
+		
+		naguriObj.pop();
+		
+		if( lefthitcount <= 0 )
+		{
+			return ret; // 残りヒット数が0の矩形は無視
+		}
+		if( naguri_throw )
+		{
+			return ret;// 投げ属性の矩形は無視
+		}		
+		
+		// 通常技から呼ばれたオブジェクトの攻撃ならOKとする
+		// oya_NoChangeMvで呼ばれた時からMvが変化していないのを確認している
+		// なので、通常技内でMvが変化するような技があると検知できなかったりする
+		if( !oya_NoChangeMv )
+		{
+			return ret;
+		}
+		
+		local isAtk = 0;
+		local isImpact = 0;
+		local isLow = 0;
+		
+		if( player.push() )
+		{
+			isAtk = Battle_Std.MoveCode.CheckFlag( def_MC_Atk );
+			isImpact = Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_AtkImpact ); // インパクトスキル
+
+			isLow = Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_AtkLow ); // 弱攻撃レベル
+			
+			player.pop();
+		}
+
+		if( !isAtk && !isImpact)
+		{
+			return ret; // 通常技にしか反応しない
+		}
+		// 成功！
+		// 返す値を作成
+		ret.isdone = 1;
+		ret.muki = muki;
+		if( isLow )
+		{
+			ret.type = 0;
+		}
+		return ret;
+	}
+	return ret;
+}
+
+
+
+
+// これがそのまま食べる数になるよ
+local foodOrderParam = [
+{ type=0, id=5, grpMask=(1<<1)|(1<<2), voice={ type=_SeType_Player, num=[170,174] } }, // ラーメン
+{ type=1, id=6, grpMask=(1<<0)|(1<<2), voice={ type=_SeType_Player, num=[183] } }, // ギョーザ
+{ type=2, id=7, grpMask=(1<<0)|(1<<1), voice={ type=_SeType_Player, num=[182] } }, // 中華丼
+]
+
+// 今食べているフードの種類を見て、崩れる皿を出す
+// いきなり空になってしまうのはしゃーなしだな
+local createEscFood = function() : (foodOrderParam)
+{
+	local foodType = BMvTbl.GetPP( CDef_Iry_s_PP_EatingType );
+	// _dp("\n foodType:"+foodType );
+	if( foodType != -1 ) // 何も食べてないと-1
+	{
+		local eff = BMvEff.CreateObject( { start_pat="FoodEsc", x=28*128, y=-167*128 } );
+		if( eff.push() )
+		{
+			BMvTbl.SetHan6LayerMask( {  val = foodOrderParam[ foodType%foodOrderParam.len() ].grpMask } );
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange } );
+			
+			eff.pop();
+		}
+	}
+}
+
+
+t.Mv_Startup <-
+{
+	function Init_After()
+	{
+		// アイコン表示用の監視オブジェクト
+		BMvEff.CreateObject( { mvname="Mv_FoodIcon" } );
+	}
+}
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00, pat_num_Sup00_Fin, foodOrderParam)
+	{
+		// 何個食べているかでパターンを変更する
+		// BMvTbl.GetPP(CDef_Iry_s_PP_EatCount)
+		// 0:ラーメンを食べる
+		// 1:ラーメン食べてる、次は餃子
+		// 2:餃子まで食べてる、次は中華丼
+		// 3:完食してる、次は大勝利
+		
+		BMvTbl.SetPP(CDef_Iry_s_PP_EatingType,-1); // 今食べてるフードのタイプ（食べてないと-1）
+
+		// 完食したら即パターンが変更されて無敵になるので、ここを通過することは基本的にない
+		if( BMvTbl.GetPP(CDef_Iry_s_PP_EatCount) >= CDef_Iry_s_FoodChallengeMax ) // 完食してるならいきなりフィニッシュへ進む
+		{
+			BMvTbl.SetPP(CDef_Iry_s_PP_EatCount,CDef_Iry_s_FoodChallengeMax);
+			BMvTbl.SetPP(CDef_Iry_s_PP_EatingType,CDef_Iry_s_FoodChallengeMax-1); // 今食べてるフードのタイプ（食べてないと-1）
+
+			BMvTbl.SetPattern( pat_num_Sup00_Fin ); // 表示するパターンを設定
+			BMvTbl.SetPP( CDef_Iry_s_PP_AllEatFinish, 1 );
+
+			
+			local foodParam = foodOrderParam[ foodOrderParam.len()-1 ];
+			local eff = BMvEff.CreateObject( { mvname="Mv_Food", start_pat="Food", id=foodParam.id, x=28*128, y=-167*128 } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange } );
+				BMvTbl.SetHan6LayerMask( {  val = foodParam.grpMask } );
+				
+				BMvTbl.JumpFrameID(160); // 完食してるので終わっている絵に進む ※本当はフェードから入りたいが…
+				eff.pop();
+			}
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+			BMvTbl.SetPP( CDef_Iry_s_PP_AllEatFinish, 0 );
+		}
+		// 表示座標指定
+		Battle_Std.AddXPos_CheckFrontStage( 300, 100 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		// Battle_Std.AddXPos_NearEnemy( 200, 200 ); // 移動距離, これ以上相手と近くならない
+		
+		BMvTbl.SetLP(5,0); // 食べ終わると1になる 子から受け取る。これが1になると殴って弾が飛ばせる。
+		
+		BMvTbl.SetPP(CDef_Iry_s_PP_CharaIsView, 1); // イリヤが画面にいると1(正確にはこのMvが生存してると1)
+
+		BMvTbl.SetLP(7,0); // 弾を飛ばしたかどうか
+		
+		// CDef_Iry_s_PP_LastEatNum は３まで進んだらダメ
+		local eatCount = BMvTbl.GetPP(CDef_Iry_s_PP_EatCount);
+		if( eatCount >= CDef_Iry_s_FoodChallengeMax ) eatCount = CDef_Iry_s_FoodChallengeMax-1;
+		BMvTbl.SetPP( CDef_Iry_s_PP_LastEatNum, eatCount ); // 初期値を記憶
+	}
+	function FrameUpdate_After() : (checkMakizoe, foodOrderParam, pat_num_Sup00_Fin)
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		
+		if( BMvTbl.GetPP(CDef_Iry_s_PP_AllEatFinish) == 0 && BMvTbl.GetPP(CDef_Iry_s_PP_EatCount) >= CDef_Iry_s_FoodChallengeMax )
+		{
+			BMvTbl.SetPattern( pat_num_Sup00_Fin ); // 表示するパターンを設定
+			BMvTbl.JumpFrameID( 500 ); // 途中から分岐ならフェードを飛ばす
+			BMvTbl.SetPP( CDef_Iry_s_PP_AllEatFinish, 1 );
+			
+			local foodParam = foodOrderParam[ foodOrderParam.len()-1 ];
+			local eff = BMvEff.CreateObject( { mvname="Mv_Food", start_pat="Food", id=foodParam.id, x=28*128, y=-167*128 } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange } );
+				BMvTbl.SetHan6LayerMask( {  val = foodParam.grpMask } );
+				
+				BMvTbl.JumpFrameID(160); // 完食してるので終わっている絵に進む
+				eff.pop();
+			}
+		}
+		
+		switch( Battle_Std.GetUpdateFrameID( mvs ) )
+		{
+		case 100: // フード生成
+			local foodParam = foodOrderParam[ BMvTbl.GetPP(CDef_Iry_s_PP_EatCount) % foodOrderParam.len() ];
+			local eff = BMvEff.CreateObject( { mvname="Mv_Food", start_pat="Food", id=foodParam.id, x=28*128, y=-167*128 } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange } );
+				BMvTbl.SetHan6LayerMask( {  val = foodParam.grpMask } );
+				eff.pop();
+			}
+			break;
+		case 150: // フード食べはじめる
+			local foodParam = foodOrderParam[ BMvTbl.GetPP(CDef_Iry_s_PP_EatCount) % foodOrderParam.len() ];
+			
+			local findobj = BMvCore.CFindObject(); // クラス生成
+			local food = findobj.Get(foodParam.id); // ID10を検索
+			if( food.push() ) // 有効かどうか
+			{
+				// _dp("\n たべる:"+foodParam.id);
+				BMvTbl.JumpFrameID( 150 );
+				
+				food.pop();
+
+				if( foodParam.voice )
+				{
+					BSound.SE_Play( foodParam.voice ); // ズルズル
+				}
+			}
+			break;
+		case 600:
+			// やったぜ
+			BMvTbl.SetPP(CDef_Iry_s_PP_EatCount,0); // リセット
+			BSound.SE_Play( { type=_SeType_Player, num=[200] } );
+			local center_pos = BMvEff.GetCameraPosition( { x=0, y=0, flags=_GetPos_ViewCamera | _GetPos_Offset | _GetPos_NoMuki } );
+			local eff = BMvEff.CreateObject( { start_pat="kusu", x=center_pos.x, y=-550*128, flags=0 } );
+			if( eff.push() )
+			{
+				local muki = BMvTbl.GetMuki();
+				local layermask = ( muki == 1 )? (1<<1)|(1<<2) : (1<<0)|(1<<2) ;
+				BMvTbl.SetHan6LayerMask( {  val = layermask } );
+				
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange } );
+				eff.pop();
+			}
+			break;
+		case 700:
+			
+			local center_pos = BMvEff.GetCameraPosition( { x=0, y=0, flags=_GetPos_ViewCamera | _GetPos_Offset | _GetPos_NoMuki } );
+			local eff = BMvEff.CreateObject( { mvname="Mv_Crack", start_pat="crack", x=center_pos.x, y=25*128, flags=0 } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_NoGround } );
+
+				eff.pop();
+			}
+			
+			// 
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				// tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_StatusUp ); // ポテンシャル発揮
+				tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_StatusUpPlus ); // ポテンシャル発揮
+				
+				main.pop();
+			}
+			break;
+		case 900: // 完食してフェードで抜けるところ
+		case 950: // １杯食べてフェードで抜けるところ
+			local foodParam = foodOrderParam[BMvTbl.GetPP(CDef_Iry_s_PP_LastEatNum)];
+			local findobj = BMvCore.CFindObject(); // クラス生成
+			local food = findobj.Get(foodParam.id); // ID10を検索
+			if( food.push() ) // 有効かどうか
+			{
+				_dp("\n フェードアウト:"+foodParam.id );
+				BMvTbl.JumpFrameID( 900 );
+				
+				food.pop();
+			}
+			break;
+		case 960:
+			// 食事後にフードを殴られるとここに
+			// 少しすると950に戻って終わる
+			break;
+		}
+		
+		// このフレーム中はフードの殴られに反応する
+		if( mvs.Param3 & 8 && BMvTbl.GetLP(7)==0 ) // まだ飛ばしてない
+		{
+			local lastMakizoeMuki = checkMakizoe();
+			// _dp("\n lastMakizoeMuki:"+lastMakizoeMuki.isdone );
+			if( lastMakizoeMuki.isdone ) // 殴って飛ばしてた
+			{
+				if( BMvTbl.GetLP(5)==1 ) // 食べ終わると1になる 子から受け取る。これが1になると殴って弾が飛ばせる
+				{
+					BMvTbl.SetLP(7,1); // 飛ばしたかどうか
+					BMvTbl.SetPP(CDef_Iry_s_PP_EatingType,-1); // もう食べてないことにする
+					
+					BMvTbl.JumpFrameID( 960 ); // mvs.Param3 & 8ではない抜け先にさっさといく。960の後は950に戻る
+					
+					local muki = BMvTbl.GetMuki();
+					// _dp("\n lastMakizoeMuki:"+lastMakizoeMuki );
+					
+					local foodParam = foodOrderParam[BMvTbl.GetPP(CDef_Iry_s_PP_LastEatNum)];
+
+					local findobj = BMvCore.CFindObject(); // クラス生成
+					local food = findobj.Get(foodParam.id); // ID10を検索
+					if( food.push() ) // 有効かどうか
+					{
+						// _dp("\n 飛ぶので消す(450):"+foodParam.id );
+						BMvTbl.JumpFrameID( 200 );
+						BMvTbl.SetFinalize( 0 );
+						
+						food.pop();
+					}
+					local usepat = "FoodAtk0";
+					switch( lastMakizoeMuki.type )
+					{
+					case 2:
+						usepat = "FoodAtk2";
+						break;
+					}
+					// lastMakizoeMuki.type
+					local eff = BMvEff.CreateObject( { mvname="Mv_FoodAtk", start_pat=usepat, x=28*128, y=-167*128 } );
+					if( eff.push() )
+					{
+						BMvTbl.SetLP(0,foodParam.type); // フードの種類を記憶
+						BMvTbl.SetLP(1,lastMakizoeMuki.type); // 飛び方を記憶
+						BMvTbl.SetHan6LayerMask( {  val = foodParam.grpMask } );
+						
+						// _dp("\n lastMakizoeMuki:"+lastMakizoeMuki );
+						if( muki != lastMakizoeMuki.muki )
+						{
+							BMvTbl.SetMuki( _Direction_Reverse );
+						}
+						local player = BMvCore.GetPlayerCharaData();
+						if( player.push() )
+						{
+							BMvTbl.SetMuki( _Direction_Auto );
+							player.pop();
+						}
+						eff.pop();
+					}
+				}
+				// 食べ終わる前に殴ろうとしたらここ
+			}
+		}
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.SetPP( CDef_Iry_s_PP_CharaIsView, 0 );
+		BMvTbl.SetPP( CDef_Iry_s_PP_AllEatFinish, 0 );
+	}
+}
+
+local iconParam =
+[
+	{
+		normal = { Param0=1, JumpID = 100 },
+		finish = { Param0=11, JumpID = 1100 },
+		noView = { Param0=21, JumpID = 2100 },
+	},
+	{
+		normal = { Param0=2, JumpID = 200 },
+		finish = { Param0=12, JumpID = 1200 },
+		noView = { Param0=22, JumpID = 2200 },
+	},
+	{
+		normal = { Param0=3, JumpID = 300 },
+		finish = { Param0=13, JumpID = 1300 },
+		noView = { Param0=23, JumpID = 2300 },
+	},
+	{
+		normal = { Param0=4, JumpID = 900 },
+		finish = { Param0=14, JumpID = 1900 },
+		noView = { Param0=24, JumpID = 2900 },
+	},
+]
+
+t.Mv_FoodIcon <- 
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "FoodIcon" );
+		
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround|_ObjFlags_NoCamera|_ObjFlags_NoRenderOrder|_ObjFlags_EraseParentPatChange } );
+		
+		// 座標は決めうち
+		local pl = BMvTbl.GetPlayerSide(); //1P:0 2P:1
+		local posst = { x=580<<7, y=-345<<7, margin=40<<7 } ;
+		local pos = { x=0, y=posst.y };
+		if( pl==0 )
+		{
+			pos.x = -posst.x;
+			BMvTbl.SetMuki( _Direction_Right ); //常に右向き
+		}
+		else
+		{
+			pos.x = posst.x;
+			BMvTbl.SetMuki( _Direction_Left ); //常に右向き
+		}
+		BMvTbl.SetPosition( { x=pos.x, y=pos.y } ); // 座標指定
+	}
+	function Update() : (iconParam)
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.MvCount % 2 == 0 )
+		{
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				local allClear = BMvTbl.GetPP( CDef_Iry_s_PP_AllEatFinish );
+				local eatEndCnt = BMvTbl.GetPP(CDef_Iry_s_PP_EatCount); // 食べ終わった数
+				local eatNum = BMvTbl.GetPP(CDef_Iry_s_PP_LastEatNum); // 何個目を食べていたか
+				local eatFin = (eatEndCnt > 0 && eatNum < eatEndCnt); // １つ以上食べ終わっていてかつ…
+
+				oya.pop();
+				
+				local useParam = iconParam[ eatNum ].normal;
+				
+				if( allClear )
+				{
+					useParam = iconParam[ iconParam.len()-1 ].normal;
+				}
+				else if( eatFin )
+				{
+					useParam = iconParam[ eatNum ].finish;
+				}
+				else if( !BMvTbl.GetPP(CDef_Iry_s_PP_CharaIsView) )
+				{
+					if( eatEndCnt == 0 )
+					{
+						useParam = iconParam[ 0 ].noView;
+					}
+					else
+					{
+						useParam = iconParam[ eatNum ].noView;
+					}
+				}
+				
+				if( mvs.Param0!= useParam.Param0 )
+				{
+					BMvTbl.JumpFrameID( useParam.JumpID );
+				}
+				
+				// _dp1p("\n allClear:"+allClear+" eatEndCnt:"+eatEndCnt+" eatNum:"+eatNum+" eatFin:"+eatFin+" useParam:"+useParam.Param0+", "+useParam.JumpID );
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+// 爆発の見た目を呼ぶ親
+t.Mv_Crack <-
+{
+	function Init()
+	{
+		Battle_Std.BackScreenBlack_Start( 300 ); // 背景を指定レーム黒くする(軽量化のため)
+	}
+	function HitInterrupt()
+	{
+		// ヒットorガードで揺れとか入れる
+		if( Battle_Std.CheckHitTiming() )
+		{
+			BMvEff.Slowmotion_Set( { type=0, time=30, power=5000 } );
+			BMvEff.SetCamera_Quake( { type=2, time=20 } );
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		Battle_Std.BackScreenBlack_End( 0 );
+	}
+}
+
+t.Mv_Food <-
+{
+	function Init()
+	{
+		BMvEff.CreateObject( { mvname="Mv_FoodYuge" } );
+		BMvTbl.SetPP(CDef_Iry_s_PP_EatingType,-1); // 今食べてるフードのタイプ（食べてないと-1）
+	}
+	function FrameUpdate()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50:
+			// BMvTbl.SetPP( CDef_Iry_s_PP_EatingType, BMvTbl.GetLP(0) );
+			BMvTbl.SetPP( CDef_Iry_s_PP_EatingType, BMvTbl.GetPP(CDef_Iry_s_PP_LastEatNum) ); // 今食べてるフードのタイプを記憶
+			break;
+		case 160:
+			// たべおわって空の皿になるとここ
+			BMvTbl.SetPP( CDef_Iry_s_PP_EatingType, BMvTbl.GetPP(CDef_Iry_s_PP_LastEatNum) ); // 今食べてるフードのタイプを記憶
+			// _dp("\n 食べ終わった");
+			if( BMvTbl.GetPP(CDef_Iry_s_PP_EatCount) < CDef_Iry_s_FoodChallengeMax ) BMvTbl.AddPP(CDef_Iry_s_PP_EatCount,1); // 食べ終わったのを加算
+
+			if( BMvTbl.GetPP(CDef_Iry_s_PP_EatCount) == 2 ) // 2回たべた
+			{
+				local main = BMvCore.GetMainCharaData();
+				if( main.push() )
+				{
+					tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_StatusUp ); // ポテンシャル発揮
+					
+					main.pop();
+				}
+			}
+			
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				// _dp("\n ここ:"+BMvTbl.GetMvName() );
+				if( BMvTbl.GetMvName()=="Mv_SupportChara" )
+				{
+					// _dp("\n ok");
+					BMvTbl.SetLP(5,1); // 食べ終わったのを伝える
+				}
+				oya.pop();
+			}
+			// 白く光らせて完食をアピール
+			BMvEff.SetCharaFlash( { color = 0xFFFFFF, type = 3, time = 16, intime=8 } ); // 暫く真っ白
+			break;
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+	}
+}
+
+// 親のフードのParam3 & 4 の間生存する
+// 親が消えたら消滅する
+t.Mv_FoodYuge <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "yuge" );
+		BMvTbl.SetLP(0,0);
+		
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange } );
+		BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseParentNull|_ObjProcFlags_EraseChangeParentMv } );
+	}
+	function FrameUpdate()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		local pat_st = BMvTbl.GetLP(0);
+		if( pat_st==0 )
+		{
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				local oya_mvs = BMvTbl.GetMvStatus();
+				
+				oya.pop();
+				
+				if( !(oya_mvs.Param3 & 4) )
+				{
+					BMvTbl.SetLP(0,1);
+
+				}
+				else
+				{
+					// 座標移動は_ObjFlags_ParentMoveだと対応していない
+					BMvTbl.SetPosition( { x=0, y=0 } );
+				}
+			}
+		}
+		else if( pat_st== 1 )
+		{
+			if( mvs.isFrameUpdate )
+			{
+				BMvTbl.SetLP(0,2);
+				BMvTbl.JumpFrameID( 900 );
+				// _dp("\n ばい");
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}	
+}
+
+t.Mv_FoodAtk <-
+{
+	function Init()
+	{
+		// BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange } );
+
+		// LP0:フードの種類
+		// LP1:飛び方 0:弱い 1:鋭く横 2:スンガン
+		BMvTbl.SetLP(3,0); // 割れに進んだかどうか
+		
+		// 相手に向かってふんわりで飛ぶ
+		// 相手の距離
+		local atkType = BMvTbl.GetLP(1);
+		_dp("\n 種類:"+atkType );
+		switch( atkType )
+		{
+		case 1: // 通常タイプ
+			BMvTbl.SetVector( { x=5000, y=-1500, addy=150, flags=_Vector_Normal } );
+			break;
+		case 2: // スンガンタイプ
+			BMvTbl.SetVector( { x=0, y=-5000, addy=50, flags=_Vector_Normal } );
+			break;
+		default:
+			local yVec = -4500;
+			local frame = 45;
+			local yAdd = -yVec/frame*2;
+			local enemyDis = Battle_Std.GetEnemyDistance();
+			local xVec = enemyDis / frame;
+			local xVecMax = 4500;
+			local xVecMin = 100;
+			// _dp("\n xVec:"+xVec);
+			if( xVec > xVecMax ) xVec = xVecMax;
+			if( xVec < xVecMin ) xVec = xVecMin;
+			
+			BMvTbl.SetVector( { x=xVec, y=yVec, addy=yAdd, flags=_Vector_Normal } );
+			break;
+		}
+		
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=255, flag=_ClearFlag_ChangeMv } ); // 弾無敵にスカる		
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+	}
+	function Update()
+	{
+		local atkType = BMvTbl.GetLP(1);
+		if( atkType == 2 ) // スンガンタイプ
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			if( mvs.MvCount == 70 )
+			{
+				BMvTbl.JumpFrameID( 250 );
+
+				local epos = Battle_Std.GetEnemyPosition();
+				BMvTbl.SetPosition( { x=epos.x, y=-1000*128 } );
+				BMvTbl.SetVector( { x=0, y=3000, addy=150, flags=_Vector_Normal } );
+				
+				// ここまできたらデータ上のParam3&4になって保証がつく
+			}
+		}
+	}
+	function FrameUpdate()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		switch( Battle_Std.GetUpdateFrameID( mvs ) )
+		{
+		case 300:
+			local vec = BMvTbl.GetVector( { flags=_Vector_Normal } );
+			local xVec = vec.x;
+			xVec = xVec / 10;
+			if( xVec > 1000 ) xVec = 1000;
+			if( xVec < 0 ) xVec = 0;
+			BMvTbl.SetVector( { x=xVec, flags=_Vector_Normal } );
+			// _dp("\n ベクトル減速:"+vec.x+" -> "+xVec );
+			BMvTbl.SetLP(3,1); // 割れに進んだかどうか
+			break;
+		}
+		
+		if( !(mvs.Param3 & 4) && BMvTbl.GetLP(3)==0 ) // Param3 & 4 の時はやられで消えない まだ割れてない
+		{
+			if( Battle_Std.CheckMainisDamage() )
+			{
+				BMvTbl.JumpFrameID( 300 );
+				BMvTbl.SetLP(3,1); // 割れに進んだかどうか
+				// _dp("\n 親のやられを検知");
+			}
+		}
+		
+		Battle_Std.CheckSousai(); // def_MC_Sousai と触れたら相殺し合う
+		if( Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Sousai_MySubSuccess ) && BMvTbl.GetLP(3)==0 )
+		{
+			BMvTbl.JumpFrameID( 300 );
+			BMvTbl.SetLP(3,1); // 割れに進んだかどうか
+			// BMvTbl.SetFinalize(0); // 相殺したら消える
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc, createEscFood)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+		
+		createEscFood(); // 食べている最中の皿を出す処理
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc, createEscFood)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+		
+		createEscFood(); // 食べている最中の皿を出す処理
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <-
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 );
+		
+		BMvEff.CreateObject( { mvname="Mv_Danger" } );
+		
+		BMvTbl.SetLP(0,0); // 消え始めたかどうか
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50:
+			Battle_Std.SetXPos_FrontCorner( 0 ); // 前方の端から出現
+			break;
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[210,211,212,213] } );
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				BMvTbl.SetMuki( _Direction_Reverse );
+				oya.pop();
+			}
+			break;
+		}
+		
+		// 画面外まで進んだらちょっとまってからファイナライズ（ラウンド終了時のみ見た目の端でチェック）
+		if( BMvTbl.GetLP(0)==0 && Battle_Std.CheckFromtCornerDistance_with_RoundEnd( -150 ) )
+		{
+			BMvTbl.SetLP(0,1); // 消え始めたかどうか
+			BMvTbl.JumpFrameID( 900 );
+		}
+	}
+}
+
+t.Mv_Danger <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( "danger" );
+		
+		BMvTbl.SetPosition( { x=525*128*BMvTbl.GetMuki(), y=-250*128 } ); // 固定
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_NoCamera } );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+	}
+}
+
+
+
+IRY_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Iry_s );
+
+_dp(" -> Load OK");

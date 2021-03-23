@@ -1,0 +1,24 @@
+//SEPrio定数っぽいもの
+//localだとスコープこのファイルだけ？
+
+Def_SEP_Furimuki		<- -1; //何か再生中なら再生しない 再生中は-1は再生しない
+
+Def_SEP_GuardLv1		<- 5;
+Def_SEP_GuardLv2		<- 10;
+Def_SEP_GuardLv3		<- 20;
+
+Def_SEP_NiceGuard		<- 30;
+Def_SEP_GuardMiss		<- 40;
+
+Def_SEP_Recover			<- -30000; //何が再生中でも止める
+
+Def_SEP_Shield			<- 50;	//シールド発動
+Def_SEP_ShieldSuccess	<- 200;	//シールド成功
+
+Def_SEP_DamageLv1		<- 110;
+Def_SEP_DamageLv2		<- 120;
+Def_SEP_DamageLv3		<- 130;
+Def_SEP_KO				<- 999;
+Def_SEP_ThrowTech		<- 300;
+
+Def_SEP_ChainShift		<- 100;

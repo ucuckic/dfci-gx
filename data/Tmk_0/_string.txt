@@ -1,0 +1,21 @@
+[data]
+// vsKrn00
+100 = W-What!? I-I'm the oldest sister though!
+
+// vsHiw00
+110 = Umm, just use your left hand to kinda guide it...?
+
+// vsStm00
+120 = But, I-I just play a little basketball...
+
+500 = P-Pleased to meet you!
+501 = I'll try my best!
+502 = Let's have a good match!
+510 = Great job!
+511 = Well done, team!
+512 = We won...
+513 = We did it. We won!
+520 = Thank you very much!
+521 = We did great!
+530 = No way...
+531 = You're quite good...

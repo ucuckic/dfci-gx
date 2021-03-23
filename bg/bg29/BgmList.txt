@@ -1,0 +1,5 @@
+bgm_array <- [];
+
+bgm_array.append( { num=29 } ); //training bgm
+bgm_array.append( { num=71 } ); //FIGHTING CLIMAX
+bgm_array.append( { chance=20, num=61 } ); //dotabata conv song

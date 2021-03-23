@@ -1,0 +1,580 @@
+print( "\n>>> [btl_CmdCheck]" );
+
+local check_DoujiButton = function( button_mask )
+{
+	local last_button = BMvTbl.GetPP(def_PP_CmdButtonStatus);
+	
+	//_dp("\n L:"+last_button+" N:"+button_mask );
+	
+	if( (button_mask - last_button) != (last_button^button_mask) ) return 0; // A+B のあと A+B+Cはいいけど A+Bのあと B+Cはダメ(全部含まれてるか)
+	
+	if( last_button == button_mask ) return 0; // A+Bの後A+Bの技を出そうとしたりしたらだめ
+	if( (last_button&button_mask) == 0 ) return 0; // Aの後Aを含まない（B+Cとか）の技を出そうとしたりしたらダメ
+	
+	return 1;
+}
+
+//コマンドチェックかませ関数
+function Battle_Std::CmdCheck( t ) : (check_DoujiButton)
+{
+	// print(".");
+
+	// ※この処理通過時のみに変更
+	
+	//行動可能状態から通常技を出すと発生します
+	//同時押しチェック生成フラグがあっても発生します
+	//同時押しのズラし押しに対応するためのMvを出すかどうかのフラグ
+	local DoujiCheck_none = 0;// キャンセル不可技用
+	local DoujiCheck_special = 0;// 必殺技
+	local DoujiCheck_exspecial = 0;// ＥＸ技以上
+
+	local flag_gen_DoujiCheck = 0;
+	local flag_keep_DoujiCheck = 0;
+	local flag_useComboGauge = 0;// ゲージ消費予約フラグ 0:ゲージ消費ない技 1:nゲージ消費技　2:VO中のみとか
+	local flag_useReverseBeat = 0;// リバースビートで通過した技　t.ComboLimitが入る
+	
+	if( "flags" in t )
+	{
+		flag_gen_DoujiCheck = ((t.flags&Def_CmdCh_GenDoujiCheck)!=0 );
+		flag_keep_DoujiCheck = ((t.flags&Def_CmdCh_KeepDoujiCheck)!=0 );
+	}
+	local check_CancelNone = BCMDTbl.CheckCancel( _SkillType_None ); // よく使うので記憶
+	
+	//やられorガード中はもうここでさよならしてしまう（重たいところだし？）
+	//昔は"SkillType"指定が無いものなら一応通れてしまっていたようだ
+	local bound_status = BtlMvStd.GetBoundStatus();
+	local CmdTbl_SkillType = ("SkillType" in t)? t.SkillType : "Special"; // 無指定だと必殺技レベル
+	if( bound_status.isDone ) // やられorガード
+	{
+		if( CmdTbl_SkillType != "GuardCancel" && CmdTbl_SkillType != "BoundCancel" )
+		{
+			return 0; // GuardCancel指定じゃなかったら失敗
+		}
+		if( bound_status.isCapture ) return 0; // 投げられ中は絶対に失敗(投げバグ防止)
+	}
+
+	if ( "Cost" in t )	// ゲージ関係の発動条件
+	{
+		if ( "ComboGauge" in t.Cost ) //ゲージ制限指定あり
+		{
+			if( t.Cost.ComboGauge == "OverLiberate")
+			{
+				if( ( BMvEff.Liberate_Get() != _SpGaugeMode_Liberate ) && ( BCMDTbl.GetComboGauge() < 20000 ) ) return 0;
+				flag_useComboGauge = 2; // コンボゲージを消費する技（成立後以降のチェックで使う）
+			}
+			else if( t.Cost.ComboGauge == "Liberate")
+			{
+				if( BMvEff.Liberate_Get() != _SpGaugeMode_Liberate ) return 0;		
+				flag_useComboGauge = 2; // コンボゲージを消費する技（成立後以降のチェックで使う）
+			}
+			else
+			{
+				if( BCMDTbl.GetComboGauge() < t.Cost.ComboGauge ) return 0;
+				flag_useComboGauge = 1; // コンボゲージを消費する技（成立後以降のチェックで使う）
+			}
+		}	
+	}
+
+	// 同時押しチェック用に押されているボタンを記憶
+	// check_DoujiButton で使った後　コマンドが成立したらPPに入れて記憶
+	local button_mask = 0;
+	
+	if( "CommandButton" in t )
+	{
+		// そのコマンドで押されるボタンを記憶
+		button_mask = t.CommandButton;
+	}
+	/*
+	// ※旧仕様
+	else
+	{
+		if( BMvTbl.CheckButtonHold( (1<<0) )>0 ) button_mask=button_mask|def_PP_CBS_ButtonA;
+		if( BMvTbl.CheckButtonHold( (1<<1) )>0 ) button_mask=button_mask|def_PP_CBS_ButtonB;
+		if( BMvTbl.CheckButtonHold( (1<<2) )>0 ) button_mask=button_mask|def_PP_CBS_ButtonC;
+		if( BMvTbl.CheckButtonHold( (1<<3) )>0 ) button_mask=button_mask|def_PP_CBS_ButtonD;
+	}
+	*/
+
+	// キャンセルタイプによる制限
+	switch ( CmdTbl_SkillType )
+	{
+	case "Special": // 必殺技
+		if( BCMDTbl.CheckCancel( _SkillType_Special ) == 0 ) return 0;
+		DoujiCheck_special = 1; //同時押しチェックあります
+		DoujiCheck_exspecial = 1; //同時押しチェックあります	
+		if( check_CancelNone )
+		{
+			DoujiCheck_none = 1;
+		}	
+		break;
+	case "AddCommand":	//追加コマンド・無条件
+		break;
+	case "AddCommandDouji": // 使ってないっぽい
+		if( check_CancelNone == 0 && check_DoujiButton( button_mask ) == 0 ) return 0; // 同時押しで強引に出していいボタンのコマンドか
+		break;
+	case "ExSpecial":	//EX
+		if( BCMDTbl.CheckCancel( _SkillType_ExSpecial ) == 0 ) return 0;
+		break;
+	case "ExSpecialDouji":	//EX IWE関係でしか使ってない
+		if( (BMvTbl.GetPP( def_PP_NoneDouji ) == 0) && (BMvTbl.GetPP( def_PP_SpecialDouji ) == 0) && (BMvTbl.GetPP( def_PP_ExSpecialDouji ) == 0) && ( BCMDTbl.CheckCancel( _SkillType_ExSpecial ) == 0 ) ) return 0;
+		if( check_CancelNone == 0 && check_DoujiButton( button_mask ) == 0 && BCMDTbl.CheckCancel( _SkillType_ExSpecial ) == 0 ) return 0; // 同時押しで強引に出していいボタンのコマンドか
+		if( flag_gen_DoujiCheck )
+		{
+			DoujiCheck_special = 1; //同時押しチェックあります
+			DoujiCheck_exspecial = 1; //同時押しチェックあります	
+			if( check_CancelNone != 0 ) // 通常技以下レベル（行動可能のときだけ可）
+			{
+				DoujiCheck_none = 1;
+			}
+		}
+		break;				
+	case "None":	//無し(キャンセルから出せない技) 行動可能時のみ出せる
+		if( check_CancelNone == 0 ) return 0;
+		DoujiCheck_none = 1; //同時押しチェックあります
+		break;
+	case "NoneDouji": //無し・同時押しチェック
+		if( (BMvTbl.GetPP( def_PP_NoneDouji ) == 0) && ( check_CancelNone == 0) ) return 0;
+		if( check_CancelNone == 0 && check_DoujiButton( button_mask ) == 0 ) return 0; // 同時押しで強引に出していいボタンのコマンドか
+		if( flag_gen_DoujiCheck )
+		{
+			DoujiCheck_special = 1; //同時押しチェックあります
+			DoujiCheck_exspecial = 1; //同時押しチェックあります	
+			if( check_CancelNone != 0 ) // 通常技以下レベル（行動可能のときだけ可）
+			{
+				DoujiCheck_none = 1;
+			}
+		}		
+		break;
+	case "SpecialDouji": //必殺技・同時押しチェック
+		//print( format("同時押しチェック:%3d \n",BMvTbl.GetPP( def_PP_SpecialDouji )) );
+		if( (BMvTbl.GetPP( def_PP_NoneDouji ) == 0) && (BMvTbl.GetPP( def_PP_SpecialDouji ) == 0) && ( BCMDTbl.CheckCancel( _SkillType_Special ) == 0 ) ) return 0;
+		if( check_CancelNone == 0 && check_DoujiButton( button_mask ) == 0 && BCMDTbl.CheckCancel( _SkillType_Special ) == 0 ) return 0; // 同時押しで強引に出していいボタンのコマンドか
+		
+		if( flag_gen_DoujiCheck )
+		{
+			DoujiCheck_special = 1; //同時押しチェックあります
+			DoujiCheck_exspecial = 1; //同時押しチェックあります	
+			if( check_CancelNone != 0 ) // 通常技以下レベル（行動可能のときだけ可）
+			{
+				DoujiCheck_none = 1;
+			}
+		}
+		break;				
+	case "NormalAdd": //通常技の追加攻撃
+		if( BCMDTbl.IsAddCommand() == 0 ) return 0;
+		break;
+	case "NormalRapid":	//連打できる通常技
+		if( BCMDTbl.CheckCancel( _SkillType_Special ) != 0 ) 
+		{
+			DoujiCheck_special = 1; //同時押しチェックあります			
+		}
+		if( BCMDTbl.CheckCancel( _SkillType_ExSpecial ) != 0 ) 
+		{
+			DoujiCheck_exspecial = 1; //同時押しチェックあります					
+		}				
+		if( BCMDTbl.CheckCancel( _SkillType_Normal ) == 0 ) return 0; 
+		if( "ComboLimit" in t )
+		{
+			if( t.ComboLimit != 0)
+			{
+				local limit_combo = BCMDTbl.CheckComboLimit( t.ComboLimit );				
+				if( limit_combo == 1 ) return 0; // 制限を受けている
+			}
+			local nowcombolv = BCMDTbl.GetComboLimitLevel();
+			if( t.ComboLimit < nowcombolv )
+			{
+				if( Def_Rule_EnableReverceBeat==2 && nowcombolv == DEF_BS_CL_CROA && t.ComboLimit == DEF_BS_CL_STDA )
+				{
+					// 2A→Aはリバースビートから外す
+				}
+				else
+				{
+					flag_useReverseBeat = t.ComboLimit; // リバースビートから出そうとしてる技
+				}
+			}			
+		}
+		DoujiCheck_none = 1; //同時押しチェックあります				
+		break;
+	case "Normal":	//通常技
+		if( BCMDTbl.CheckCancel( _SkillType_Special ) != 0 ) //必殺技レベルでキャンセル可能状態
+		{
+			DoujiCheck_special = 1; //同時押しチェックあります
+		}
+		if( BCMDTbl.CheckCancel( _SkillType_ExSpecial ) != 0 ) //超必殺技レベルでキャンセル可能状態
+		{
+			DoujiCheck_exspecial = 1; //同時押しチェックあります					
+		}			
+		if( BCMDTbl.CheckCancel( _SkillType_Normal ) == 0 ) return 0; //通常技レベルでキャンセルできない状態
+		if( "ComboLimit" in t )
+		{
+			if( t.ComboLimit != 0)
+			{
+				local limit_combo = BCMDTbl.CheckComboLimit( t.ComboLimit );				
+				if( limit_combo == 255 || limit_combo == 1 ) return 0;
+			}
+			local nowcombolv = BCMDTbl.GetComboLimitLevel();
+			if( t.ComboLimit < nowcombolv )
+			{
+				if( Def_Rule_EnableReverceBeat==2 && nowcombolv == DEF_BS_CL_CROA && t.ComboLimit == DEF_BS_CL_STDA )
+				{
+					// 2A→Aはリバースビートから外す
+				}
+				else
+				{
+					flag_useReverseBeat = t.ComboLimit; // リバースビートから出そうとしてる技
+				}
+			}			
+		}
+		DoujiCheck_none = 1; //同時押しチェックあります
+		break;
+	case "SpecialJump": //必殺技（上要素あり）
+		//必殺技は同技ではキャンセルできないように？
+		//ジャンプ移行フレームのみ受け付ける
+		if( BCMDTbl.CheckMoveName( ["Mv_JumpWait_F","Mv_JumpWait_N","Mv_JumpWait_B","Mv_HighJumpWait_F"] ) )
+		{
+		}
+		else
+		{
+			if( BCMDTbl.CheckCancel( _SkillType_Special ) == 0 ) return 0;
+		}
+		DoujiCheck_special = 1; //同時押しチェックあります
+		DoujiCheck_exspecial = 1; //同時押しチェックあります	
+		if( check_CancelNone != 0 ) // 通常技以下レベル（行動可能のときだけ可）
+		{
+			DoujiCheck_none = 1;
+		}	
+		break;
+	case "ExSpecialJump":	//EX
+		// ↓の方でこれと同じ処理あります
+		if( BCMDTbl.CheckMoveName( ["Mv_JumpWait_F","Mv_JumpWait_N","Mv_JumpWait_B","Mv_HighJumpWait_F"] ) )
+		{
+		}
+		else
+		{
+			if( BCMDTbl.CheckCancel( _SkillType_ExSpecial ) == 0 ) return 0;
+		}
+		break;
+	case "GuardCancel": //ガードキャンセル
+		local mvname = BMvTbl.GetMvName();
+		local ok = ( mvname=="Mv_Guard" && bound_status.isBound == 2 );
+		if( !ok ) return 0; //失敗
+		// ガードモーションの最初の方しか受け付けない
+		local mvs = BMvTbl.GetMvStatus();
+		// _dp("\n mvs.MvCount:"+mvs.MvCount);
+		if( mvs.MvCount > 14 ) return 0;
+		
+		// ガード直後の仕様を無くす
+		// local guard_frame = BMvTbl.GetLP(9); // ガードしてから何フレーム経過したか(Mv_Guard内なら多分ＯＫ) 1～
+		// _dp("\n guard_frame:"+guard_frame);
+		// if( guard_frame > 20 ) return 0;
+		break;			
+	case "BoundCancel":
+		if( bound_status.isBound == 0 ) return 0; // やられorガードでないと失敗
+		// 自分が死んでいたら出せない
+		local rs = BMvTbl.GetMvRoundStatus();
+		if( rs.isMyKo )
+		{
+			// ※Blastは死んでいたら出せないようにはなっているがそれ以外もあるので入れておく
+			// _dp("\n 死んでるので出せない");
+			return 0;
+		}
+		break;
+	}
+
+	if ( "PosState" in t )	//位置による制限
+	{
+		switch ( t.PosState )
+		{
+		case "Stand":
+			if( BCMDTbl.CheckPosState( _PosState_Stand ) == 0 ) return 0;	
+			break;
+		case "Air":
+			if( BCMDTbl.CheckPosState( _PosState_Air ) == 0 ) return 0;	
+			break;
+		case "Crouch":
+			if( BCMDTbl.CheckPosState( _PosState_Crouch ) == 0 ) return 0;
+			break;
+		case "Always":
+			if( BCMDTbl.CheckPosState( _PosState_Always ) == 0 ) return 0;	
+			break;
+		default: //その他
+			if( BCMDTbl.CheckPosState( _PosState_Ground ) == 0 ) return 0;
+			break;
+		}
+	}
+	else //無指定だと地上技
+	{
+		if( BCMDTbl.CheckPosState( _PosState_Ground ) == 0 ) return 0;
+	}	
+	
+	
+	// 細かい制限
+	if ( "BallLimit" in t ) // 飛び道具制限
+	{
+		foreach(i, v in t.BallLimit)
+		{
+			//print("\n番号："+i+" 数："+v+" チェック:"+BMvTbl.TobiParam_Func({ slot=i, type=_ValGet }) );
+			if ( BMvTbl.TobiParam_Func({ slot=i, type=_ValGet }) >= v) //指定未満じゃないと出ない
+			{
+				return 0; //飛び道具カウンタ以下じゃないとだめ			
+			}
+		}
+	}
+	if ( "BallCount" in t ) // 飛び道具制限
+	{
+		foreach(i, v in t.BallCount)
+		{
+			//print("番号："+i+" 数："+v);
+			if ( BMvTbl.TobiParam_Func({ slot=i, type=_ValGet }) != v) return 0; //飛び道具カウンタと同じじゃないとだめ						
+		}
+	}
+	if ( "BallOver" in t ) // 飛び道具制限
+	{
+		foreach(i, v in t.BallOver)
+		{
+			if ( BMvTbl.TobiParam_Func({ slot=i, type=_ValGet }) < v) return 0; //飛び道具カウンタ以上じゃないとだめ		
+		}
+	}	
+	if ( "DashLimit" in t ) //ダッシュ制限
+	{
+		if (BCMDTbl.CheckDash(0,0) >= t.DashLimit) return 0;
+	}
+	if ( "HeightLimit" in t ) //高度制限
+	{
+		//_dm("はいった？ t.HeightLimit:"+t.HeightLimit+" 結果："+BCMDTbl.CheckDash(t.HeightLimit,0));
+		//if (BCMDTbl.CheckDash(t.HeightLimit,0) == 0) return 0;
+		local pos = BMvTbl.GetPosition(0); //座標を取得（操作親でなくていい？）
+		if( pos.y > -t.HeightLimit ) return 0; //HeightLimitは高さ（プラス）なのでちょっと変換
+	}
+	if ( "AirJumpLimit" in t ) //多段ジャンプチェック レバーニュートラルが検出されるまで再ジャンプ可能状態にならない
+	{
+		if (BCMDTbl.CheckAirJump(t.AirJumpLimit) == 0  ) return 0;//ジャンプカウントがt.AirJumpLimit以上だと0
+	}	
+	
+	
+	//特定のMvの時ははじく
+	if ( "MvCheck" in t )
+	{
+		if ( "SkillFail" in t.MvCheck )	//特定のMvだったらはじく（必殺技用）
+		{
+			//行動可能かチェック
+			//※もともと行動不能のmvでアニメ後半が行動可能になっているものは同技でキャンセルできるようにする
+
+			//怖いので地上のmvのみ
+			if( check_CancelNone == 0 )
+			{
+				//行動不能
+				if( BCMDTbl.CheckMoveName( t.MvCheck.SkillFail ) ) return 0;
+			}
+			else
+			{
+				//地上キャンセル
+				if( BCMDTbl.CheckPosState( _PosState_Ground ) == 0 )
+				{
+					//地上ではない
+					if( BCMDTbl.CheckMoveName( t.MvCheck.SkillFail ) ) return 0;				
+				}
+				else
+				{
+					//地上だ
+					//行動可能で地上状態
+					//同技のチェックを行わない
+				}
+			}
+		}
+		
+		if ( "Fail" in t.MvCheck )	//特定のMvだったらはじく
+		{
+			if( BCMDTbl.CheckMoveName( t.MvCheck.Fail ) ) return 0;
+		}
+		if ( "Only" in t.MvCheck )	//特定のMvから以外だとはじく
+		{
+			if( BCMDTbl.CheckMoveName( t.MvCheck.Only ) == 0 ) return 0;
+		}	
+	}
+
+	//ヒット状態を見てはじく
+	//BMvTbl.ClearHitStatus()をやってないのでキャンセルで出した技から追加入力がすぐ受け付けちゃう
+	if( "HitStatus" in t)
+	{
+		local s = BMvTbl.GetMvHitStatus();
+		//_dm( " hs:"+s.Type+" _HitType_Damage:"+_HitType_Damage+" _HitType_Guard:"+_HitType_Guard );
+		//_dm("HitStatis"+(s.Type ==_HitType_Damage || s.Type ==_HitType_Guard ));
+		switch ( t.HitStatus )
+		{
+		case "Hit":
+			if( !(s.Type & _HitType_Hit ) ) return 0;
+			break;
+		case "Damage":
+			if( !(s.Type & _HitType_Damage) ) return 0;
+			break;
+		case "Guard":
+			if( !(s.Type & _HitType_Guard) ) return 0;
+			break;
+		}	
+	}
+
+	//IDを見てはじく
+	if( "FrameIDCheck" in t)
+	{
+		//_dm("ID:"+Battle_Std.GetPlayerFrameID() );
+		if ( "Fail" in t.FrameIDCheck )	//特定のFrameIDだったらはじく
+		{
+			local p_frameid = Battle_Std.GetPlayerFrameID();
+			if( type( t.FrameIDCheck.Fail ) == "array" )
+			{
+				foreach( i, v in t.FrameIDCheck.Fail )
+				{
+					if( p_frameid == v ) return 0;
+				}			
+			}
+			else
+			{
+				if( p_frameid == t.FrameIDCheck.Fail ) return 0;
+			}
+		}
+		if ( "Only" in t.FrameIDCheck )	//特定のFrameIDから以外だとはじく
+		{	
+			local p_frameid = Battle_Std.GetPlayerFrameID();
+			if( type( t.FrameIDCheck.Only ) == "array" )
+			{
+				local hit = 0;
+				foreach( i, v in t.FrameIDCheck.Only )
+				{
+					if( p_frameid == v )
+					{
+						hit = 1;
+						break;
+					}				
+				}
+				if( hit == 0 ) return 0; // 何も無かったら失敗
+			}
+			else
+			{
+				if( p_frameid != t.FrameIDCheck.Only ) return 0;		
+			}
+		}
+	}
+	
+	// 特殊な弾き
+	if( Def_Rule_EnableReverceBeat != 1 )
+	{
+		if( flag_useReverseBeat )
+		{
+			if( Def_Rule_Kirifuda_EnableReverseBeat && tDDC.Kirifuda_CheckTime() )
+			{
+				// リバースビート自由
+			}
+			else
+			{
+				return 0;
+			}
+		}
+	}
+
+	//ここから先は出せるの確定してからの処理　---------------------------------
+	//CmdCheck通過で更新されるステータス
+	//_dp("\n def_PP_CmdStatus初期化");
+	BMvTbl.SetPP(def_PP_CmdStatus,0); //初期化
+	BMvTbl.SetPP(def_PP_CmdButtonStatus,0); //初期化
+	if( BCMDTbl.CheckCancel( _SkillType_Normal )==255 )
+	{
+		BMvTbl.SetPP(def_PP_CmdStatus, BMvTbl.GetPP(def_PP_CmdStatus)|def_PP_CS_MoveAble ); //行動可能だった
+		BMvTbl.SetPP(def_PP_CmdStatus, BMvTbl.GetPP(def_PP_CmdStatus)|def_PP_CS_SpCancelOK ); //Sp技を出せる状態だった
+		BMvTbl.SetPP(def_PP_CmdStatus, BMvTbl.GetPP(def_PP_CmdStatus)|def_PP_CS_ExCancelOK ); //EX技を出せる状態だった
+	}
+	else
+	{
+		// ↑の方でこれと同じ処理あります
+		local cmd_excancel = 0;
+		if( BCMDTbl.CheckMoveName( ["Mv_JumpWait_F","Mv_JumpWait_N","Mv_JumpWait_B","Mv_HighJumpWait_F"] ) )
+		{
+			cmd_excancel = 1;
+		}
+		else
+		{
+			if( BCMDTbl.CheckCancel( _SkillType_ExSpecial ) ) cmd_excancel = 1;
+		}
+		if( cmd_excancel )
+		{
+			// _dp("\n SP技出せるところから");
+			BMvTbl.SetPP(def_PP_CmdStatus, BMvTbl.GetPP(def_PP_CmdStatus)|def_PP_CS_SpCancelOK ); //Sp技を出せる状態だった
+			if( Battle_Std.CancelCheck_EXSpecialSkill() )
+			{
+				// _dp("\n EX技出せるところから");
+				BMvTbl.SetPP(def_PP_CmdStatus, BMvTbl.GetPP(def_PP_CmdStatus)|def_PP_CS_ExCancelOK ); //EX技を出せる状態だった
+			}
+		}	
+	}
+	
+
+	
+	// どのボタンを押しているか記憶
+	// Doujiで出せる技はこれで記憶したボタンと一致していないと出せない
+	// Aを押して出した後は A+Xの技しか出せないみたいなの
+	BMvTbl.SetPP(def_PP_CmdButtonStatus, BMvTbl.GetPP(def_PP_CmdButtonStatus)|button_mask ); //押していたボタンを記憶
+	//_dp("\n button_maskを記憶:"+button_mask);
+	
+	//同時押しチェック猶予をなくす
+	//これをしないと同時押し猶予を使って出した技の最中もコマンドを受け付けちゃう
+	if( flag_keep_DoujiCheck )
+	{
+		
+	}
+	else
+	{
+		Battle_Std.ClearDoujiDelay(); // 同時押しチェック猶予を無くす
+	}
+	//フラグを見て同時押しチェックオブジェクトを出す
+	
+	//行動可能状態から出したコマンドのようだな
+	if( check_CancelNone != 0 )
+	{
+		//None設定の技が強引に出せるフレーム
+		if( (DoujiCheck_none == 1) && ( BMvTbl.GetPP( def_PP_NoneDouji ) <=0 ) )
+		{
+			//_dm("生成：Mv_NoneDouji");
+			BMvEff.CreateObject( { mvname="Mv_NoneDouji" } );
+		} 					
+
+		if( (DoujiCheck_special == 1) && ( BMvTbl.GetPP( def_PP_SpecialDouji ) <=0 ) )
+		{
+			//_dm("生成：Mv_SpecialDouji");
+			BMvEff.CreateObject( { mvname="Mv_SpecialDouji" } );
+		}
+		
+		if( (DoujiCheck_exspecial == 1) && ( BMvTbl.GetPP( def_PP_ExSpecialDouji ) <=0 ) )
+		{
+			//_dm("生成：Mv_SpecialExDouji");
+			BMvEff.CreateObject( { mvname="Mv_ExSpecialDouji" } );
+		}		
+	}
+	
+
+	// ゲージ消費予約処理
+	if( flag_useComboGauge == 0 ) // ゲージ消費しない技
+	{
+	}
+	else if( flag_useComboGauge == 2 ) // VO中のみ
+	{
+		BMvEff.Liberate_End(); //
+		BCMDTbl.SetSpUseBufferTmp( { value=20000 } ); //ゲージ消費予約
+		BMvTbl.SetPP(def_PP_CmdStatus, BMvTbl.GetPP(def_PP_CmdStatus)|def_PP_CS_UseGauge ); //ゲージ消費技予約
+	}
+	else // １ゲージ消費とか
+	{
+		BCMDTbl.SetSpUseBufferTmp( { value=t.Cost.ComboGauge } ); //ゲージ消費予約
+		BMvTbl.SetPP(def_PP_CmdStatus, BMvTbl.GetPP(def_PP_CmdStatus)|def_PP_CS_UseGauge ); //ゲージ消費技予約
+	}
+	
+	// リバースビートのアナウンス？
+	if( flag_useReverseBeat ) // リバースビートから出そうとした技
+	{
+		//_dp("\n useReverseBeat予約");
+		BMvTbl.SetPP(def_PP_CmdStatus, BMvTbl.GetPP(def_PP_CmdStatus)|def_PP_CS_ReverseBeat ); //リバースビートから出そうとした
+	}
+
+	return 1; //ここまでくれば出せる技
+}
+
+print("\n btl_CmdCheck.....OK");

@@ -1,0 +1,179 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(3);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		case 2:
+			tDDC.Support_SetMessage( "@C102", 200, 102 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		
+		// 表示座標指定
+		Battle_Std.AddXPos_NearEnemy( 100, 200 ); // 移動距離, これ以上相手と近くならない
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[179] } );
+			break;
+		case 200:
+			BSound.SE_Play( { type=_SeType_Player, num=[173] } );
+			break;
+		case 300:
+			BSound.SE_Play( { type=_SeType_Player, num=[170] } );
+			break;
+		case 400:
+			BSound.SE_Play( { type=_SeType_Player, num=[178] } );
+			break;
+		}
+	}
+	function HitInterrupt_After()
+	{
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <-
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 );
+		
+		// 表示座標指定
+		Battle_Std.AddXPos_NearEnemy( 400, 400 ); // 移動距離, これ以上相手と近くならない		
+	}
+	function FrameUpdate_After()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		switch( Battle_Std.GetUpdateFrameID( mvs ) )
+		{
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[182] } );
+			break;
+		}
+		
+		local param1 = mvs.Param1;
+		if( param1 & 32 ) // 画面外までいかないようにベクトルを止める
+		{
+			if( Battle_Std.GetFrontStageDistance() < 0 )
+			{
+				BMvTbl.SetVector( { x=0, flags=_Vector_Normal } );
+			}
+			// 位置補整はやらないでいいかな
+		}
+	}	
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+	}
+}
+
+
+
+PAI_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Pai_s );
+
+_dp(" -> Load OK");

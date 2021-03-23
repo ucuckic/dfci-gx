@@ -1,0 +1,93 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Aen_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(220); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Aen00_7200", type=0, category=1}; // 妾に任せておけ！
+// クライマックスブースト発動
+st[81] = { path=1, file="Aen00_7002_b_s2", type=0, category=1}; // そこだーっ！　逃がすかああ！　天誅天誅♪
+// ブラストＯＫ
+st[82] = { path=1, file="Aen00_4900", type=0, category=1}; // うむ、いつでも行けるぞ！
+
+// プレイヤー勝利
+st[100] = { path=1, file="Aen00_2100", type=0, category=1}; // 流石、妾のパートナーだな！
+st[101] = { path=1, file="Aen00_2101", type=0, category=1}; // ちょっとだけ格好良かったぞ！
+
+// ラウンド敗北
+st[110] = { path=1, file="Aen00_2200", type=0, category=1}; // まだ大丈夫だ。妾もついているぞ！
+st[111] = { path=1, file="Aen00_2201", type=0, category=1}; // なかなかの手練だな、負けてはおれんぞ！
+
+// 通常攻撃
+// st[120] = { path=1, file="Aen00_2500", type=0, category=1}; // はっ！
+// st[121] = { path=1, file="Aen00_2501", type=0, category=1}; // とう！
+// st[122] = { path=1, file="Aen00_2502", type=0, category=1}; // やっ！
+
+// 撤退
+st[130] = { path=1, file="Aen00_4000", type=0, category=1}; // ぬぅぅぅ！失敗したぞ！
+st[131] = { path=1, file="Aen00_4001", type=0, category=1}; // くぅーっ！一旦退くぞ！
+
+// ダメージ
+st[140] = { path=1, file="Aen00_4500", type=0, category=1}; // ああッ！
+st[141] = { path=1, file="Aen00_4501", type=0, category=1}; // きゃっ！
+st[142] = { path=1, file="Aen00_4502", type=0, category=1}; // っちょ！
+
+// ダウン（1～2秒程度）
+// st[150] = { path=1, file="Aen00_4600", type=0, category=1}; // きゃああああ！
+
+// 戦闘準備完了
+st[160] = { path=1, file="Aen00_4900", type=0, category=1}; // うむ、いつでも行けるぞ！
+st[161] = { path=1, file="Aen00_4901", type=0, category=1}; // よし、準備完了したぞ！
+
+// 必殺技１
+st[170] = { path=1, file="Aen00_7000_b_s0", type=0, category=1}; // てぇーっ！　ハアアアアアア！　まいったか！
+st[171] = { path=1, file="Aen00_7000_b_s1", type=0, category=1}; // てぇーっ！　ハアアアアアア！　まいったか！
+st[172] = { path=1, file="Aen00_7000_b_s2", type=0, category=1}; // てぇーっ！　ハアアアアアア！　まいったか！
+st[175] = { path=1, file="Aen00_7001_b_s0", type=0, category=1}; // やあーっ！　そこだああああ！　　むふふ！
+st[176] = { path=1, file="Aen00_7001_b_s1", type=0, category=1}; // やあーっ！　そこだああああ！　　むふふ！
+st[177] = { path=1, file="Aen00_7001_b_s2", type=0, category=1}; // やあーっ！　そこだああああ！　　むふふ！
+st[180] = { path=1, file="Aen00_7002_b_s0", type=0, category=1}; // そこだーっ！　逃がすかああ！　天誅天誅♪
+st[181] = { path=1, file="Aen00_7002_b_s1", type=0, category=1}; // そこだーっ！　逃がすかああ！　天誅天誅♪
+st[182] = { path=1, file="Aen00_7002_b_s2", type=0, category=1}; // そこだーっ！　逃がすかああ！　天誅天誅♪
+st[185] = { path=1, file="Aen00_7003_b_s0", type=0, category=1}; // てぇいっ！　たあああああ！　降参してもいいぞ？
+st[186] = { path=1, file="Aen00_7003_b_s1", type=0, category=1}; // てぇいっ！　たあああああ！　降参してもいいぞ？
+st[187] = { path=1, file="Aen00_7003_b_s2", type=0, category=1}; // てぇいっ！　たあああああ！　降参してもいいぞ？
+
+// 必殺技2
+st[190] = { path=1, file="Aen00_7100_b_s0", type=0, category=1}; // せええい！　どうだ！
+st[191] = { path=1, file="Aen00_7100_b_s1", type=0, category=1}; // せええい！　どうだ！
+st[193] = { path=1, file="Aen00_7101_b_s0", type=0, category=1}; // てりゃッ！　ふふん！
+st[194] = { path=1, file="Aen00_7101_b_s1", type=0, category=1}; // てりゃッ！　ふふん！
+st[196] = { path=1, file="Aen00_7102_b_s0", type=0, category=1}; // 吹き飛べ！　よし！
+st[197] = { path=1, file="Aen00_7102_b_s1", type=0, category=1}; // 吹き飛べ！　よし！
+st[199] = { path=1, file="Aen00_7103_b_s0", type=0, category=1}; // でぇえい！　やったぞ！
+st[200] = { path=1, file="Aen00_7103_b_s1", type=0, category=1}; // でぇえい！　やったぞ！
+
+st[210] = { path=1, file="Aen00_7200", type=0, category=1}; // 妾に任せておけ！
+
+
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	妾の名は藍原延珠。モデル･ラビットのイニシエーターだ！
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	む、迷っておるのか？
+
+// キャラセレクト画面キャラクター決定
+// 1130	妾に任せておけば、もう安心だぞ！

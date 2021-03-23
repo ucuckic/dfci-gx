@@ -1,0 +1,16 @@
+[data]
+001 = Valkyria Chronicles Stage
+002 = Virtua Fighter 5 Stage
+004 = NiGHTS Stage
+005 = Phantasy Star Online 2 Stage
+007 = Sonic the Hedgehog Stage
+008 = 7th Dragon 2020 Stage
+009 = Shinobi Stage
+013 = Cyber Troopers Virtual-On Stage
+014 = Border Break Stage
+015 = Valkyria Chronicles Stage (Night)
+016 = Wonderland Wars Stage
+017 = HiÅôsCoool! SeHa Girls Stage
+018 = The World End Eclipse Stage
+029 = Training Stage
+099 = debug

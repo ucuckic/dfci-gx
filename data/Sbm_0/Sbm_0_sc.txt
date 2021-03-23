@@ -1,0 +1,20 @@
+_dp("\n[_sc.txt]");
+
+Battle_Status <-
+{
+	// ‚«‚è‚Ó‚¾
+	Kirifuda_PointMax = 2, // Ø‚èŽDÅ‘å’liŠî–{’l‚Rj
+	Kirifuda_Type = 0, // Ø‚èŽDƒ^ƒCƒvi0:UŒ‚“IÔ 1:–hŒä“IÂj	
+	
+	// Jem_0‚ÆJem_1‚ÍÝ’èÏ‚Ý‚È‚Ì‚ÅJem_2‚ÆJem_3‚ÉÝ’è‚·‚é
+	// Jem_2 = 5001,	// ƒTƒ|[ƒg‚ð‚S‰ñŒÄ‚Ño‚µ‚½‚ç‚P‚O•bŠÔUŒ‚—Í‚ª‚P‚O“ƒAƒbƒvA‚Q‰ñ‚ÅÁ–Å
+	// 1A(Slot)BB(‰ñ”)C(ŽžŠÔ)D(Œø‰Ê)E(Œø‰Ê’l)F(Á–Å‰ñ”)
+	// Jem_2 = 11051012, // ƒGƒNƒXƒeƒ“ƒhƒAƒNƒVƒ‡ƒ“‚ð‚T‰ñs‚Á‚½‚ç‚P‚O•bŠÔUŒ‚—Í‚ª‚P‚O“ƒAƒbƒvA‚Q‰ñ‚ÅÁ–Å
+	// Jem_2 = 11002002, // ƒGƒNƒXƒeƒ“ƒhƒAƒNƒVƒ‡ƒ“‚ð‚T‰ñs‚Á‚½‚ç‚Q‚O•bŠÔUŒ‚—Í‚ª‚O“ƒAƒbƒvA‚Q‰ñ‚ÅÁ–Å
+	// Jem_2 = 13032001, // ‚d‚w•KŽE‹Z‚ð‚R‰ñs‚Á‚½‚ç‚Q‚O•bŠÔUŒ‚—Í‚ª‚O“ƒAƒbƒv
+	// Jem_2 = 6001, // EX‚ð‚R‰ñŽg‚¤‚ÆA‚Q‚O•bŠÔƒTƒ|[ƒgŒÄ‚Ño‚µ«”\ƒAƒbƒv
+	Jem_2 = 6003, // EX‚ð‚R‰ñŽg‚¤‚ÆA‚R‚O•bŠÔƒTƒ|[ƒgŒÄ‚Ño‚µ«”\ƒAƒbƒv
+}
+
+Battle_Std.InsertTable( Battle_Status, Battle_Std.GetStd_BattleStatusTable() ); //ƒfƒtƒHƒ‹ƒg
+_dp(" -> Load OK");

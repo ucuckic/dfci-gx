@@ -1,0 +1,418 @@
+print("\n>>_se_list");
+
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Sha/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Sha00_6100", type=0, category=1}; // 体が軽い…！
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+// 登場シーン	
+st[100] = { path=1, file="Sha00_2000", type=0, category=1}; // ふん、やるの？
+st[101] = { path=1, file="Sha00_2001", type=0, category=1}; // 立ち塞がるというなら、打ち破るまで
+st[102] = { path=1, file="Sha00_2002", type=0, category=1}; // この気配は…！
+
+// 掛け合い
+st[104] = { path=1, file="Sha00_2050", type=0, category=1}; // うるさいうるさい
+st[105] = { path=1, file="Sha00_2051", type=0, category=1}; // ゲームと一緒にしないで
+st[106] = { path=1, file="Sha00_2052", type=0, category=1}; // 紅蓮の炎ですべてを焼きつくす！（対深雪）
+st[107] = { path=1, file="Sha00_2053", type=0, category=1}; // 他人とは思えない（対大河）
+st[108] = { path=1, file="Sha00_2077", type=0, category=1}; // うるさいうるさ～い！
+
+// 戦闘勝利・汎用	
+st[110] = { path=1, file="Sha00_2100", type=0, category=1}; // 次の戦いが待ってる
+st[111] = { path=1, file="Sha00_2101", type=0, category=1}; // これがフレイムヘイズの使命
+// 戦闘勝利・辛勝	
+st[112] = { path=1, file="Sha00_2102", type=0, category=1}; // この程度じゃ…ダメ
+// 戦闘勝利・楽勝	
+st[113] = { path=1, file="Sha00_2103", type=0, category=1}; // さっきまでの威勢はどうしたの
+
+// ラウンド勝利	
+st[120] = { path=1, file="Sha00_2150", type=0, category=1}; // それで全力？
+st[121] = { path=1, file="Sha00_2151", type=0, category=1}; // やめる気になった？
+
+// タイムアップ判定負け	
+st[130] = { path=1, file="Sha00_2200", type=0, category=1}; // 追いつけなかった…
+st[131] = { path=1, file="Sha00_2201", type=0, category=1}; // 力が、足りない…！
+
+// 弱攻撃	
+st[140] = { path=1, file="Sha00_2300", type=0, category=1}; // ふ
+st[141] = { path=1, file="Sha00_2301", type=0, category=1}; // し
+st[142] = { path=1, file="Sha00_2302a", type=0, category=1}; // は
+st[143] = { path=1, file="Sha00_2303", type=0, category=1}; // や
+st[144] = { path=1, file="Sha00_2304a", type=0, category=1}; // た
+
+// 中攻撃	
+st[150] = { path=1, file="Sha00_2400", type=0, category=1}; // たぁ
+st[151] = { path=1, file="Sha00_2401", type=0, category=1}; // やぁ
+st[152] = { path=1, file="Sha00_2402a", type=0, category=1}; // はっ
+st[153] = { path=1, file="Sha00_2403", type=0, category=1}; // えいっ
+st[154] = { path=1, file="Sha00_2404", type=0, category=1}; // てやっ
+st[156] = { path=1, file="Sha00_2405", type=0, category=1}; // しっ
+st[157] = { path=1, file="Sha00_2406", type=0, category=1}; // ふっ
+
+// 強攻撃	
+st[160] = { path=1, file="Sha00_2500", type=0, category=1}; // てぇい！
+st[161] = { path=1, file="Sha00_2501", type=0, category=1}; // そこっ！
+st[162] = { path=1, file="Sha00_2502", type=0, category=1}; // 食らえ！
+st[163] = { path=1, file="Sha00_2503", type=0, category=1}; // 斬る！
+st[164] = { path=1, file="Sha00_2504", type=0, category=1}; // いゃあぁ！
+st[165] = { path=1, file="Sha00_2505", type=0, category=1}; // せぇい！
+st[166] = { path=1, file="Sha00_2506", type=0, category=1}; // はあっ！
+
+// 特殊攻撃	
+// st[170] = { path=1, file="Sha00_2600", type=0, category=1}; // 見えた！
+// st[171] = { path=1, file="Sha00_2601", type=0, category=1}; // 当てる！
+// st[172] = { path=1, file="Sha00_2602", type=0, category=1}; // 関係ない！
+// st[173] = { path=1, file="Sha00_2603", type=0, category=1}; // 散れ！
+st[174] = { path=1, file="Sha00_2604", type=0, category=1}; // 受けろ！
+st[175] = { path=1, file="Sha00_2605", type=0, category=1}; // 邪魔！
+// st[176] = { path=1, file="Sha00_2606", type=0, category=1}; // この程度なの！
+st[177] = { path=1, file="Sha00_2607", type=0, category=1}; // 砕けろ！
+
+// 投げ技成功	
+st[180] = { path=1, file="Sha00_2700", type=0, category=1}; // 吹っ飛べ！
+st[181] = { path=1, file="Sha00_2701", type=0, category=1}; // がら空き！
+st[182] = { path=1, file="Sha00_2702", type=0, category=1}; // 遅すぎる！
+
+// 投げ技失敗	
+// st[190] = { path=1, file="Sha00_2800", type=0, category=1}; // ちっ
+// st[191] = { path=1, file="Sha00_2801", type=0, category=1}; // そんなっ
+
+// 敵の投げ技を回避	
+st[200] = { path=1, file="Sha00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 甘い！
+st[201] = { path=1, file="Sha00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 離れろ！
+
+// 挑発アクション	
+st[210] = { path=1, file="Sha00_3100", type=0, category=1}; // いつまで待たせるつもり
+st[211] = { path=1, file="Sha00_3101", type=0, category=1}; // 戦う気が無いの？
+
+// ジャンプ	
+// st[220] = { path=1, file="Sha00_3200", type=0, category=1}; // たっ
+st[221] = { path=1, file="Sha00_3201", type=0, category=1}; // はっ
+// st[222] = { path=1, file="Sha00_3202", type=0, category=1}; // 上から！
+
+// ダッシュ	
+st[230] = { path=1, file="Sha00_3300", type=0, category=1}; // ふっ
+// st[231] = { path=1, file="Sha00_3301", type=0, category=1}; // 詰める
+st[232] = { path=1, file="Sha00_3302", type=0, category=1}; // 今
+
+// バックステップ	
+st[240] = { path=1, file="Sha00_3400", type=0, category=1}; // よっ
+st[241] = { path=1, file="Sha00_3401", type=0, category=1}; // 下がる
+// st[242] = { path=1, file="Sha00_3402", type=0, category=1}; // 殺気…！
+
+// 小攻撃ガード	
+st[250] = { path=1, file="Sha00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // ふ…
+st[251] = { path=1, file="Sha00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // 弱い
+st[252] = { path=1, file="Sha00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // 効かない
+
+// 中攻撃ガード	
+st[260] = { path=1, file="Sha00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // ぐっ
+st[261] = { path=1, file="Sha00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // ちっ
+st[262] = { path=1, file="Sha00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // ぬるい！
+
+// 大攻撃ガード	
+st[270] = { path=1, file="Sha00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // ぐうっ
+st[271] = { path=1, file="Sha00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // やる…！
+st[272] = { path=1, file="Sha00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // ちぃ…！
+
+// 攻撃を見切り余裕でガード	
+st[280] = { path=1, file="Sha00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 単純
+st[281] = { path=1, file="Sha00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // みえみえ
+st[282] = { path=1, file="Sha00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 通じない
+
+// ガード失敗	
+st[290] = { path=1, file="Sha00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // そんなっ！？
+st[291] = { path=1, file="Sha00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // うあっ！？
+st[292] = { path=1, file="Sha00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // なにっ！
+
+// 受け身	
+st[300] = { path=1, file="Sha00_4000", type=0, category=1}; // はっ
+st[301] = { path=1, file="Sha00_4001", type=0, category=1}; // やるっ
+st[302] = { path=1, file="Sha00_4002", type=0, category=1}; // まだ！
+
+// バリア発動	
+// st[310] = { path=1, file="Sha00_4100", type=0, category=1}; // こい
+// st[311] = { path=1, file="Sha00_4101", type=0, category=1}; // 防ぐ…
+// st[312] = { path=1, file="Sha00_4102", type=0, category=1}; // そこ
+
+// バリアガード成功	
+// st[320] = { path=1, file="Sha00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // …ふん！
+// st[321] = { path=1, file="Sha00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // むっ
+// st[322] = { path=1, file="Sha00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // 無駄
+
+// 小ダメージ	
+st[330] = { path=1, file="Sha00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // うっ
+st[331] = { path=1, file="Sha00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // くっ
+st[332] = { path=1, file="Sha00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // いっ
+
+// 中ダメージ	
+st[340] = { path=1, file="Sha00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // あうっ
+st[341] = { path=1, file="Sha00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // ぐぅっ
+st[342] = { path=1, file="Sha00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // ちっ
+
+// 大ダメージ	
+st[350] = { path=1, file="Sha00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // ぐうぅ！
+st[351] = { path=1, file="Sha00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // あぁーっ！
+st[352] = { path=1, file="Sha00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // ダメ…！
+
+// 電撃ダメージ	
+// st[360] = { path=1, file="Sha00_4600", type=0, category=1}; // 体が…！
+// 麻痺ダメージ	
+// st[361] = { path=1, file="Sha00_4601", type=0, category=1}; // なに…？
+// 特殊ダメージ	
+// st[362] = { path=1, file="Sha00_4602", type=0, category=1}; // しまっ！？（しまった）
+
+// ダウン	
+st[370] = { path=1, file="Sha00_4700", type=0, category=1 prio=Def_SEP_KO }; // うあぁぁ――っ
+st[371] = { path=1, file="Sha00_4701", type=0, category=1 prio=Def_SEP_KO }; // まずい…っ！
+st[372] = { path=1, file="Sha00_4702", type=0, category=1 prio=Def_SEP_KO }; // まだ…戦える…　（断末魔、苦しそうに）
+
+// ダウン・ノックアウト	
+st[380] = { path=1, file="Sha00_4800", type=0, category=1, prio=Def_SEP_KO }; // あぁぁ―――――――っ
+st[381] = { path=1, file="Sha00_4801", type=0, category=1, prio=Def_SEP_KO }; // うわあぁぁ―――――っ
+st[382] = { path=1, file="Sha00_4802", type=0, category=1, prio=Def_SEP_KO }; // そんな…　（悲しそうに）
+
+// 起きあがり	
+st[390] = { path=1, file="Sha00_4900", type=0, category=1}; // まだよ…
+st[391] = { path=1, file="Sha00_4901", type=0, category=1}; // これからよ
+st[392] = { path=1, file="Sha00_4902", type=0, category=1}; // こんなことで…
+
+// 起きあがり・瀕死	
+// st[400] = { path=1, file="Sha00_5000", type=0, category=1}; // くっ…！
+// st[401] = { path=1, file="Sha00_5001", type=0, category=1}; // 効いた…！
+// st[402] = { path=1, file="Sha00_5002", type=0, category=1}; // まだ行けるッ！
+
+// ブラスト	
+st[410] = { path=1, file="Sha00_5100", type=0, category=1}; // はあっ！
+st[411] = { path=1, file="Sha00_5101", type=0, category=1}; // 解き放つ！
+st[412] = { path=1, file="Sha00_5102", type=0, category=1}; // ここから！
+
+// コンボブラスト	
+st[420] = { path=1, file="Sha00_5200", type=0, category=1}; // いくわよ！
+st[421] = { path=1, file="Sha00_5201", type=0, category=1}; // 飛べ！
+
+// バウンドブラスト	
+st[430] = { path=1, file="Sha00_5300", type=0, category=1}; // いい加減に！
+st[431] = { path=1, file="Sha00_5301", type=0, category=1}; // うるさいうるさいうるさい！
+st[432] = { path=1, file="Sha00_5302", type=0, category=1}; // うるさい！
+
+// 攻撃サポートキャラ呼び出し	
+st[440] = { path=1, file="Sha00_5400", type=0, category=1}; // いま！
+st[441] = { path=1, file="Sha00_5401", type=0, category=1}; // 好機！
+st[442] = { path=1, file="Sha00_5402", type=0, category=1}; // 任せる！
+
+// 補助サポートキャラ呼び出し	
+// st[450] = { path=1, file="Sha00_5500", type=0, category=1}; // 回復を
+// st[451] = { path=1, file="Sha00_5501", type=0, category=1}; // 援護を
+// st[452] = { path=1, file="Sha00_5502", type=0, category=1}; // 油断しないで
+
+// 防御サポートキャラ呼び出し	
+// st[460] = { path=1, file="Sha00_5600", type=0, category=1}; // いけない…
+// st[461] = { path=1, file="Sha00_5601", type=0, category=1}; // 間に合わない…
+// st[462] = { path=1, file="Sha00_5602", type=0, category=1}; // 悠二…
+
+// 専用サポートキャラ呼び出し
+st[465] = { path=1, file="Sha00_5700", type=0, category=1}; // 
+st[466] = { path=1, file="Sha00_5701", type=0, category=1}; // 
+
+// 好調時にポテンシャル発動	
+st[470] = { path=1, file="Sha00_6100", type=0, category=3}; // 体が軽い…！
+st[471] = { path=1, file="Sha00_6101", type=0, category=3}; // いい調子…！
+st[472] = { path=1, file="Sha00_6102", type=0, category=3}; // 胸が熱い…！
+
+// ピンチ時にポテンシャル発動	
+st[480] = { path=1, file="Sha00_6200", type=0, category=3}; // ここからよ！
+st[481] = { path=1, file="Sha00_6201", type=0, category=3}; // お前なんかに絶対、負けない！
+st[482] = { path=1, file="Sha00_6202", type=0, category=3}; // 私は炎髪灼眼の討ち手、シャナ！
+
+// レアな隠しポテンシャル発動	
+// st[490] = { path=1, file="Sha00_6300", type=0, category=3}; // 力が沸く…　何でもできるッ！
+// st[491] = { path=1, file="Sha00_6301", type=0, category=3}; // どうすればいいか、気持ちが教えてくれる
+
+// 激突演出	
+// st[500] = { path=1, file="Sha00_6400", type=0, category=3}; // 私は炎髪灼眼の討ち手、シャナ！
+// st[501] = { path=1, file="Sha00_6401", type=0, category=3}; // 相手になる！
+// st[502] = { path=1, file="Sha00_6402", type=0, category=3}; // 勝負！
+
+// 必殺技１	
+st[510] = { path=1, file="Sha00_7000", type=0, category=1}; // 邪魔！
+st[511] = { path=1, file="Sha00_7001", type=0, category=1}; // …斬る！
+st[512] = { path=1, file="Sha00_7002", type=0, category=1}; // てぇーい！
+
+// st[513] = { path=1, file="Sha00_7003", type=0, category=1}; // そこーっ！
+// st[515] = { path=1, file="Sha00_7000a", type=0, category=1}; // 邪魔！
+// st[516] = { path=1, file="Sha00_7001a", type=0, category=1}; // …斬る！
+// st[517] = { path=1, file="Sha00_7002a", type=0, category=1}; // てぇーい！
+// st[518] = { path=1, file="Sha00_7003a", type=0, category=1}; // そこーっ！
+
+// 必殺技2	
+st[520] = { path=1, file="Sha00_7100", type=0, category=1}; // 飛焔！
+st[521] = { path=1, file="Sha00_7101", type=0, category=1}; // 飛べ！
+// st[522] = { path=1, file="Sha00_7102", type=0, category=1}; // いけっ！
+// st[523] = { path=1, file="Sha00_7103", type=0, category=1}; // 燃えろ！
+// st[525] = { path=1, file="Sha00_7100a", type=0, category=1}; // 飛焔！
+// st[526] = { path=1, file="Sha00_7101a", type=0, category=1}; // 飛べ！
+st[527] = { path=1, file="Sha00_7102a", type=0, category=1}; // いけっ！
+st[528] = { path=1, file="Sha00_7103a", type=0, category=1}; // 燃えろ！
+
+// 必殺技3	
+// st[530] = { path=1, file="Sha00_7200", type=0, category=1}; // 紅蓮の大太刀！
+// st[531] = { path=1, file="Sha00_7201_s0", type=0, category=1}; // はぁぁぁ、　たぁッ！
+// st[532] = { path=1, file="Sha00_7201_s1", type=0, category=1}; // はぁぁぁ、　たぁッ！
+// st[533] = { path=1, file="Sha00_7202_s0", type=0, category=1}; // 叩きつぶすッ！　はぁッ！
+// st[534] = { path=1, file="Sha00_7202_s1", type=0, category=1}; // 叩きつぶすッ！　はぁッ！
+// st[535] = { path=1, file="Sha00_7203_s0", type=0, category=1}; // せぇーっ、ぃやぁっ！
+// st[536] = { path=1, file="Sha00_7203_s1", type=0, category=1}; // せぇーっ、ぃやぁっ！
+
+st[600] = { path=1, file="Sha00_7200a", type=0, category=1}; // 紅蓮の大太刀！
+// st[601] = { path=1, file="Sha00_7201_s0", type=0, category=1}; // はぁぁぁ、　たぁッ！
+// st[602] = { path=1, file="Sha00_7201a_s1", type=0, category=1}; // はぁぁぁ、　たぁッ！
+st[603] = { path=1, file="Sha00_7202a_s0", type=0, category=1}; // 叩きつぶすッ！　はぁッ！
+st[604] = { path=1, file="Sha00_7202a_s1", type=0, category=1}; // 叩きつぶすッ！　はぁッ！
+st[605] = { path=1, file="Sha00_7203a_s0", type=0, category=1}; // せぇーっ、ぃやぁっ！
+st[606] = { path=1, file="Sha00_7203a_s1", type=0, category=1}; // せぇーっ、ぃやぁっ！
+
+// 必殺技4	
+st[540] = { path=1, file="Sha00_7300", type=0, category=1}; // 真紅！
+// st[541] = { path=1, file="Sha00_7301", type=0, category=1}; // 遅いッ！
+st[542] = { path=1, file="Sha00_7302", type=0, category=1}; // 薙ぎ払うッ！
+// st[543] = { path=1, file="Sha00_7303", type=0, category=1}; // ふ…はぁああっ！！
+// st[545] = { path=1, file="Sha00_7300a", type=0, category=1}; // 真紅！
+st[546] = { path=1, file="Sha00_7301a", type=0, category=1}; // 遅いッ！
+// st[547] = { path=1, file="Sha00_7302a", type=0, category=1}; // 薙ぎ払うッ！
+// st[548] = { path=1, file="Sha00_7303a", type=0, category=1}; // ふ…はぁああっ！！
+
+// 必殺技5	
+// st[550] = { path=1, file="Sha00_7400", type=0, category=1}; // 逃がさないッ！
+// st[551] = { path=1, file="Sha00_7401", type=0, category=1}; // はぁぁあああっ！
+// st[552] = { path=1, file="Sha00_7402", type=0, category=1}; // 燃えろっ！
+// st[553] = { path=1, file="Sha00_7403_s1", type=0, category=1}; // 捕まえた…焼き尽くす！
+st[555] = { path=1, file="Sha00_7400a", type=0, category=1}; // 逃がさないッ！
+// st[556] = { path=1, file="Sha00_7401a", type=0, category=1}; // はぁぁあああっ！
+st[557] = { path=1, file="Sha00_7402a", type=0, category=1}; // 燃えろっ！
+// st[558] = { path=1, file="Sha00_7403a_s1", type=0, category=1}; // 捕まえた…焼き尽くす！
+
+// 必殺技6	
+st[560] = { path=1, file="Sha00_7500", type=0, category=1}; // 審判！
+st[561] = { path=1, file="Sha00_7501", type=0, category=1}; // これなら…！
+st[562] = { path=1, file="Sha00_7502", type=0, category=1}; // すべてを見通す…
+// st[563] = { path=1, file="Sha00_7503", type=0, category=1}; // それか！！
+st[565] = { path=1, file="Sha00_7500a", type=0, category=1}; // 審判！(624D用)
+
+// 超必殺技1	
+st[570] = { path=1, file="Sha00_8000_s0", type=0, category=1}; // この私の…全てを！！　ぬぅううううう！！
+// st[571] = { path=1, file="Sha00_8000_s1", type=0, category=1}; // この私の…全てを！！　ぬぅううううう！！
+
+// st[572] = { path=1, file="Sha00_8001_s0", type=0, category=1}; // 体が…熱い！！　うおおおおぉぉぉー！
+st[573] = { path=1, file="Sha00_8001_s1", type=0, category=1}; // 体が…熱い！！　うおおおおぉぉぉー！
+
+// st[574] = { path=1, file="Sha00_8002_s0", type=0, category=1}; // この一撃に！　賭ける！！
+// st[575] = { path=1, file="Sha00_8002_s1", type=0, category=1}; // この一撃に！　賭ける！！
+
+// 超必殺技2	
+st[580] = { path=1, file="Sha00_8100_s0", type=0, category=1}; // 真紅ッ！　飛焔ッ！　審判ッ！　断ッ罪！！！
+st[581] = { path=1, file="Sha00_8100_s1", type=0, category=1}; // 真紅ッ！　飛焔ッ！　審判ッ！　断ッ罪！！！
+// st[582] = { path=1, file="Sha00_8100_s2", type=0, category=1}; // 真紅ッ！　飛焔ッ！　審判ッ！　断ッ罪！！！
+st[583] = { path=1, file="Sha00_8100_s3", type=0, category=1}; // 真紅ッ！　飛焔ッ！　審判ッ！　断ッ罪！！！
+
+st[584] = { path=1, file="Sha00_8101_s0", type=0, category=1}; // 最後の一手！　はああああぁぁーーー！！！
+// st[585] = { path=1, file="Sha00_8101_s1", type=0, category=1}; // 最後の一手！　はああああぁぁーーー！！！
+
+// st[586] = { path=1, file="Sha00_8102_s0", type=0, category=1}; // 強い私こそが…　炎髪灼眼の打ち手…　シャナ！！
+// st[587] = { path=1, file="Sha00_8102_s1", type=0, category=1}; // 強い私こそが…　炎髪灼眼の打ち手…　シャナ！！
+// st[588] = { path=1, file="Sha00_8102_s2", type=0, category=1}; // 強い私こそが…　炎髪灼眼の打ち手…　シャナ！！
+
+
+/*
+// 対人戦３連続勝利
+1000	あなたならやれる。きっと強くなれる！
+
+// 対人戦１０連続勝利
+1001	私は…あなたと一緒に歩いて行ける！
+
+// 汎用勝利
+1010	行こう、悠二と向き合うために……この、本当の私として。
+
+// 汎用勝利
+1011	我が名は“天壌の劫火”アラストールのフレイムヘイズ――『炎髪灼眼の討ち手』シャナ。
+
+// 汎用勝利
+1012	さよなら。
+
+// 汎用勝利
+1013	こんなところね。
+
+// 汎用勝利
+1014	おまえ、迷惑なのよ。
+
+// 汎用勝利
+1015	新しい、熱い歌を、私は作ろう。
+
+// 汎用勝利
+1016	身に刻み、思い知れ――天なる罰を！
+
+// 勝利画面レアボイス
+1017	メロンパンはカリカリモフモフが一番！
+
+// 勝利画面レアボイス
+1018	うるさいうるさいうるさーい！！
+
+// キャラセレクト画面セレクト待機5秒
+1100	なにじろじろみてんのよ
+
+// キャラセレクト画面セレクト待機15秒
+1120	一緒に、できるよね
+
+// キャラセレクト画面キャラクター決定
+1130	私は炎髪灼眼の打ち手、シャナ！
+
+// コンティニュー画面コンテニュー待機
+1200	まだ…やれる…！
+
+// コンティニュー画面再戦決定
+1210	今度こそ！必ず！
+
+// コンティニュー画面ゲームオーバー
+1220	まだ…やれるのに…
+
+// 乱入出迎えボイス
+1300	おまえは…”紅世の徒”…？
+
+// 乱入出迎えボイス
+1301	おまえの実力、見せてもらうわ
+
+// タイトルコール
+1700	ファイティング・クライマックス！
+
+// タイトルコール
+1701	電撃文庫、ファイティング・クライマックス！
+
+// エンディング１（5～6秒程度）
+8200	一緒に戦ってくれて……ありがとう。
+
+// エンディング１（5～6秒程度）
+8201	これからも……一緒に「夢」を見よう。
+*/

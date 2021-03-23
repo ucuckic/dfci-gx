@@ -1,0 +1,178 @@
+
+BgObject <-
+{
+	panidata = "./bg/bg01/stage_ef.pat", // ややこしくなるので、できるだけ同じフォルダに入れるように
+
+	// 000-099まで
+	data000 =
+	[
+		{ tag="frm", name="p000_w25_000", wait=35 }, //  
+		{ tag="frm", name="p000_w25_001", wait=35 }, //
+		{ tag="frm", name="p000_w25_002", wait=35 }, //
+		{ tag="frm", name="p000_w25_003", wait=35 }, //
+		{ tag="frm", name="p000_w25_004", wait=35 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=100, y=-460 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+	data001 =
+	[
+		{ tag="frm", name="p000_w25_000", wait=35 }, //  
+		{ tag="frm", name="p000_w25_001", wait=35 }, //
+		{ tag="frm", name="p000_w25_002", wait=35 }, //
+		{ tag="frm", name="p000_w25_003", wait=35 }, //
+		{ tag="frm", name="p000_w25_004", wait=35 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=1280, y=-360 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+	data002 =
+	[
+		{ tag="frm", name="p000_w25_000", wait=35 }, //  
+		{ tag="frm", name="p000_w25_001", wait=35 }, //
+		{ tag="frm", name="p000_w25_002", wait=35 }, //
+		{ tag="frm", name="p000_w25_003", wait=35 }, //
+		{ tag="frm", name="p000_w25_004", wait=35 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=-1280, y=-560 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+	data003 =
+	[
+		{ tag="frm", name="p000_w30_000", wait=40 }, //  
+		{ tag="frm", name="p000_w30_001", wait=40 }, //
+		{ tag="frm", name="p000_w30_002", wait=40 }, //
+		{ tag="frm", name="p000_w30_003", wait=40 }, //
+		{ tag="frm", name="p000_w30_004", wait=40 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=-100, y=-360 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+	data004 =
+	[
+		{ tag="frm", name="p000_w30_000", wait=40 }, //  
+		{ tag="frm", name="p000_w30_001", wait=40 }, //
+		{ tag="frm", name="p000_w30_002", wait=40 }, //
+		{ tag="frm", name="p000_w30_003", wait=40 }, //
+		{ tag="frm", name="p000_w30_004", wait=40 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=1080, y=-460 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+	data005 =
+	[
+		{ tag="frm", name="p000_w30_000", wait=40 }, //  
+		{ tag="frm", name="p000_w30_001", wait=40 }, //
+		{ tag="frm", name="p000_w30_002", wait=40 }, //
+		{ tag="frm", name="p000_w30_003", wait=40 }, //
+		{ tag="frm", name="p000_w30_004", wait=40 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=-1080, y=-560 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+
+	data006 =
+	[
+		{ tag="frm", name="p000_w30_000", wait=50 }, //  
+		{ tag="frm", name="p000_w30_001", wait=50 }, //
+		{ tag="frm", name="p000_w30_002", wait=50 }, //
+		{ tag="frm", name="p000_w30_003", wait=50 }, //
+		{ tag="frm", name="p000_w30_004", wait=50 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=720, y=-460 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+
+	data006 =
+	[
+		{ tag="frm", name="p000_w30_000", wait=50 }, //  
+		{ tag="frm", name="p000_w30_001", wait=50 }, //
+		{ tag="frm", name="p000_w30_002", wait=50 }, //
+		{ tag="frm", name="p000_w30_003", wait=50 }, //
+		{ tag="frm", name="p000_w30_004", wait=50 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=-720, y=-360 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+	data007 =
+	[
+		{ tag="frm", name="p000_w25_000", wait=35 }, //  
+		{ tag="frm", name="p000_w25_001", wait=35 }, //
+		{ tag="frm", name="p000_w25_002", wait=35 }, //
+		{ tag="frm", name="p000_w25_003", wait=35 }, //
+		{ tag="frm", name="p000_w25_004", wait=35 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=500, y=-560 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+	data008 =
+	[
+		{ tag="frm", name="p000_w25_000", wait=35 }, //  
+		{ tag="frm", name="p000_w25_001", wait=35 }, //
+		{ tag="frm", name="p000_w25_002", wait=35 }, //
+		{ tag="frm", name="p000_w25_003", wait=35 }, //
+		{ tag="frm", name="p000_w25_004", wait=35 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=-500, y=-560 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+	data009 =
+	[
+		{ tag="frm", name="p000_w25_000", wait=35 }, //  
+		{ tag="frm", name="p000_w25_001", wait=35 }, //
+		{ tag="frm", name="p000_w25_002", wait=35 }, //
+		{ tag="frm", name="p000_w25_003", wait=35 }, //
+		{ tag="frm", name="p000_w25_004", wait=35 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=-1580, y=-760 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+	data010 =
+	[
+		{ tag="frm", name="p000_w25_000", wait=35 }, //  
+		{ tag="frm", name="p000_w25_001", wait=35 }, //
+		{ tag="frm", name="p000_w25_002", wait=35 }, //
+		{ tag="frm", name="p000_w25_003", wait=35 }, //
+		{ tag="frm", name="p000_w25_004", wait=35 }, //
+
+		{ tag="prio", val=0 }, // プライオリティ 奥0 手前700くらい
+
+		{ tag="startpos", x=1580, y=-560 }, // 
+		{ tag="startdelay", val=0 }, // 開始時の待ちフレーム
+	]
+
+}
+

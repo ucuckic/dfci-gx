@@ -1,0 +1,235 @@
+/*
+// ・作成した行動はエラーがでないか必ずチェックする
+// ・COMは最高難易度で調整する
+// ・受身は内部で勝手に行います。
+// ・投げぬけは勝手に行わないので「投げられているときにA+Dを押す」という動作を直接作成する。
+//
+// ＜checkfunc、updatefunc＞
+// ・BMvEffとかの関数も使える。
+// ・使っていい関数は取得のみのものです、プレイヤーにパラメータを設定するSet系のものは絶対に使わないように。
+// ・CCom系のクラス関数は使えません。
+// ・BCom.GetStatus() で取得できるものはそっちを使う。処理速度的に。
+// ・checkfuncはできるだけ軽くする。軽いチェックでどんどん弾くこと。
+//
+// ＜定数＞
+// ・いろいろ定数があります
+
+// CComMove::flags定数
+{
+	_eComMoveFlag_MoveEnd = (1<< 0), // 終了
+	_eComMoveFlag_ThroughEnd = (1<< 1), // あたらなかったら終了
+
+	_eComMoveFlag_HitNext = (1<< 2), // あたったら次へ
+	_eComMoveFlag_DamageNext = (1<< 3), // ダメージを与えたら次へ
+	_eComMoveFlag_HitEnd = (1<< 6), // あたったら終了
+	_eComMoveFlag_DamageEnd = (1<< 7), // ダメージを与えたら終了
+
+	_eComMoveFlag_HitObjNext = (1<< 4), // オブジェクトがあたったら次へ
+	_eComMoveFlag_DamageObjNext = (1<< 5), // オブジェクトダメージを与えたら次へ
+	//※ストップ共有のやつじゃないとだめ
+
+	_eComMoveFlag_AirNext = (1<< 8), // 空中状態になったら次へ
+	_eComMoveFlag_GroundNext = (1<< 9),  // 地上状態になったら次へ
+	_eComMoveFlag_MoveableNext = (1<<10), // 行動可能になったら次へ
+	_eComMoveFlag_MovedisableNext = (1<<11), // 行動不可になったら次へ
+
+	_eComMoveFlag_AirEnd = (1<<12), // 空中状態になったら終了
+	_eComMoveFlag_GroundEnd = (1<<13),  // 地上状態になったら終了
+	_eComMoveFlag_MoveableEnd = (1<<14), // 行動可能になったら終了
+	_eComMoveFlag_MovedisableEnd = (1<<15), // 行動不可になったら終了
+
+	_eComMoveFlag_NmCancelEnd = (1<<16), // 通常キャンセル可能状態になったら終了
+	_eComMoveFlag_SpCancelEnd = (1<<17),  // 必殺キャンセル可能状態になったら終了
+	_eComMoveFlag_CancelEnd = (_eComMoveFlag_NmCancelEnd | _eComMoveFlag_SpCancelEnd),  // キャンセル可能状態になったら終了
+	_eComMoveFlag_NmCancelNext = (1<<18), // 通常キャンセル可能状態になったら次へ
+	_eComMoveFlag_SpCancelNext = (1<<19),  // 必殺キャンセル可能状態になったら次へ
+	_eComMoveFlag_CancelNext = (_eComMoveFlag_NmCancelNext | _eComMoveFlag_SpCancelNext),  // キャンセル可能状態になったら次へ
+
+	_eComMoveFlag_StickHold = (1<<30), // スティックホールド
+	_eComMoveFlag_ButtonHold = (1<<31), // ボタンホールド
+}
+
+// CComSkill::flags定数
+{
+	_eComSkillType_Interrupt = (1<<0), // 割り込みチェック可能
+	_eComSkillType_NoInterrupt = (1<<1), // 行動中に割り込みされない（こっちが優先
+
+	_eComSkillFlag_ = 0xFFFFFFFF
+};
+
+// ボタン
+{
+	_eComButton_A = (1<<0),
+	_eComButton_B = (1<<1),
+	_eComButton_C = (1<<2),
+	_eComButton_D = (1<<3),
+}
+
+
+//--------------------------------------------------------------
+// 発動テストテンプレ
+stmp = com.GetSkill( 31 ); // 作成
+stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+stmp.SetLotFailedAvg( 0 ); // 失敗確率
+stmp.SetFlags( 0 ); // フラグ
+stmp.checkfunc = function() // チェック
+{
+	local st = BCom.GetStatus();
+	if( st.CheckPosState( _PosState_Ground ) ) return 0; // 
+
+	return 999999;//com_frequency1; // 戻り値が採用比重
+}
+stmp.updatefunc = function() // 採用されたら毎フレーム更新
+{
+	local st = BCom.GetStatus();
+
+	return 1;
+}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	//mtmp.SetSpSkill( 9999 ); // 
+	mtmp.Set( 0, _eComButton_A,  5, 0,  _eComMoveFlag_MoveEnd ); // 
+
+//--------------------------------------------------------------
+
+
+*/
+
+
+//-------------------------------------------------------------
+class CComMove
+{
+//public:
+	tag = ""; // 半角16文字まで
+	stick = 0; // スティック
+	button = 0; // ボタン
+	sp_skill = -1; // 必殺技
+	wait = 10; // ウェイト 配列にすると[1]がランダム値
+
+	flags = 0; // 色々フラグ
+
+	constructor(...)
+	{
+		tag = "";
+		stick = 0;
+		button = 0;
+		sp_skill = -1;
+		wait = 0;
+
+		flags = 0;
+	}
+
+	// ちょっと登録しやすく
+	function SetTag(s) {  tag = s;  } //>! タグ設定 半角16文字まで ＞ s--タグ
+	function SetPad( s, b ) {  stick = s;  button = b;  }  //>! パッド設定 ＞ s--スティック  b-ボタン
+	function SetWait( w, rnd_w ) {  wait = [ w, rnd_w ];  }  //>! ウェイト設定 ＞ w--ウェイト  rnd_w-ウェイトランダム幅
+	function SetSpSkill( s ) {  sp_skill = s;  }  //>! 必殺技設定 ＞ s--技番号
+	function SetFlags( fl ) {  flags = fl;  }  //>! フラグ設定 ＞ s--フラグ _eComMoveFlag_
+	// 
+	function Set( s, b, w, rnd_w, fl ) {  SetPad( s, b );  SetWait( w, rnd_w );  SetFlags( fl );  }  //>! SetPad,SetWait,SetFlags を同時に
+};
+
+//-------------------------------------------------------------
+class CComSkill
+{
+	tag = ""; // 半角16文字まで
+	type = 0;
+	flags = 0; // 
+	lotwait = 0; // 終了後、抽選に入っていい時間、基本0
+	lotfailedavg = 0; // 抽選で選ばれた際に発動失敗してしまう確率(0-100)
+
+	checkfunc = 0; // チェック用関数（設定しないと抽選されない、ジャンプ先専用の場合は記述しない
+	updatefunc = 0; // アップデート関数
+
+	move_list = 0; // CComMoveリスト
+
+	constructor(...)
+	{
+		tag = "";
+		type = 0;
+		flags = 0;
+		lotwait = 0;
+		lotfailedavg = 0;
+
+		if( vargc >= 1 )
+		{
+		}
+		move_list = [];
+	}
+
+	// 
+	function SetMoveSize(i)
+	{
+		move_list.resize(i);
+		for( local i=0; i<move_list.len(); i++ )
+		{
+			move_list[i] = CComMove();
+		}
+	}
+	function GetMoveSize() {  return move_list.len();  }
+	function GetMove(i) //> i-
+	{
+		return move_list[i];
+	}
+	// 勝手に加算、メモリ的にあんまりよくない
+	function PlusMove()
+	{
+		local i = move_list.len();
+		move_list.append( CComMove() );
+		return GetMove(i);
+	}
+
+	// ちょっと登録しやすく
+	function SetTag(s) {  tag = s;  } //>! タグ設定 半角16文字まで ＞ s--タグ
+	function SetFlags( s ) {  flags = s;  }  //>! フラグ設定 ＞ s--フラグ _eComSkillType_
+	function SetLotWait( s ) {  lotwait = s;  }  //>! 終了＆失敗時の抽選待ち ＞ s--時間
+	function SetLotFailedAvg( s ) {  lotfailedavg = s;  }  //>! 抽選失敗確率 ＞ s--確率(0-100)
+};
+
+//-------------------------------------------------------------
+class CCom
+{
+	guardavg = 0; // ガード確率
+
+	skill_list = 0; // CComSkillリスト
+
+	constructor(...) // vargc-引数の数  vargv[]-引数配列
+	{
+		guardavg = 0;
+
+		skill_list = [];
+
+		if( vargc >= 1 )
+		{
+			skill_list.resize( vargv[0] );
+		}
+		for( local i=0; i<skill_list.len(); i++ )
+		{
+			skill_list[i] = CComSkill();
+		}
+		print("\n" + vargc );
+	}
+
+	function GetSkill(i) //> i-
+	{
+		return skill_list[i];
+	}
+
+	// ちょっと登録しやすく
+	function SetGuardAvg(s) {  guardavg = s;  } //>! ガード確率設定 ＞ s--確率(0-100)
+};
+
+
+global_com_tmp <- 0;
+
+// _com の最後に呼んでこれで登録するように
+function ComBase_GlobalComTmp_Set( comdat )
+{
+	global_com_tmp = comdat;
+}
+
+function ComBase_GlobalComTmp_Delete()
+{
+	global_com_tmp = 0;
+}
+

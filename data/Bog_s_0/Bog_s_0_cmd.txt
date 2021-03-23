@@ -1,0 +1,4 @@
+btl_debPrint2("\n[s_Bog_0_cmd.txt]");
+BOG_S_CommandTable <- 0;
+_dp(" -> Load OK");
+

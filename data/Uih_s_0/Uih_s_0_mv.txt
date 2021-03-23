@@ -1,0 +1,1142 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+const CDef_Uih_s_PP_PowSt = 1; // パワーアップ状態の記憶
+const CDef_Uih_s_PP_PowEffSt = 2; // 初春6Sの効果が乗ったかどうか
+
+// 上記２つのPP用共通フラグ
+const CDef_Uih_s_Flags_PowBlast = 1;
+const CDef_Uih_s_Flags_Potential = 2;
+const CDef_Uih_s_Flags_Kirifuda = 4;
+const CDef_Uih_s_Flags_AllPow = 7;
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+
+t.Mv_Startup <-
+{
+	function Init_After()
+	{
+		BMvEff.CreateObject( { mvname="Mv_PowerUpChecker" } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+local siziParam = [
+	{
+		// １コンボでＯＫ
+		messAnnounce = 
+		[
+			{ mess="@C190", se=190 },
+		],
+		checkmv = "Mv_SiziChecker_Down",
+		messSuccess =
+		[
+			{ mess="@C191", se=191 },
+		],
+		messFailure =
+		[
+			{ mess="@C200", se=200 },
+			{ mess="@C201", se=201 },
+		],
+		comboSizi = 1,
+		orderIconMask = (1<<0)|(1<<1),
+	},
+	{
+		// 死ぬほど簡単
+		messAnnounce = 
+		[
+			{ mess="@C192", se=192 },
+		],
+		checkmv = "Mv_SiziChecker_NoDamage",
+		messSuccess =
+		[
+			{ mess="@C193", se=193 },
+		],
+		messFailure =
+		[
+			{ mess="@C200", se=200 },
+			{ mess="@C201", se=201 },
+		],
+		comboSizi = 0,
+		orderIconMask = (1<<0)|(1<<2),
+	},	
+
+	{
+		// 難しい
+		messAnnounce = 
+		[
+			{ mess="@C194", se=194 },
+		],
+		checkmv = "Mv_SiziChecker_BoundTime",
+		messSuccess =
+		[
+			{ mess="@C191", se=191 },
+			{ mess="@C193", se=193 },
+		],
+		messFailure =
+		[
+			{ mess="@C200", se=200 },
+			{ mess="@C201", se=201 },
+		],
+		comboSizi = 0,
+		orderIconMask = (1<<1)|(1<<2),
+	},
+]
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00, siziParam)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		
+		// 表示座標指定
+		Battle_Std.AddXPos_CheckFrontStage( 100, 0 ); // 移動距離, これ以上壁と近くならない
+		
+		BMvTbl.SetLP(0,0); // 指示の種類
+		BMvTbl.SetLP(1,0); // 子から受ける成功判定 0:挑戦中 1:成功 -1:失敗
+		BMvTbl.SetLP(2,0); // 子が参照する親の状態(FrameIDみたいな) 0:失敗チェックも行わない 100:指示を出した後 500:ガタッ
+		
+		BMvTbl.SetLP(3,0); // コンボリキャストするかどうか、指示生成時に更新
+	}
+	function FrameUpdate_After() : (siziParam)
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		
+		// Battle_Std.DebWrite_ValTiming( { ID=mvs.FrameID } );
+		
+		switch( Battle_Std.GetUpdateFrameID( mvs ) )
+		{
+		case 100: // でてきてカタカタ開始
+			BSound.SE_Play( { type=_SeType_Player, num=[182,184,185] } );
+			// サーチオブジェクトを出して攻撃開始だ
+			local eff = BMvEff.CreateObject( { mvname="Mv_Mark" } );
+			if( eff.push() )
+			{
+				BMvTbl.SetLP(0,1); // 保証ありで初春がくらっても消えない
+				eff.pop();
+			}
+			break;
+		case 400: // 消えた後のウェイト30F
+			// 相手のやられ終了をまって、やられてなければすぐに500へ進む
+			break;
+		case 500: // 指示出し＆チェック1200F(↓の方でFrameID500中のチェック処理あり)
+			// このタイミングで指示メッセージを出す
+			// ID500の間は成功or失敗判定処理を行う
+			// 1200Fぐらいで失敗（無言でリキャ開始）になる
+			
+			BMvTbl.SetLP(2,100); // 指示を出した後
+			{
+				// 指示を抽選
+				local siziType = BMvEff.Random_Limit( siziParam.len() );
+				local st = siziParam[siziType];
+				_dp("\n 指示タイプ:"+siziType+" メッセージdata:"+st.messAnnounce[0].mess+" 監視:"+st.checkmv );
+				BMvTbl.SetLP(0,siziType); // 出した指示の種類を記憶
+
+				// 指示のチェックオブジェクトを生成
+				BMvTbl.SetLP(1,0); // 子から受ける成功判定 0:挑戦中 1:成功 -1:失敗
+				BMvEff.CreateObject( { mvname= st.checkmv } );
+				
+				// 指示のアイコンを表示
+				local icon = BMvEff.CreateObject( { mvname= "Mv_OrderIcon" } );
+				if( icon.push() )
+				{
+					BMvTbl.SetHan6LayerMask( {  val = st.orderIconMask } );
+					icon.pop();
+				}
+				
+				// 指示のメッセージを表示
+				local rnd = BMvEff.Random_Limit( st.messAnnounce.len() );
+				local param = st.messAnnounce[ rnd%st.messAnnounce.len() ];
+				tDDC.Support_SetMessage( param.mess , 9999, param.se );
+				
+				// 指示別の特殊な処理
+				BMvTbl.SetLP(3,st.comboSizi); // コンボ指示を記憶 1だとコンボ中次の指示を出す
+			}			
+			break;
+		case 600: // 指示に成功（Iconからも参照）
+			// ヒット時の吹き飛ぶ向きがちぐはぐなことが多いので
+			Battle_Std.SetSupportMuki_CheckMainPos(); // メインキャラ同士の座標を元に向きを変更
+		
+			tDDC.Jem_SetMessageEx( 1, -1, "", 30 ); // ポテンシャルカットイン
+			local eff = BMvEff.CreateObject( { mvname="Mv_Mark" } );
+			if( eff.push() )
+			{
+				BMvTbl.SetLP(0,0); // 初回じゃない
+				eff.pop();
+			}
+			break;
+		case 700: // 成功後やられ終了待機（Iconからも参照）
+			break;
+		case 800: // 再度指示出しに戻るor終わるのループポイント（Iconからも参照）
+			// 500に戻るウェイト
+			break;
+		}
+		
+		// 絵が消えている間
+		// 保証状態
+		if( mvs.Param3 & 4 )
+		{
+			if( Battle_Std.RoundisEnd() )
+			{
+				BMvTbl.SetFinalize( 0 );
+				tDDC.Support_SetMessage( "" , -1, -1 ); // メッセージを消す。表示時間に０未満を入れると表示を消去。
+				return;
+			}
+			
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				local clamove = Battle_Std.MoveCode.CheckFlag( def_MC_Skill ) && Battle_Std.MvAction.CheckFlag( def_MC_SPAction );
+				
+				main.pop();
+				
+				if( clamove )
+				{
+					_dp("\n クライマックスアーツを検知したら撤退");
+					BMvTbl.SetFinalize( 0 );
+					return;
+				}
+			}
+		}
+
+		// FrameID400の間は相手のやられを待つ・・・けど30Fぐらいですぐにチェック開始
+		if( mvs.FrameID == 400 )
+		{
+			// やられが終わったら次の指示へ
+			if( !Battle_Std.CheckEnemyisBound() )
+			{
+				BMvTbl.JumpFrameID( 500 ); // 指示出し
+			}
+		}
+		
+		// FrameID700の間は相手のやられを待つ
+		if( mvs.FrameID == 700 )
+		{
+			// やられが終わる or コンボ中次の指示を出すフラグなら先へ進む
+			if( !Battle_Std.CheckEnemyisBound() || BMvTbl.GetLP(3)==1 )
+			{
+				BMvTbl.JumpFrameID( 800 ); // 指示出しの500へ戻るウェイト
+			}
+		}		
+		
+		// 終了待機
+		// 消えた状態でしたか成功判定のチェックを行わない
+		// また、消えた状態では成功より前に相手が死んでいたら終わる
+		if( mvs.FrameID == 500 )
+		{
+			local siziType = BMvTbl.GetLP(0); // 今出している指示の種類を取得
+			local st = siziParam[siziType];
+			
+			if( BMvTbl.GetLP(1)==1 ) // 子から受ける成功判定 0:挑戦中 1:成功 -1:失敗
+			{
+				// 成功した！
+				local rnd = BMvEff.Random_Limit( st.messSuccess.len() );
+				local param = st.messSuccess[ rnd%st.messSuccess.len() ];
+				_dp("\n 成功:"+param.mess+" se:"+param.se );
+				
+				tDDC.Support_SetMessage( param.mess , 200, param.se );
+				// トロフィー用処理
+				local main = BMvCore.GetMainCharaData(); // プレイヤー情報を取得
+				if( main.push() )
+				{
+					if( BMvTbl.GetCharaNo()==Def_ChrNo_Krk)
+					{
+						_dp("\n 黒子が指示を達成したのでトロフィーゲット");
+						BMvTbl.Achievement_Unlock( _eAchievement_KRK );
+					}
+					main.pop();
+				}
+				
+				BMvTbl.SetLP(2,500); // クリアなの
+				BMvTbl.JumpFrameID( 600 ); // 600で指示を出す
+			
+				return;
+			}
+			else if( BMvTbl.GetLP(1) == -1 ) // 子から受ける成功判定 0:挑戦中 1:成功 -1:失敗
+			{
+				local rnd = BMvEff.Random_Limit( st.messFailure.len() );
+				local param = st.messFailure[ rnd%st.messFailure.len() ];
+				_dp("\n 失敗:"+param.mess+" se:"+param.se );
+				
+				tDDC.Support_SetMessage( param.mess , 200, param.se );
+				
+				BMvTbl.SetFinalize( 0 );
+				return;
+			}
+		}
+	}
+	function LastUpdate_After()
+	{
+		//子から受ける成功判定 0:挑戦中 1:成功 -1:失敗
+		if( BMvTbl.GetLP(1)==0 )
+		{
+			_dp("\n 指示に挑戦中のメッセージ消去");
+			tDDC.Support_SetMessage( "" , -1, -1 ); // メッセージを消す。表示時間に０未満を入れると表示を消去。
+		}
+	}
+}
+
+local pat_num_OrderIcon = BMvEff.GetPatternNum( { datatype=0, pat="OrderIcon" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_OrderIcon <- 
+{
+	function Init() : (pat_num_OrderIcon)
+	{
+		BMvTbl.SetPattern( pat_num_OrderIcon );
+		
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround|_ObjFlags_NoCamera|_ObjFlags_NoRenderOrder|_ObjFlags_EraseParentPatChange } );
+		
+		// 座標は決めうち
+		local pl = BMvTbl.GetPlayerSide(); //1P:0 2P:1
+		local posst = { x=580<<7, y=-345<<7, margin=40<<7 } ;
+		local pos = { x=0, y=posst.y };
+		if( pl==0 )
+		{
+			pos.x = -posst.x;
+		}
+		else
+		{
+			pos.x = posst.x;
+		}
+		BMvTbl.SetMuki( _Direction_Right ); //常に右向き
+		BMvTbl.SetPosition( { x=pos.x, y=pos.y } ); // 座標指定		
+	}
+	function FrameUpdate()
+	{
+		// 
+		local mvs = BMvTbl.GetMvStatus();
+		local oya = BMvCore.GetParentCharaData();
+		if( oya.push() )
+		{
+			local oya_mvs = BMvTbl.GetMvStatus();
+			oya.pop();
+			
+			local param0 = mvs.Param0;
+			
+			// 待機中
+			if( param0!=2 && oya_mvs.FrameID == 600 ) BMvTbl.JumpFrameID( 200 ); // 成功！
+			if( param0!=3 && oya_mvs.FrameID == 700 ) BMvTbl.JumpFrameID( 300 ); // 成功後のコンボ終了待機
+			if( oya_mvs.FrameID == 800 ) // 指示が終わって抜ける
+			{
+				BMvTbl.SetFinalize( 0 );
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}	
+}
+
+local pat_num_Mark = BMvEff.GetPatternNum( { datatype=0, pat="Mark" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Mark <-
+{
+	function Init() : (pat_num_Mark)
+	{
+		// BMvTbl.SetLP(0,0); // 1:初回なので強い
+		
+		BMvTbl.SetPattern( pat_num_Mark );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange } );
+	}
+	function FrameUpdate()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		
+		// 初春が食らっても消えない保証にする
+		if( BMvTbl.GetLP(0)==1 && mvs.MvCount == 35 )
+		{
+			_dp("\n 保証タイミング");
+			BMvEff.EraseObjectFlags( { flags=_ObjFlags_EraseParentPatChange } );
+		}
+		
+		// Param3 & 8 相手をサーチ
+		// Param3 & 2 やられ中じゃないとサーチしない
+		// _dp("\n mvs.Param3:"+mvs.Param3 );
+		if( mvs.Param3 & 8 )
+		{
+			local marking = 1;
+			if( mvs.Param3 & 2 )
+			{
+				if( !Battle_Std.CheckEnemyisDamage() )
+				{
+					marking = 0;
+				}
+			}
+			
+			if( marking )
+			{
+				// _dp("\n マーキング中");
+				Battle_Std.SetPos_MarkingEnemy(); // 敵にくっつく
+			}
+		}
+		
+		if( mvs.Param3 & 4 )
+		{
+			// 相手が無敵だったりしてあたりそうにない時は頭に戻る
+			// 無敵じゃないようなら攻撃アニメに進む
+			// 他にも条件色々足してみよう
+			local wait = 0;
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				local mutekiSt = BMvEff.GetPlayerMuteki( 0 );
+				enemy.pop();
+				
+				// _dp("\n mutekiSt:"+mutekiSt );
+				
+				if( mutekiSt ) // 無敵の時は1or10
+				{
+					if( !Battle_Std.CheckEnemyisBound() && !Battle_Std.CheckMainisBound() )
+					{
+						wait = 1;
+					}
+				}
+			}
+			
+			if( wait ) // 無敵の時は1or10
+			{
+				wait = 1;
+				BMvTbl.JumpFrameID( 299 ); // &4の頭に戻ってる
+			}
+		}
+		
+		// プレイヤーのやられできえる
+		// 初春をたたいたらそれはflagで消える
+		if( Battle_Std.CheckMainisDamage() && BMvTbl.GetLP(0)==0 )
+		{
+			BMvTbl.SetFinalize( 0 );
+		}
+	}
+	function HitInterrupt()
+	{
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			BMvEff.Slowmotion_Set( { type=0, time=30, power=5000 } );
+			BMvEff.SetCamera_Quake( { type=2, time=20 } );
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local siziCheckerInitFunc = function()
+{
+	BMvTbl.SetPattern( 65 );
+	BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_NoRender|_ObjFlags_NoGround } );
+	
+	BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } );
+}
+
+// 固めorコンボが３秒続いたら成功
+t.Mv_SiziChecker_BoundTime <-
+{
+	function Init() : (siziCheckerInitFunc)
+	{
+		siziCheckerInitFunc();
+		
+		BMvTbl.SetLP(0,0); // これが180を超えたら成功
+	}
+	function Update()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		
+		if( Battle_Std.CheckEnemyisBound() )
+		{
+			BMvTbl.AddLP(0,1); // 加算
+		}
+		
+		if( BMvTbl.GetLP(0) >= 60 )
+		{
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				BMvTbl.SetLP( 1, 1 ); // 成功ダヨ
+				oya.pop();
+				
+				BMvTbl.SetFinalize( 0 );
+				return;
+			}
+		}
+		
+		// 失敗判定
+		if( Battle_Std.CheckMainisDamage() )
+		{
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				BMvTbl.SetLP( 1, -1 ); // 失敗ダヨ
+				oya.pop();
+				
+				BMvTbl.SetFinalize( 0 );
+				return;
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+t.Mv_SiziChecker_Down <-
+{
+	function Init() : (siziCheckerInitFunc)
+	{
+		siziCheckerInitFunc();
+		
+		BMvTbl.SetLP(1,0); // 状態 0:相手がダウン以外になるのを待つ 1:相手がダウンになるのを待つ
+	}
+	function Update()
+	{
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			local bs = BtlMvStd.GetBoundStatus();
+			local enemyIsDown = ( bs.isBound && bs.IsDown() );
+		
+			enemy.pop();
+			
+			switch( BMvTbl.GetLP(1) )
+			{
+			case 0:
+				if( !enemyIsDown )
+				{
+					BMvTbl.SetLP(1,1); // ダウンになるのを待つ
+				}
+				break;
+			case 1:
+				if( enemyIsDown )
+				{
+					BMvTbl.SetLP(1,2); // おわり
+					
+					local oya = BMvCore.GetParentCharaData();
+					if( oya.push() )
+					{
+						BMvTbl.SetLP( 1, 1 ); // 成功ダヨ
+						oya.pop();
+						
+						BMvTbl.SetFinalize( 0 );
+						return;
+					}
+				}
+				break;
+			}
+			
+		}
+
+		// 失敗判定
+		if( Battle_Std.CheckMainisDamage() )
+		{
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				BMvTbl.SetLP( 1, -1 ); // 失敗ダヨ
+				oya.pop();
+				
+				BMvTbl.SetFinalize( 0 );
+				return;
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+local makemv_SiziChecker_NoBound = function( param={} ) : (siziCheckerInitFunc)
+{
+	local retmv = {};
+	
+	local mvparam =
+	{
+		missFlagType = "NoDamage",
+		checkFrame = 240,
+	};
+	
+	mvparam.missFlagType = ("type" in param)? param.type : 0;
+	switch( param.type )
+	{
+	case "NoDamage":
+		mvparam.missFlagType = "Damage";
+		mvparam.checkFrame = 240;
+		break;
+	case "NoBound":
+		mvparam.missFlagType = "Bound";
+		mvparam.checkFrame = 240;
+	default:
+		break;
+	}
+	
+	retmv.Init <- function() : (siziCheckerInitFunc)
+	{
+		siziCheckerInitFunc();
+		
+		BMvTbl.SetLP(0,0); // これが一定値を超えたら成功
+		BMvTbl.SetLP(1,0); // 状態 0:自分がやられ以外になるのを待つ 1:自分がやられになるのを待つ
+	}
+	
+	retmv.Update <- function() : (mvparam)
+	{
+		// local main = BMvCore.GetMainCharaData();
+
+		local missFlag = 0;
+		switch( mvparam.missFlagType )
+		{
+		case "Damage":
+			missFlag = Battle_Std.CheckMainisDamage();
+			break;
+		case "Bound":
+		default:
+			missFlag = Battle_Std.CheckMainisBound();
+			break;
+		}
+			
+		switch( BMvTbl.GetLP(1) )
+		{
+		case 0:
+			if( !missFlag ) // やられ以外になるのをまつ
+			{
+				BMvTbl.SetLP(1,1); 
+			}
+			break;
+		case 1:
+			if( missFlag ) // やられちゃった
+			{
+				local oya = BMvCore.GetParentCharaData();
+				if( oya.push() )
+				{
+					BMvTbl.SetLP( 1, -1 ); // 失敗ダヨ
+					oya.pop();
+					
+					BMvTbl.SetFinalize( 0 );
+					return;
+				}
+			}
+			else // やられてない
+			{
+				BMvTbl.AddLP(0,1); // 加算
+				if( BMvTbl.GetLP(0) >= mvparam.checkFrame )
+				{
+					local oya = BMvCore.GetParentCharaData();
+					if( oya.push() )
+					{
+						BMvTbl.SetLP( 1, 1 ); // 成功ダヨ
+						oya.pop();
+						
+						BMvTbl.SetFinalize( 0 );
+						return;
+					}
+				}
+			}
+			break;
+		}
+	}
+	
+	retmv.Finalize <- function()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	
+	return retmv;
+}
+
+t.Mv_SiziChecker_NoDamage <- makemv_SiziChecker_NoBound( { type="NoDamage" } );
+t.Mv_SiziChecker_NoBound <- makemv_SiziChecker_NoBound( { type="NoBound" } );
+
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		// 透明状態を殴られた時は透明のママ消える
+		// そうしないと突如出現して違和感あるので
+		local toumei = ( BMvTbl.GetMvStatus().Param3 & 8 );
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+		if( toumei )
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoRender } );
+		}
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		// 透明状態を殴られた時は透明のママ消える
+		// そうしないと突如出現して違和感あるので
+		local toumei = ( BMvTbl.GetMvStatus().Param3 & 8 );
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+		if( toumei )
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoRender } );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <-
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 );
+		
+		// 表示座標指定
+		// Battle_Std.AddXPos_NearEnemy( 400, 400 ); // 移動距離, これ以上相手と近くならない
+		Battle_Std.AddXPos_CheckFrontStage( 400, 0 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		
+		// 時間停止中だって動いちまうぜ
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll } );
+
+		local eff = BMvEff.CreateObject( { mvname="Mv_TL_Flower" } );
+		if( eff.push() )
+		{
+			// _ObjFlags_MoveTimeStopAll  があるのは暗転中などに止まってしまうと
+			// ポテンシャルの時間などが進んでしまうため
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_ParentMove|_ObjFlags_NoGround|_ObjFlags_MoveTimeStopAll } );
+			eff.pop();
+		}
+		
+		BMvTbl.SetLP(0,0); // TL花から受け取る　0:通常 10:終わり
+		BMvTbl.SetLP(1,0); // ループを抜けたかどうか 1:抜けたので処理しない
+	}
+	function FrameUpdate_After()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		switch( Battle_Std.GetUpdateFrameID( mvs ) )
+		{
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[170,171,172,173] } );
+			break;
+		}
+		
+		// 花TLから終わりを伝えられた
+		if( BMvTbl.GetLP(1)==0 && BMvTbl.GetLP(0)==10 )
+		{
+			if( mvs.FrameID == 500 ) // ループポイント
+			{
+				BMvTbl.JumpFrameID( 900 ); // 終了アニメへ
+				BMvTbl.SetLP(1,1);
+			}
+		}
+	}
+}
+
+local grpMask =
+[
+	(1<<1)|(1<<2),
+	(1<<0)|(1<<2),
+	(1<<0)|(1<<1),
+]
+
+local flwParam = [
+	[
+		{ pos=[-129,-292], grp=grpMask[0], size=100, rev=1 },
+		{ pos=[ -80,-334], grp=grpMask[1], size= 80, rev=1 },
+		{ pos=[  68,-251], grp=grpMask[0], size=100, rev=0 },
+	],
+	[
+		{ pos=[  50,-334], grp=grpMask[1], size= 80, rev=0 },
+		{ pos=[ -67,-213], grp=grpMask[2], size=100, rev=0 },
+	],
+	[
+		{ pos=[-133,-217], grp=grpMask[1], size= 60, rev=0 },
+		{ pos=[-166,-323], grp=grpMask[2], size= 60, rev=0 },
+		{ pos=[  13,-383], grp=grpMask[0], size= 60, rev=1 },
+		{ pos=[ 109,-223], grp=grpMask[1], size=100, rev=1 },
+		{ pos=[ 139,-304], grp=grpMask[2], size= 60, rev=1 },
+	],
+
+]
+
+
+
+local pat_num_FlwGrp = BMvEff.GetPatternNum( { datatype=0, pat="FlwGrp" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_TL_Flower = BMvEff.GetPatternNum( { datatype=0, pat="TL_Flower" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_TL_Flower <-
+{
+	function Init() : (pat_num_TL_Flower)
+	{
+		BMvTbl.SetPattern( pat_num_TL_Flower );
+		
+		BMvTbl.SetLP(0,0); // 花の咲くアニメ進行用（flwParam）
+
+		BMvTbl.SetLP(9,0); // 効果時間測定用
+		
+		// BMvTbl.SetPP(CDef_Uih_s_PP_PowSt,0); // 1:パワブラ中 2:ポテ中 4:切り札中
+		
+		local powSt = BMvTbl.GetPP(CDef_Uih_s_PP_PowEffSt);
+		BMvTbl.SetLP(5,powSt); // でてきた時のフラグを記憶
+	}
+	function FrameUpdate() : (flwParam, pat_num_FlwGrp)
+	{
+		// 花がパパッと咲くアニメ
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.isFrameUpdate && mvs.Param3&4 )
+		{
+			local fra_pos = BMvTbl.GetLP(0);
+			BMvTbl.AddLP(0,1);
+			if( fra_pos < flwParam.len() )
+			{
+				local param = flwParam[fra_pos%flwParam.len()];
+				
+				for( local i=0; i<param.len(); i++ )
+				{
+					local pa = param[i];
+					local eff = BMvEff.CreateObject( { /*mvname="Mv_Flw",*/
+					start_pat=pat_num_FlwGrp, x=pa.pos[0], y=pa.pos[1], flags=_Position_ToolShift } );
+					if( eff.push() )
+					{
+						BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_NoGround|_ObjFlags_MoveTimeStopAll } );
+					
+						// _dp("\n pa.grp:"+pa.grp );
+						BMvTbl.SetHan6LayerMask( {  val = pa.grp } );
+						local scale = 10000 * pa.size / 100;
+						BMvTbl.SetScale( { x=scale, y=scale } );
+						if( pa.rev ) BMvTbl.SetMuki( _Direction_Reverse );
+						eff.pop();
+					}
+				}
+			}
+		}
+	}
+	function Update()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		local count = BMvTbl.GetLP(9);
+		local rs = BMvTbl.GetMvRoundStatus();
+		
+		// TimeUpdate をチェックしないと
+		// キャンセルサポとかで呼ぶと切り札の時間増えちまうよ（時間停止中切り札のへりが止まるので）
+		if( mvs.Param3&4 && count < 240 )
+		{
+			//_dp("\n はいってる？:"+mvs.MvCount );
+
+			local powSt = BMvTbl.GetLP(5); // 生成時の CDef_Uih_s_PP_PowEffSt
+			local nowPowSt = BMvTbl.GetPP(CDef_Uih_s_PP_PowSt); // 現在のパワーアップ状況
+			
+			// Battle_Std.DebWrite_ValTiming( { powSt=powSt, nowPowSt=nowPowSt } );
+			
+			local setPowBlast = 0; // このフレームパワブラ延長したか
+			local setPowJem = 0; // このフレームポテンシャル延長したか
+			local setPowKiri = 0; // このフレーム切り札延長したか
+
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				// 何か２ // パワブラの残り時間を減らないようにする
+				// ※パワーアップブラストでない場合は効果なし
+				if( Battle_Std.Val_CheckFlag( nowPowSt, CDef_Uih_s_Flags_PowBlast ) ) // 現在パワブラ中
+				{
+					if( Battle_Std.Val_CheckFlag( powSt, CDef_Uih_s_Flags_PowBlast ) ) // 生成時に既に効果出してたら
+					{
+						// _dp("\n 重ねがけ:パワブラ");
+						if( count % 3 == 0 )
+						{
+							tDDC.Blast_AddPowerTime( 1 ); // 時間加算値、延長したい場合は正の値
+							setPowBlast = 1;
+						}
+					}
+					else
+					{
+						tDDC.Blast_AddPowerTime( 1 ); // 時間加算値、延長したい場合は正の値
+						setPowBlast = 1;
+					}
+				}
+
+				// 何か１ // 各種ポテンシャルの発動時の残り時間が減らないようにする
+				// num - どれを加算するか、今のところ-1をいれる（全体になる）
+				// plus - 時間加算値、延長したい場合は正の値
+				// ※発動中でない場合は効果なし
+				if( Battle_Std.Val_CheckFlag( nowPowSt, CDef_Uih_s_Flags_Potential ) ) // 現在効果がでているかどうか
+				{
+					if( Battle_Std.Val_CheckFlag( powSt, CDef_Uih_s_Flags_Potential ) ) // 生成時に既に効果出してたら
+					{
+						// _dp("\n 重ねがけ:ポテ");
+						if( count % 3 == 0 )
+						{
+							tDDC.Jem_WorkingPlus( -1, 1 );
+							setPowJem = 1;
+						}
+					}
+					else
+					{
+						tDDC.Jem_WorkingPlus( -1, 1 );
+						setPowJem = 1;
+					}
+				}
+				
+				if( Battle_Std.Val_CheckFlag( nowPowSt, CDef_Uih_s_Flags_Kirifuda ) ) // 現在効果がでているかどうか
+				{
+					if( rs.TimeUpdate )
+					{
+						if( Battle_Std.Val_CheckFlag( powSt, CDef_Uih_s_Flags_Kirifuda ) ) // 成時に既に効果出してたら
+						{
+							if( count % 9 == 0 )
+							{
+								// _dp("\n 重ねがけ:切り札");
+								tDDC.Kirifuda_TimeAdd( -10000, 1 ); // 切り札の残り時間を減らないようにする
+								setPowKiri = 1;
+							}
+						}
+						else
+						{
+							if( count % 3 == 0 )
+							{
+								tDDC.Kirifuda_TimeAdd( -10000, 1 ); // 切り札の残り時間を減らないようにする
+								setPowKiri = 1;
+							}
+						}
+					}
+				}
+				
+				if( Battle_Std.Val_CheckFlag( nowPowSt, CDef_Uih_s_Flags_AllPow ) )
+				{
+				}
+				else
+				{
+					// _dp("\n 何も効果がないので体力を回復")
+					// 240F*1=240回復
+					BMvEff.SetHpGauge( { value = 1, valuetype=1 } ); // 回復量*全体フレーム=回復量
+				}
+				
+				main.pop();
+				
+				// このフレーム効果を延長したら、延長したのをCDef_Uih_s_PP_PowEffStに記憶しておき
+				// 次回Mv_TL_Flower生成時は、重ねがけとして効果を薄くする
+				if( setPowBlast )
+				{
+					// if( !Battle_Std.PP_CheckFlag( CDef_Uih_s_PP_PowEffSt, CDef_Uih_s_Flags_PowBlast ) )
+					// {
+						// _dp("\n ブラスト延長を記憶");
+					// }
+					Battle_Std.PP_AddFlag( CDef_Uih_s_PP_PowEffSt, CDef_Uih_s_Flags_PowBlast );
+				}
+				if( setPowJem )
+				{
+					// if( !Battle_Std.PP_CheckFlag( CDef_Uih_s_PP_PowEffSt, CDef_Uih_s_Flags_Potential ) )
+					// {
+						// _dp("\n ポテンシャル延長を記憶");
+					// }
+					Battle_Std.PP_AddFlag( CDef_Uih_s_PP_PowEffSt, CDef_Uih_s_Flags_Potential );
+				}
+				if( setPowKiri )
+				{
+					// if( !Battle_Std.PP_CheckFlag( CDef_Uih_s_PP_PowEffSt, CDef_Uih_s_Flags_Kirifuda ) )
+					// {
+						// _dp("\n 切り札延長を記憶");
+					// }
+					Battle_Std.PP_AddFlag( CDef_Uih_s_PP_PowEffSt, CDef_Uih_s_Flags_Kirifuda );
+				}
+			}
+
+			// 現在240Fぐらい
+			BMvTbl.AddLP(9,1); // 効果時間測定
+			// _dp("\n 加算フレーム:"+(count+1) );
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		if( BMvTbl.CheckMvUniqueID( { datatype=_DataType_Parent } ) != 0 ) // 親が初春のままなら
+		{
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				if( BMvTbl.GetLP(0) == 0 )
+				{
+					BMvTbl.SetLP(0,10); // 終わり
+				}
+				oya.pop();
+			}
+		}
+	}
+}
+
+
+// 遅くしている間でている
+// その間パワーアップブラストになっていたら、フラグをたてたりする
+
+
+local pat_num_PowerUpChecker = BMvEff.GetPatternNum( { datatype=0, pat="PowerUpChecker" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_PowerUpChecker <-
+{
+	function Init() : (pat_num_PowerUpChecker)
+	{
+		BMvTbl.SetPattern( pat_num_PowerUpChecker );
+		
+		BMvTbl.SetPP(CDef_Uih_s_PP_PowSt,0); // 1:パワブラ中 2:ポテ中 4:切り札中
+		BMvTbl.SetPP(CDef_Uih_s_PP_PowEffSt,0); // 初春6Sの効果が乗ったもの 1:パワブラ 2:ポテ 4:切り札
+	}
+	function Update()
+	{
+		// デバッグ用変数確認処理
+		/*
+		local pow0 =( Battle_Std.Val_CheckFlag( BMvTbl.GetPP(CDef_Uih_s_PP_PowSt), CDef_Uih_s_Flags_PowBlast ) )? "◯" : "×";
+		local pot0 =( Battle_Std.Val_CheckFlag( BMvTbl.GetPP(CDef_Uih_s_PP_PowSt), CDef_Uih_s_Flags_Potential ) )? "◯" : "×";
+		local kir0 =( Battle_Std.Val_CheckFlag( BMvTbl.GetPP(CDef_Uih_s_PP_PowSt), CDef_Uih_s_Flags_Kirifuda ) )? "◯" : "×";
+		local pow1 =( Battle_Std.Val_CheckFlag( BMvTbl.GetPP(CDef_Uih_s_PP_PowEffSt), CDef_Uih_s_Flags_PowBlast ) )? "◯" : "×";
+		local pot1 =( Battle_Std.Val_CheckFlag( BMvTbl.GetPP(CDef_Uih_s_PP_PowEffSt), CDef_Uih_s_Flags_Potential ) )? "◯" : "×";
+		local kir1 =( Battle_Std.Val_CheckFlag( BMvTbl.GetPP(CDef_Uih_s_PP_PowEffSt), CDef_Uih_s_Flags_Kirifuda ) )? "◯" : "×";
+		
+		local str = "\n[効果] パ:"+pow0+" ポ:"+pot0+" 切:"+kir0+" [済] パ:"+pow1+" ポ:"+pot1+" 切:"+kir1;
+
+		// _dp( str );
+		Battle_Std.DebWrite_ValTiming( { ["初春監視"]=str } );
+		*/
+		
+		local main = BMvCore.GetMainCharaData();
+		if( main.push() )
+		{
+			local blastMode = tDDC.Blast_GetUseMode(); // -1:未使用 0:パワーアップブラスト 1:バウンドブラスト 2:コンボブラスト
+			local jemWork = tDDC.Jem_IsWorking(0) || tDDC.Jem_IsWorking(1) || tDDC.Jem_IsWorking(2); // 何らかのポテンシャル発動
+			local kirifuda = tDDC.Kirifuda_CheckTime(); // 切り札ゲージがでているか
+			
+			main.pop();
+			
+			if( blastMode == 0 ) // パワーアップブラスト状態
+			{
+				Battle_Std.PP_AddFlag( CDef_Uih_s_PP_PowSt, CDef_Uih_s_Flags_PowBlast ); // パワブラ状態を記憶
+			}
+			else
+			{
+				Battle_Std.PP_DelFlag( CDef_Uih_s_PP_PowSt, CDef_Uih_s_Flags_PowBlast );
+				Battle_Std.PP_DelFlag( CDef_Uih_s_PP_PowEffSt, CDef_Uih_s_Flags_PowBlast );
+			}
+
+			if( jemWork )
+			{
+				Battle_Std.PP_AddFlag( CDef_Uih_s_PP_PowSt, CDef_Uih_s_Flags_Potential );
+			}
+			else
+			{
+				Battle_Std.PP_DelFlag( CDef_Uih_s_PP_PowSt, CDef_Uih_s_Flags_Potential );
+				Battle_Std.PP_DelFlag( CDef_Uih_s_PP_PowEffSt, CDef_Uih_s_Flags_Potential );
+			}
+			
+			if( kirifuda )
+			{
+				Battle_Std.PP_AddFlag( CDef_Uih_s_PP_PowSt, CDef_Uih_s_Flags_Kirifuda );
+			}
+			else
+			{
+				Battle_Std.PP_DelFlag( CDef_Uih_s_PP_PowSt, CDef_Uih_s_Flags_Kirifuda );
+				Battle_Std.PP_DelFlag( CDef_Uih_s_PP_PowEffSt, CDef_Uih_s_Flags_Kirifuda );
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } ); // やられ音声
+	}
+}
+
+
+
+UIH_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Uih_s );
+
+_dp(" -> Load OK");

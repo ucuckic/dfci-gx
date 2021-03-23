@@ -1,0 +1,12 @@
+[System]
+ProjectName=Crt_s
+[DataFile]
+FileNum= 2
+File00=_temp.HA6
+File01=Crt_s.HA6
+[BmpcutFile]
+FileNum= 1
+File00=Crt_s.cg
+[PAniFile]
+FileNum= 1
+File00=Crt_s_ef00.pat

@@ -1,0 +1,10 @@
+[System]
+ProjectName=csel_Emi
+[DataFile]
+FileNum= 1
+File00=csel_Emi.HA6
+[BmpcutFile]
+FileNum= 1
+File00=csel_Emi.cg
+[PAniFile]
+FileNum= 0

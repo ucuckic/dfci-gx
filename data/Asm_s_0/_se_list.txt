@@ -1,0 +1,78 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Asm_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(400); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Asm00_4901", type=0, category=1, }; // わたしの番ですね
+// クライマックスブースト発動
+st[81] = { path=1, file="Asm00_7002", type=0, category=1, }; // 会いました！
+// ブラストＯＫ
+st[82] = { path=1, file="Asm00_4901", type=0, category=1, }; // わたしの番ですね
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Asm00_2100", type=0, category=1, }; // やりましたね！
+st[101] = { path=1, file="Asm00_2101", type=0, category=1, }; // お役に立てましたでしょうか
+
+// ラウンド敗北	
+st[110] = { path=1, file="Asm00_2200", type=0, category=1, }; // これは一体…！
+st[111] = { path=1, file="Asm00_2201", type=0, category=1, }; // 残念です……！
+
+// 通常攻撃	
+st[120] = { path=1, file="Asm00_2500", type=0, category=1, }; // は
+// st[121] = { path=1, file="Asm00_2501", type=0, category=1, }; // せい
+st[122] = { path=1, file="Asm00_2502", type=0, category=1, }; // 捉えました
+
+// 撤退	
+st[130] = { path=1, file="Asm00_4000", type=0, category=1, }; // ここは下がります
+st[131] = { path=1, file="Asm00_4001", type=0, category=1, }; // 流石ですね…！
+
+// ダメージ	
+st[140] = { path=1, file="Asm00_4500", type=0, category=1, }; // きゃん
+st[141] = { path=1, file="Asm00_4501", type=0, category=1, }; // あぅっ
+st[142] = { path=1, file="Asm00_4502", type=0, category=1, }; // …大丈夫です！
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Asm00_4700", type=0, category=1, }; // ちょ、ちょっと待ってください
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Asm00_4900", type=0, category=1, }; // 戦闘再開です
+st[161] = { path=1, file="Asm00_4901", type=0, category=1, }; // わたしの番ですね
+
+// 必殺技１	
+st[170] = { path=1, file="Asm00_7000", type=0, category=1, }; // 地脈接続！
+st[175] = { path=1, file="Asm00_7001", type=0, category=1, }; // ハナミ！
+st[176] = { path=1, file="Asm00_7002", type=0, category=1, }; // 会いました！
+st[177] = { path=1, file="Asm00_7003", type=0, category=1, }; // 行きます！
+
+// 必殺技２
+// st[180] = { path=1, file="Asm00_7100", type=0, category=1, }; // 浅間の神音借り(かのんがり)を代演奉納で用います
+// st[185] = { path=1, file="Asm00_7101", type=0, category=1, }; // 代演として体力を奉納
+// st[186] = { path=1, file="Asm00_7102", type=0, category=1, }; // 代演としてゲージを奉納
+// st[187] = { path=1, file="Asm00_7103", type=0, category=1, }; // 代演として切り札を奉納
+
+// 必殺技３
+st[190] = { path=1, file="Asm00_7200_b", type=0, category=1, }; // 白砂代座(しらさごだいざ)"梅椿"、接続！
+st[195] = { path=1, file="Asm00_7201_b", type=0, category=1, }; // …っ！、会いました！
+st[196] = { path=1, file="Asm00_7202_b", type=0, category=1, }; // お願い、行って……！
+st[197] = { path=1, file="Asm00_7203_b", type=0, category=1, }; // 貫きます！
+
+// 必殺技４
+// st[200] = { path=1, file="Asm00_7300", type=0, category=2, }; // 許可でたよ（ハナミ）
+// st[201] = { path=1, file="Asm00_7301", type=0, category=2, }; // 拍手（ハナミ）

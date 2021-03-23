@@ -1,0 +1,453 @@
+// 0はランダム用 数字部分がそのままBGナンバーに
+// DataFile = // BGデータフォルダ名、BGファイル名は bg.fbx 固定
+// IsSelectAble = 1 // ステージセレクトで選択できるかどうか
+// Scale = [X,Y,Z] // モデル拡大率
+// Pos = [X,Y,Z] // モデル移動量
+// ViewGrid = // 1ならばグリッド表示
+// MSAA = // MSAAレベル 0-16 設定値が対応していない場合、カードの最大値となる。通常は2で
+// TargetW =  // レンダリングターゲット幅 基本値1280
+// TargetH =  // レンダリングターゲット高さ 基本値720
+// VanishingPoint = // 消失点位置 基本値0.0
+// ShadowScale = // 影の大きさ(マイナスだと奥側に伸びる)
+// ShadowAlpha = // 影の濃さ
+// ※ 浮動小数点定数に「f」を使ってはいけない。 ×「0.0f」 ○「0.0」
+// Name = // ステージ選択時に表示されるBG名 *:作りかけのもの
+// BGM_Final = // 決着ラウンド用BGM番号、書かなければ-1
+// SelectDisable =  // 選択禁止か
+// RandomDisable =  // ランダム禁止か
+// VsDisable =  // 対戦禁止か
+
+BgList <-
+{	
+	/////////////////////////////////////////////////////////
+	Bg_001 =
+	{
+		Name = "戦場のヴァルキュリアステージ",
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 1,
+
+	}
+	/////////////////////////////////////////////////////////
+	Bg_002 =
+	{
+		Name = "バーチャファイター５ステージ",
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 2,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_004 =
+	{
+		Name = "ＮｉＧＨＴＳステージ",
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 3,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_005 =
+	{
+		Name = "ファンタシースターオンライン２ステージ",
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 4,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_007 =
+	{
+		Name = "ソニック・ザ・ヘッジホッグステージ",
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 5,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_008 =
+	{
+		Name = "セブンスドラゴン２０２０ステージ",
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 6,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_009 =
+	{
+		Name = "Ｓｈｉｎｏｂｉステージ",
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 7,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_013 =
+	{
+		Name = "電脳戦機バーチャロンステージ",
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 8,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_014 =
+	{
+		Name = "ボーダーブレイクステージ"
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 9,
+
+	}
+	/////////////////////////////////////////////////////////
+	Bg_015 =
+	{
+		Name = "戦場のヴァルキュリアステージ（夜）"
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 9,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_016 =
+	{
+		Name = "ワンダーランドウォーズステージ",
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 10,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_017 =
+	{
+		Name = "Hi☆sCoool！ セハガールステージ", // 全角32文字未満
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 14,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_018 =
+	{
+		Name = "ワールド エンド エクリプスステージ", // 全角32文字未満
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 14,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_029 =
+	{
+		Name = "トレーニングステージ", // 全角32文字未満
+		DataFile = "",
+
+		
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		MSAA = 16,
+		StageW = 4096, // 2560,4096
+		
+		BGM_Final_cs_vocal = 72,
+		BGM_Final_cs = 92,
+		BGM_Final_vocal = 71,
+		BGM_Final = 91,
+		BGM_Final_cs2_vocal = 73,
+		BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 15,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_099 =
+	{
+		Name = "デバッグ",
+		DataFile = "",
+
+		SelectDisable = 1, // 選択禁止か
+		RandomDisable = 1, // ランダム禁止か
+		VsDisable = 1, // 対戦禁止か
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		StageW = 4096, // 2560
+		MSAA = 16,
+	}
+}
+
+
+

@@ -1,0 +1,90 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Mik_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="ignition", type=0, category=1}; 
+// クライマックスブースト発動
+st[81] = { path=1, file="supboost", type=0, category=1}; 
+// ブラストＯＫ
+st[82] = { path=1, file="blast", type=0, category=1}; 
+
+//SFX
+st[1] = { path=1, file="button1", type=1, category=4};
+st[2] = { path=1, file="button2", type=1, category=4};
+st[3] = { path=1, file="guitar1", type=1, category=5};
+st[4] = { path=1, file="heart", type=1, category=4};
+st[5] = { path=1, file="hitsound", type=1, category=4};
+st[6] = { path=1, file="Microphone", type=1, category=4};
+st[7] = { path=1, file="wavesound", type=1, category=4};
+st[8] = { path=1, file="spin", type=1, category=4};
+
+// Player win	
+st[100] = { path=1, file="win1", type=0, category=1}; 
+st[101] = { path=1, file="win2", type=0, category=1}; 
+
+// Round Lose	
+st[110] = { path=1, file="lose01", type=0, category=1}; 
+st[111] = { path=1, file="lose02", type=0, category=1}; 
+
+// Sup00	
+st[130] = { path=1, file="sup00_1", type=0, category=1};
+st[131] = { path=1, file="sup00_2", type=0, category=1};
+st[132] = { path=1, file="sup00_4", type=0, category=1};
+st[133] = { path=1, file="sup00_5", type=0, category=1};
+st[134] = { path=1, file="sup00_3", type=0, category=1};
+st[135] = { path=1, file="sup00_6", type=0, category=1};
+st[136] = { path=1, file="sup00_6", type=0, category=1};
+st[136] = { path=1, file="supboost", type=0, category=1};
+st[137] = { path=1, file="sup00_8", type=0, category=1};
+st[138] = { path=1, file="sup00_9", type=0, category=1};
+st[139] = { path=1, file="sup00_10", type=0, category=1};
+
+// Sup10	
+st[140] = { path=1, file="sup10_0", type=0, category=1}; 
+st[141] = { path=1, file="sup10_5", type=0, category=1}; 
+st[142] = { path=1, file="sup10_1", type=0, category=1}; 
+st[143] = { path=1, file="sup10_3", type=0, category=1}; 
+st[144] = { path=1, file="sup10_4", type=0, category=1};  
+
+// Charged	
+st[160] = { path=1, file="charged1", type=0, category=1}; 
+st[161] = { path=1, file="charged2", type=0, category=1}; 
+
+// Hitted	
+st[170] = { path=1, file="hit01", type=0, category=1}; 
+st[171] = { path=1, file="hit02", type=0, category=1}; 
+st[172] = { path=1, file="hit03", type=0, category=1}; 
+st[173] = { path=1, file="hit04", type=0, category=1}; 
+st[174] = { path=1, file="hit05", type=0, category=1}; 
+
+// meme	
+st[180] = { path=1, file="polka", type=0, category=1}; 
+st[181] = { path=1, file="popipo", type=0, category=1}; 
+
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	はじめまして、三塚井ドクロです。ドクロちゃんて呼んでください！
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	身長は135センチで、上から81、52、78。皆さんよろしくお願いします！
+
+// キャラセレクト画面キャラクター決定
+// 1130	辛いかも知れないけど、一緒に全国大会目指そうよ！

@@ -1,0 +1,13 @@
+[System]
+ProjectName=Kur
+[DataFile]
+FileNum= 3
+File00=_temp.HA6
+File01=Kur.HA6
+File02=../BaseData.HA6
+[BmpcutFile]
+FileNum= 1
+File00=Kur.cg
+[PAniFile]
+FileNum= 1
+File00=Kur_ef00.pat

@@ -1,0 +1,12 @@
+[System]
+ProjectName=Rus_s
+[DataFile]
+FileNum= 2
+File00=_temp.HA6
+File01=Rus_s.HA6
+[BmpcutFile]
+FileNum= 1
+File00=Rus_s.cg
+[PAniFile]
+FileNum= 1
+File00=Rus_s_ef00.pat

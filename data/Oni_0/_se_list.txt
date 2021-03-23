@@ -1,0 +1,399 @@
+print("\n>>_se_list");
+
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Oni/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="FingerSnap", type=0, category=4, }; // 指パッチン（41236）
+st[51] = { path=2, file="MagiFire", type=0, category=4, }; // 炎（236）
+
+// イグニッション選択
+st[80] = { path=1, file="Oni00_6100", type=0, category=1}; // 今が好機だ
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+// 登場シーン	
+st[100] = { path=1, file="Oni00_2000", type=0, category=1}; // 警告だ、投降しろ
+st[101] = { path=1, file="Oni00_2001", type=0, category=1}; // さて模擬線を開始しようか
+st[102] = { path=1, file="Oni00_2002", type=0, category=1}; // ここから先は洒落じゃすまないぞ
+// st[103] = { path=1, file="Oni00_2003", type=0, category=1}; // 穏やかじゃないな
+// st[104] = { path=1, file="Oni00_2004", type=0, category=1}; // お前は俺から逃げられない
+
+// 掛け合い
+st[105] = { path=1, file="Oni00_2060", type=0, category=1}; // お手柔らかに頼む。俺は「劣等生」だからな。(vs桐乃)
+st[106] = { path=1, file="Oni00_2061", type=0, category=1}; // 気を抜かず、お互い安全第一でいこう。(vs深雪)
+st[107] = { path=1, file="Oni00_2062", type=0, category=1}; // あの時の……リベンジをさせてもらう！（vsキリト）
+st[108] = { path=1, file="Oni00_2063", type=0, category=1}; // ……まずい。これ以上見られるのは危険だ。（vs美琴）
+st[109] = { path=1, file="Oni00_2070", type=0, category=1}; // vs黒子）
+st[104] = { path=1, file="Oni00_2071", type=0, category=1}; // 
+
+// 戦闘勝利・汎用	
+st[110] = { path=1, file="Oni00_2100", type=0, category=1}; // 心配するな、殺しはしない
+st[111] = { path=1, file="Oni00_2101", type=0, category=1}; // 読みが甘かったようだな
+// 戦闘勝利・辛勝	
+st[112] = { path=1, file="Oni00_2102", type=0, category=1}; // 油断していた事は否めないが、恐るべき技量だ
+// 戦闘勝利・楽勝	
+st[113] = { path=1, file="Oni00_2103", type=0, category=1}; // まだまだだな
+
+// ラウンド勝利	
+st[120] = { path=1, file="Oni00_2150", type=0, category=1}; // 茶番は止めてもらいたいな
+st[121] = { path=1, file="Oni00_2151", type=0, category=1}; // 降伏してもらおう
+
+// タイムアップ判定負け	
+st[130] = { path=1, file="Oni00_2200", type=0, category=1}; // 俺としたことが…
+st[131] = { path=1, file="Oni00_2201", type=0, category=1}; // 妥当な結果か
+
+// 弱攻撃	
+st[140] = { path=1, file="Oni00_2300", type=0, category=1}; // は
+st[141] = { path=1, file="Oni00_2301", type=0, category=1}; // ふ
+st[142] = { path=1, file="Oni00_2302", type=0, category=1}; // し
+st[143] = { path=1, file="Oni00_2303", type=0, category=1}; // せ
+st[144] = { path=1, file="Oni00_2304", type=0, category=1}; // た
+
+// 中攻撃	
+st[150] = { path=1, file="Oni00_2400", type=0, category=1}; // はっ
+st[151] = { path=1, file="Oni00_2401", type=0, category=1}; // ふん
+st[152] = { path=1, file="Oni00_2402", type=0, category=1}; // せあっ
+st[153] = { path=1, file="Oni00_2403", type=0, category=1}; // ここだ
+st[154] = { path=1, file="Oni00_2404", type=0, category=1}; // こうか？
+st[155] = { path=1, file="Oni00_2405_b", type=0, category=1}; // せいっ
+// st[156] = { path=1, file="Oni00_2406", type=0, category=1}; // せんっ
+
+// 強攻撃	
+st[160] = { path=1, file="Oni00_2500", type=0, category=1}; // はあっ！
+st[161] = { path=1, file="Oni00_2501_b", type=0, category=1}; // とった！
+st[162] = { path=1, file="Oni00_2502_b", type=0, category=1}; // ぜやっ！
+st[163] = { path=1, file="Oni00_2503", type=0, category=1}; // 遅い！
+st[164] = { path=1, file="Oni00_2504", type=0, category=1}; // もらった！
+st[165] = { path=1, file="Oni00_2505_b", type=0, category=1}; // そこだっ！
+st[166] = { path=1, file="Oni00_2506", type=0, category=1}; // であっ！
+
+// 特殊攻撃	
+// st[170] = { path=1, file="Oni00_2600", type=0, category=1}; // 落ちろ
+// st[171] = { path=1, file="Oni00_2601", type=0, category=1}; // 駄目だな
+// st[172] = { path=1, file="Oni00_2602", type=0, category=1}; // 悪いな
+// st[173] = { path=1, file="Oni00_2603", type=0, category=1}; // 諦めろ
+st[174] = { path=1, file="Oni00_2604", type=0, category=1}; // 消えろ
+// st[175] = { path=1, file="Oni00_2605", type=0, category=1}; // 無駄だ
+st[176] = { path=1, file="Oni00_2606", type=0, category=1}; // インパクトブレイク
+st[177] = { path=1, file="Oni00_2607", type=0, category=1}; // 飛べ！
+
+// 投げ技成功	
+// st[180] = { path=1, file="Oni00_2700", type=0, category=1}; // 捕獲する
+st[181] = { path=1, file="Oni00_2701", type=0, category=1}; // これはどうだ？
+// st[182] = { path=1, file="Oni00_2702", type=0, category=1}; // 捕捉した
+
+// 投げ技失敗	
+// st[190] = { path=1, file="Oni00_2800", type=0, category=1}; // なにっ
+// st[191] = { path=1, file="Oni00_2801", type=0, category=1}; // 速い！
+
+// 敵の投げ技を回避	
+st[200] = { path=1, file="Oni00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // その手を離せ
+st[201] = { path=1, file="Oni00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 詰めが甘いな
+
+// 挑発アクション	
+// st[210] = { path=1, file="Oni00_3100", type=0, category=1}; // 遊んでいるのか？
+// st[211] = { path=1, file="Oni00_3101", type=0, category=1}; // 俺も暇ではない、早く済ませよう
+
+// ジャンプ	
+// st[220] = { path=1, file="Oni00_3200", type=0, category=1}; // ふ
+// st[221] = { path=1, file="Oni00_3201", type=0, category=1}; // は
+// st[222] = { path=1, file="Oni00_3202", type=0, category=1}; // とう
+
+// ダッシュ	
+st[230] = { path=1, file="Oni00_3300", type=0, category=1}; // いくぞ
+st[231] = { path=1, file="Oni00_3301", type=0, category=1}; // ふんっ
+// st[232] = { path=1, file="Oni00_3302", type=0, category=1}; // 待て！
+
+// バックステップ	
+// st[240] = { path=1, file="Oni00_3400", type=0, category=1}; // ふっ
+st[241] = { path=1, file="Oni00_3401", type=0, category=1}; // はっ
+st[242] = { path=1, file="Oni00_3402", type=0, category=1}; // 下がる
+
+// 小攻撃ガード	
+st[250] = { path=1, file="Oni00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // ふ…
+st[251] = { path=1, file="Oni00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // こうか
+st[252] = { path=1, file="Oni00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // 甘いな
+
+// 中攻撃ガード	
+st[260] = { path=1, file="Oni00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // ほう
+st[261] = { path=1, file="Oni00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // やる
+st[262] = { path=1, file="Oni00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // 無謀な
+
+// 大攻撃ガード	
+st[270] = { path=1, file="Oni00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // 厄介だな
+st[271] = { path=1, file="Oni00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // 効くな…！
+st[272] = { path=1, file="Oni00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // 何だと
+
+// 攻撃を見切り余裕でガード	
+st[280] = { path=1, file="Oni00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 効かん
+st[281] = { path=1, file="Oni00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // ガード
+st[282] = { path=1, file="Oni00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 鈍い
+
+// ガード失敗	
+st[290] = { path=1, file="Oni00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // 抜けた！？
+st[291] = { path=1, file="Oni00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // しまった！
+st[292] = { path=1, file="Oni00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // まさか！？
+
+// 受け身	
+st[300] = { path=1, file="Oni00_4000", type=0, category=1}; // おっと
+st[301] = { path=1, file="Oni00_4001", type=0, category=1}; // 次は無いぞ
+st[302] = { path=1, file="Oni00_4002", type=0, category=1}; // これからだ
+
+// バリア発動	
+// st[310] = { path=1, file="Oni00_4100", type=0, category=1}; // 来い
+// st[311] = { path=1, file="Oni00_4101", type=0, category=1}; // 殺気！？
+// st[312] = { path=1, file="Oni00_4102", type=0, category=1}; // 良いだろう…
+
+// バリアガード成功	
+// st[320] = { path=1, file="Oni00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // もうよせ
+// st[321] = { path=1, file="Oni00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // やるな
+// st[322] = { path=1, file="Oni00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // いい攻撃だ
+
+// 小ダメージ	
+st[330] = { path=1, file="Oni00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // く
+st[331] = { path=1, file="Oni00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // な
+st[332] = { path=1, file="Oni00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // む
+
+// 中ダメージ	
+st[340] = { path=1, file="Oni00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // くあっ
+st[341] = { path=1, file="Oni00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // くあっ
+st[342] = { path=1, file="Oni00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // ぐおっ
+
+// 大ダメージ	
+st[350] = { path=1, file="Oni00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // ちぃっ！
+st[351] = { path=1, file="Oni00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // これはっ
+st[352] = { path=1, file="Oni00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // むぅっ！
+
+// 電撃ダメージ	
+// st[360] = { path=1, file="Oni00_4600", type=0, category=1}; // ぐぅっ！
+// 麻痺ダメージ	
+// st[361] = { path=1, file="Oni00_4601", type=0, category=1}; // 眩暈が…！
+// 特殊ダメージ	
+// st[362] = { path=1, file="Oni00_4602", type=0, category=1}; // 毒か！
+
+// ダウン	
+st[370] = { path=1, file="Oni00_4700", type=0, category=1, category=1, prio=Def_SEP_KO }; // これ程とは…！
+st[371] = { path=1, file="Oni00_4701", type=0, category=1, category=1, prio=Def_SEP_KO }; // 見誤ったか…！
+st[372] = { path=1, file="Oni00_4702", type=0, category=1, category=1, prio=Def_SEP_KO }; // ばか…な…！
+
+// ダウン・ノックアウト	
+st[380] = { path=1, file="Oni00_4800", type=0, category=1, category=1, prio=Def_SEP_KO }; // やはり俺の才能では…！
+st[381] = { path=1, file="Oni00_4801", type=0, category=1, category=1, prio=Def_SEP_KO }; // なんだと…っ！
+st[382] = { path=1, file="Oni00_4802", type=0, category=1, category=1, prio=Def_SEP_KO }; // ぐわぁぁぁ！
+
+// 起きあがり	
+st[390] = { path=1, file="Oni00_4900", type=0, category=1}; // 大きく出たな
+st[391] = { path=1, file="Oni00_4901", type=0, category=1}; // 問題ない
+st[392] = { path=1, file="Oni00_4902", type=0, category=1}; // どうしたものか
+
+// 起きあがり・瀕死	
+// st[400] = { path=1, file="Oni00_5000", type=0, category=1}; // 危なかったな
+// st[401] = { path=1, file="Oni00_5001", type=0, category=1}; // まずいな
+// st[402] = { path=1, file="Oni00_5002", type=0, category=1}; // まずいな
+
+// ブラスト	
+st[410] = { path=1, file="Oni00_5100", type=0, category=1}; // パワーアップブラスト
+st[411] = { path=1, file="Oni00_5101", type=0, category=1}; // 攻勢に出るぞ！
+st[412] = { path=1, file="Oni00_5102", type=0, category=1}; // もう遅い！
+
+// コンボブラスト	
+st[420] = { path=1, file="Oni00_5200", type=0, category=1}; // コンボブラスト
+st[421] = { path=1, file="Oni00_5201", type=0, category=1}; // 仕留める！
+
+// バウンドブラスト	
+st[430] = { path=1, file="Oni00_5300", type=0, category=1}; // エスケープブラスト
+st[431] = { path=1, file="Oni00_5301", type=0, category=1}; // 驚いたな
+st[432] = { path=1, file="Oni00_5302", type=0, category=1}; // やるじゃないか
+
+// 攻撃サポートキャラ呼び出し	
+st[440] = { path=1, file="Oni00_5400", type=0, category=1}; // 頼むぞ
+st[441] = { path=1, file="Oni00_5401", type=0, category=1}; // 任せる
+st[442] = { path=1, file="Oni00_5402", type=0, category=1}; // やりすぎるなよ
+
+// 深雪のボイス
+st[443] = { path=1, file="Sbm00_5500", type=0, category=2}; // 今です！
+st[444] = { path=1, file="Sbm00_5501", type=0, category=2}; // 援護してください！
+st[445] = { path=1, file="Sbm00_5602", type=0, category=2}; // お兄さま！
+
+// 補助サポートキャラ呼び出し	
+// st[450] = { path=1, file="Oni00_5500", type=0, category=1}; // 助かる
+// st[451] = { path=1, file="Oni00_5501", type=0, category=1}; // やってくれ
+// st[452] = { path=1, file="Oni00_5502", type=0, category=1}; // やってくれ
+
+// 防御サポートキャラ呼び出し	
+// st[460] = { path=1, file="Oni00_5600", type=0, category=1}; // ありがとう
+st[461] = { path=1, file="Oni00_5601", type=0, category=1}; // すまない ※対深雪時のラウンド勝利ボイスで使用
+// st[462] = { path=1, file="Oni00_5602", type=0, category=1}; // 助かったよ
+
+// 固有サポートキャラ呼び出し	
+st[465] = { path=1, file="Oni00_5700", type=0, category=1}; // 深雪
+st[466] = { path=1, file="Oni00_5701", type=0, category=1}; // 頼むぞ、深雪
+st[467] = { path=1, file="Oni00_5702", type=0, category=1}; // 深雪には適わないな
+
+// 好調時にポテンシャル発動	
+// st[470] = { path=1, file="Oni00_6100", type=0, category=3}; // 今が好機だ
+// st[471] = { path=1, file="Oni00_6101", type=0, category=3}; // 予定通りだな
+// st[472] = { path=1, file="Oni00_6102", type=0, category=3}; // 実に分かりやすい状況だな
+
+st[470] = { path=1, file="Sbm00_8403_b", type=0, category=4}; // さすおに
+st[471] = { path=1, file="Sbm00_8403_b", type=0, category=4}; // さすおに
+st[472] = { path=1, file="Sbm00_8403_b", type=0, category=4}; // さすおに
+
+// ピンチ時にポテンシャル発動	
+st[480] = { path=1, file="Oni00_6200", type=0, category=3}; // 状況を覆す！
+// st[481] = { path=1, file="Oni00_6201", type=0, category=3}; // 意味が良く分からないが…
+st[482] = { path=1, file="Oni00_6202", type=0, category=3}; // 今更引き下がれないな
+
+// レアな隠しポテンシャル発動
+// st[491] = { path=1, file="Oni00_6301", type=0, category=3}; // 俺に本気を出させるな
+
+// 激突演出	
+// st[500] = { path=1, file="Oni00_6400", type=0, category=3}; // ふんっ…！
+// st[501] = { path=1, file="Oni00_6401", type=0, category=3}; // はぁあっ！
+// st[502] = { path=1, file="Oni00_6402", type=0, category=3}; // おおお！
+
+// 必殺技１	
+st[510] = { path=1, file="Oni00_7000", type=0, category=1}; // 抵抗はよせ
+st[511] = { path=1, file="Oni00_7001_b", type=0, category=1}; // 後悔するぞ
+st[512] = { path=1, file="Oni00_7002", type=0, category=1}; // 大人しくしろ
+st[513] = { path=1, file="Oni00_7003", type=0, category=1}; // 雲散霧消（ミスト・ディスパージョン）
+st[515] = { path=1, file="Oni00_7003_b", type=0, category=1}; // 雲散霧消（ミスト・ディスパージョン）
+st[516] = { path=1, file="Oni00_2602", type=0, category=1}; // 悪いな
+st[517] = { path=1, file="Oni00_7401_b", type=0, category=1}; // 茶番だな
+
+// 必殺技2	
+st[520] = { path=1, file="Oni00_7100", type=0, category=1}; // 駆逐する
+st[521] = { path=1, file="Oni00_7101", type=0, category=1}; // 強襲する
+// st[522] = { path=1, file="Oni00_7102_b", type=0, category=1}; // 上だ
+st[523] = { path=1, file="Oni00_7103_b", type=0, category=1}; // ループキャスト
+
+// 必殺技3	
+st[530] = { path=1, file="Oni00_7200", type=0, category=1}; // 諦めろ
+st[531] = { path=1, file="Oni00_7201", type=0, category=1}; // 寝てろ
+st[532] = { path=1, file="Oni00_7202_b", type=0, category=1}; // トドメだ
+st[533] = { path=1, file="Oni00_7203", type=0, category=1}; // 出直して来い
+
+// 必殺技4	
+st[540] = { path=1, file="Oni00_7300", type=0, category=1}; // 止まってみえる
+st[541] = { path=1, file="Oni00_7301", type=0, category=1}; // こっちだ
+st[542] = { path=1, file="Oni00_7302", type=0, category=1}; // 後ろだ
+st[543] = { path=1, file="Oni00_7303", type=0, category=1}; // 捉えた
+
+// 必殺技5	
+// st[550] = { path=1, file="Oni00_7400", type=0, category=1}; // 猿芝居はよせ
+// st[551] = { path=1, file="Oni00_7401_b", type=0, category=1}; // 茶番だな
+st[552] = { path=1, file="Oni00_7402", type=0, category=1}; // 抵抗するな
+st[553] = { path=1, file="Oni00_7403", type=0, category=1}; // 無様だな
+
+// 必殺技6	
+st[560] = { path=1, file="Oni00_7500", type=0, category=1}; // やむを得ん…！
+st[561] = { path=1, file="Oni00_7501", type=0, category=1}; // 使わせて貰う
+st[562] = { path=1, file="Oni00_7502_c", type=0, category=1}; // これはオフレコで頼む
+st[563] = { path=1, file="Oni00_7503", type=0, category=1}; // フラッシュキャスト
+
+// 超必殺技1	
+st[570] = { path=1, file="Oni00_8000_s0", type=0, category=1}; // 警告はしたぞ　…任務完了
+st[571] = { path=1, file="Oni00_8000_s1", type=0, category=1}; // 警告はしたぞ　…任務完了
+st[572] = { path=1, file="Oni00_8001_s0", type=0, category=1}; // これで最後だ　…終わりだな
+st[573] = { path=1, file="Oni00_8001_s1", type=0, category=1}; // これで最後だ　…終わりだな
+st[574] = { path=1, file="Oni00_8002_s0", type=0, category=1}; // 殺しはしない　…そのまま寝ていろ
+st[575] = { path=1, file="Oni00_8002_s1", type=0, category=1}; // 殺しはしない　…そのまま寝ていろ
+
+// 超必殺技2	
+st[580] = { path=1, file="Oni00_8100_s0", type=0, category=1}; // 命の保障はできないぞ　…安心して眠れ
+st[581] = { path=1, file="Oni00_8100_s1", type=0, category=1}; // 命の保障はできないぞ　…安心して眠れ
+st[582] = { path=1, file="Oni00_8101_s0", type=0, category=1}; // ここで仕留める　…少しやりすぎたか
+st[583] = { path=1, file="Oni00_8101_s1", type=0, category=1}; // ここで仕留める　…少しやりすぎたか
+st[584] = { path=1, file="Oni00_8102_s0", type=0, category=1}; // 分からせてやろう　…深雪に近づく事は俺が許さん
+st[585] = { path=1, file="Oni00_8102_s1", type=0, category=1}; // 分からせてやろう　…深雪に近づく事は俺が許さん
+
+st[590] = { path=1, file="Oni00_8200", type=0, category=1}; // 自己修復術式、オートスタート
+
+// // 対人戦３連続勝利
+// 1000	いい結果だ、功績者の名前にはあなたの名前を登録しておいてくれ
+
+// // 対人戦１０連続勝利
+// 1001	この功績はあなたがあってこそだ。あなたの技術力がなければこの功績は挙げられなかっただろう。感謝する
+
+// // 汎用勝利
+// 1010	俺と深雪の日常を損なおうとするものを全て排除する。これが俺の最優先事項だ
+
+// // 汎用勝利
+// 1011	これが本当の戦場だったら、次はないぞ
+
+// // 汎用勝利
+// 1012	これ以上見られるのは危険だ――俺の"秘密"を――
+
+// // 汎用勝利
+// 1013	やれやれ、はやくも化けの皮が剥がれてきたな
+
+// // 汎用勝利
+// 1014	そろそろ戻ろうか――。午後の実習には出席しないと、週末は居残りだからな。
+
+// // 汎用勝利
+// 1015	学校では、評価されない項目ですからね…
+
+// // 汎用勝利
+// 1016	いい腕だ、深雪も新たなライバル登場でモチベーションを上げているよ
+
+// // 勝利画面レアボイス
+// 1017	そこまでだ、おとなしく巣に帰れ
+
+// // 勝利画面レアボイス
+// 1018	いい試合だった。深雪に褒めてやるように言っておこう
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	俺…ですか？
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	はぁ…、前回で分かっただろう。この戦いは俺と相性が悪い、止めておけ
+
+// // キャラセレクト画面キャラクター決定
+// 1130	わかった、出来る限り最善を尽くそう
+
+// // コンティニュー画面コンテニュー待機
+// 1200	自己修復術式、オートスタート、魔法式、ロード コア・エイドス・データ、バックアップよりリード、修復開始……
+
+// // コンティニュー画面再戦決定
+// 1210	完了
+
+// // コンティニュー画面ゲームオーバー
+// 1220	自己修復強制停止
+
+// // 乱入出迎えボイス
+// 1300	相手にとって不足はない。殺す気でかかってこい
+
+// // 乱入出迎えボイス
+// 1301	人前で粗相をする前に帰った方がいいんじゃないか？
+
+// // タイトルコール
+// 1700	電撃文庫ファイティング・クライマックス
+
+// // タイトルコール
+// 1701	ファイティング・クライマックス
+
+// // エンディング１（5～6秒程度）
+// 8200	キミのおかげで助かった、礼を言う
+
+// // エンディング１（5～6秒程度）
+// 8201	フ…また一緒に「夢」を見よう

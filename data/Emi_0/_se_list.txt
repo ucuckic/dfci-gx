@@ -1,0 +1,306 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Emi/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Emi00_3100", type=0, category=1}; // どっからでもかかってきなさい！
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+st[100] = { path=1, file="Emi00_2000", type=0, category=1}; // 顕現せよ！我が力、魔を滅（ほろぼ）さんがため！
+st[101] = { path=1, file="Emi00_2001", type=0, category=1}; // 問答無用！覚悟しなさい！
+st[102] = { path=1, file="Emi00_2002", type=0, category=1}; // すぐに決着付けてあげるわ！
+st[103] = { path=1, file="Emi00_2003", type=0, category=1}; // さぁ、いくわよアラス・ラムス！
+st[104] = { path=1, file="Emi00_2004", type=0, category=1}; // 相手になってあげるわ
+
+// 掛け合い
+st[105] = { path=1, file="Emi00_2060", type=0, category=1}; // ……本当にこいつが、「黒の剣士」なの？
+st[106] = { path=1, file="Emi00_2061", type=0, category=1}; // ゲーム好きならわかるでしょ？世界を救う「勇者」の強さが！
+st[107] = { path=1, file="Emi00_2062", type=0, category=1}; // 「姫」ってわりに、魔王みたいなヤツが出てきたわね……
+st[108] = { path=1, file="Emi00_2063", type=0, category=1}; // あんたも似たようなもんでしょうが！！
+
+st[110] = { path=1, file="Emi00_2100", type=0, category=1}; // 話になんないわね
+st[111] = { path=1, file="Emi00_2101", type=0, category=1}; // 成敗！（時代劇風に）
+
+st[112] = { path=1, file="Emi00_2102", type=0, category=1}; // ふぅー、危なかったー
+
+st[113] = { path=1, file="Emi00_2103", type=0, category=1}; // ちょっとやりすぎたかしら
+
+st[120] = { path=1, file="Emi00_2150", type=0, category=1}; // まだ、やる？
+st[121] = { path=1, file="Emi00_2151", type=0, category=1}; // ふぅ、ご苦労様
+
+st[130] = { path=1, file="Emi00_2200", type=0, category=1}; // はァ！？冗談じゃないわよ！
+st[131] = { path=1, file="Emi00_2201", type=0, category=1}; // えぇー……
+
+st[140] = { path=1, file="Emi00_2300_b", type=0, category=1}; // や
+st[141] = { path=1, file="Emi00_2301_b", type=0, category=1}; // た
+st[142] = { path=1, file="Emi00_2302_b", type=0, category=1}; // ふ
+st[143] = { path=1, file="Emi00_2303_b", type=0, category=1}; // よ
+// st[144] = { path=1, file="Emi00_2304_b", type=0, category=1}; // は
+
+st[150] = { path=1, file="Emi00_2400_b", type=0, category=1}; // てあっ
+st[151] = { path=1, file="Emi00_2401", type=0, category=1}; // そこっ
+st[152] = { path=1, file="Emi00_2402", type=0, category=1}; // はあっ
+st[153] = { path=1, file="Emi00_2403_b", type=0, category=1}; // せいっ
+st[154] = { path=1, file="Emi00_2404_b", type=0, category=1}; // このっ
+
+st[155] = { path=1, file="Emi00_2405_b", type=0, category=1}; // せやっ
+st[156] = { path=1, file="Emi00_2406_b", type=0, category=1}; // とうっ
+
+st[160] = { path=1, file="Emi00_2500_b", type=0, category=1}; // せええいっ！
+st[161] = { path=1, file="Emi00_2501_b", type=0, category=1}; // はああっ！
+st[162] = { path=1, file="Emi00_2502_b", type=0, category=1}; // どっせええい！
+st[163] = { path=1, file="Emi00_2503", type=0, category=1}; // いっけええ！
+st[164] = { path=1, file="Emi00_2504_c", type=0, category=1}; // オラァァ！
+// st[165] = { path=1, file="Emi00_2505", type=0, category=1}; // 死ねええ！
+st[166] = { path=1, file="Emi00_2506", type=0, category=1}; // 足元っ！
+
+// st[170] = { path=1, file="Emi00_2600", type=0, category=1}; // このゲスっ！
+// st[171] = { path=1, file="Emi00_2601", type=0, category=1}; // うるさいっ！
+// st[172] = { path=1, file="Emi00_2602", type=0, category=1}; // 容赦しないわ！
+// st[173] = { path=1, file="Emi00_2603", type=0, category=1}; // 最っ低！
+// st[174] = { path=1, file="Emi00_2604", type=0, category=1}; // いい加減に…
+// st[175] = { path=1, file="Emi00_2605", type=0, category=1}; // しなさいっ！
+
+st[176] = { path=1, file="Emi00_2606", type=0, category=1}; // せーの
+st[177] = { path=1, file="Emi00_2607", type=0, category=1}; // ぶっ飛べ！
+
+st[180] = { path=1, file="Emi00_2700", type=0, category=1}; // 光爆衝波！（こうばくしょうは）
+st[181] = { path=1, file="Emi00_2701", type=0, category=1}; // 吹っ飛べ！
+st[182] = { path=1, file="Emi00_2702", type=0, category=1}; // これならどう！？
+
+// st[190] = { path=1, file="Emi00_2800", type=0, category=1}; // あれっ？
+// st[191] = { path=1, file="Emi00_2801", type=0, category=1}; // …チィッ！
+
+st[200] = { path=1, file="Emi00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // この変態！
+st[201] = { path=1, file="Emi00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 触んな！
+
+// st[210] = { path=1, file="Emi00_3100", type=0, category=1}; // どっからでもかかってきなさい！
+// st[211] = { path=1, file="Emi00_3101", type=0, category=1}; // もう帰っていい？
+
+st[220] = { path=1, file="Emi00_3200", type=0, category=1}; // やっ
+// st[221] = { path=1, file="Emi00_3201", type=0, category=1}; // とうっ
+// st[222] = { path=1, file="Emi00_3202", type=0, category=1}; // ふん
+
+st[230] = { path=1, file="Emi00_3300", type=0, category=1}; // いくわよ！
+st[231] = { path=1, file="Emi00_3301", type=0, category=1}; // ふっ
+// st[232] = { path=1, file="Emi00_3302", type=0, category=1}; // 天光駿靴！（てんこうしゅんか）
+
+st[240] = { path=1, file="Emi00_3400", type=0, category=1}; // こっちよ！
+st[241] = { path=1, file="Emi00_3401", type=0, category=1}; // よっと
+st[242] = { path=1, file="Emi00_3402", type=0, category=1}; // さっ
+
+st[250] = { path=1, file="Emi00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // 何これ？
+st[251] = { path=1, file="Emi00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // 甘いわ
+st[252] = { path=1, file="Emi00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // ハン（鼻で笑う感じ）
+
+st[260] = { path=1, file="Emi00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // 危なっ
+st[261] = { path=1, file="Emi00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // 余裕余裕（少し強がった感じで）
+st[262] = { path=1, file="Emi00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // おおう
+
+st[270] = { path=1, file="Emi00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // っつぅ～！（攻撃を受け止めた手が痺れた）
+st[271] = { path=1, file="Emi00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // 重い！
+st[272] = { path=1, file="Emi00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // これは…！
+
+st[280] = { path=1, file="Emi00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 無駄よ
+st[281] = { path=1, file="Emi00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // なめられたものね
+st[282] = { path=1, file="Emi00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // はぁぁ…（大きめなため息）
+
+st[290] = { path=1, file="Emi00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // やばっ
+st[291] = { path=1, file="Emi00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // ちょ…まっ
+st[292] = { path=1, file="Emi00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // げ！
+
+st[300] = { path=1, file="Emi00_4000", type=0, category=1}; // おっとっと
+st[301] = { path=1, file="Emi00_4001", type=0, category=1}; // やるじゃない
+st[302] = { path=1, file="Emi00_4002", type=0, category=1}; // あわわ
+
+// st[310] = { path=1, file="Emi00_4100", type=0, category=1}; // きなさい
+// st[311] = { path=1, file="Emi00_4101", type=0, category=1}; // やってみれば？
+// st[312] = { path=1, file="Emi00_4102", type=0, category=1}; // どうしたの？
+
+// st[320] = { path=1, file="Emi00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // そら見なさい
+// st[321] = { path=1, file="Emi00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // あー…はいはい
+// st[322] = { path=1, file="Emi00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // ほらね？
+
+st[330] = { path=1, file="Emi00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // いたっ
+st[331] = { path=1, file="Emi00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // きゃっ
+st[332] = { path=1, file="Emi00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // っつぅ
+
+st[340] = { path=1, file="Emi00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // ああっ
+st[341] = { path=1, file="Emi00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // ふぐっ
+st[342] = { path=1, file="Emi00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // あだっ
+
+st[350] = { path=1, file="Emi00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // 痛った！
+st[351] = { path=1, file="Emi00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // ちょっと！
+st[352] = { path=1, file="Emi00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // 何するのよ！
+
+// st[360] = { path=1, file="Emi00_4600", type=0, category=1}; // ひゃうっ！
+// st[361] = { path=1, file="Emi00_4601", type=0, category=1}; // 眩暈が…
+// st[362] = { path=1, file="Emi00_4602", type=0, category=1}; // やってくれたわね…！
+
+st[370] = { path=1, file="Emi00_4700", type=0, category=1, prio=Def_SEP_KO }; // ああああっ！
+st[371] = { path=1, file="Emi00_4701", type=0, category=1, prio=Def_SEP_KO }; // ウソでしょー！？
+st[372] = { path=1, file="Emi00_4702", type=0, category=1, prio=Def_SEP_KO }; // 覚えてなさいよー！
+
+st[380] = { path=1, file="Emi00_4800", type=0, category=1, prio=Def_SEP_KO }; // きゃああああああ！
+st[381] = { path=1, file="Emi00_4801", type=0, category=1, prio=Def_SEP_KO }; // ああああああっ！
+st[382] = { path=1, file="Emi00_4802", type=0, category=1, prio=Def_SEP_KO }; // そん…な……
+
+st[390] = { path=1, file="Emi00_4900", type=0, category=1}; // いたたたた…
+st[391] = { path=1, file="Emi00_4901", type=0, category=1}; // この程度…
+st[392] = { path=1, file="Emi00_4902", type=0, category=1}; // まだまだ
+
+// st[400] = { path=1, file="Emi00_5000", type=0, category=1}; // 甘く見ていたわね…
+// st[401] = { path=1, file="Emi00_5001", type=0, category=1}; // 冗談じゃないわよ…
+// st[402] = { path=1, file="Emi00_5002", type=0, category=1}; // いったぁぁ～
+
+st[410] = { path=1, file="Emi00_5100", type=0, category=1}; // 私を怒らせたわね！
+st[411] = { path=1, file="Emi00_5101", type=0, category=1}; // ブッ殺す！
+st[412] = { path=1, file="Emi00_5102", type=0, category=1}; // はああああっ！
+
+st[420] = { path=1, file="Emi00_5200", type=0, category=1}; // ここからよ！
+st[421] = { path=1, file="Emi00_5201", type=0, category=1}; // 追撃するわ！
+
+st[430] = { path=1, file="Emi00_5300", type=0, category=1}; // こっち来んな！
+st[431] = { path=1, file="Emi00_5301", type=0, category=1}; // あーもうウザったい！
+st[432] = { path=1, file="Emi00_5302", type=0, category=1}; // 離れなさい！
+
+st[440] = { path=1, file="Emi00_5400", type=0, category=1}; // やっちゃって！
+st[441] = { path=1, file="Emi00_5401", type=0, category=1}; // こらしめてやりなさい！
+st[442] = { path=1, file="Emi00_5402", type=0, category=1}; // 頼んだわよ！
+
+// st[450] = { path=1, file="Emi00_5500", type=0, category=1}; // お願い！
+// st[451] = { path=1, file="Emi00_5501", type=0, category=1}; // 任せるわ！
+// st[452] = { path=1, file="Emi00_5502", type=0, category=1}; // 援護頼むわ！
+
+// st[460] = { path=1, file="Emi00_5600", type=0, category=1}; // ありがとう！
+// st[461] = { path=1, file="Emi00_5601", type=0, category=1}; // 助かるわ！
+// st[462] = { path=1, file="Emi00_5602", type=0, category=1}; // ナイス！
+
+st[465] = { path=1, file="Emi00_5700", type=0, category=1}; // さっさとしなさい！
+st[466] = { path=1, file="Emi00_5701", type=0, category=1}; // 何しに来たのよ！
+st[467] = { path=1, file="Emi00_5702", type=0, category=1}; // 魔王！
+
+st[470] = { path=1, file="Emi00_6100", type=0, category=3}; // いい度胸してるじゃない！
+st[471] = { path=1, file="Emi00_6101", type=0, category=3}; // ようやく体があったまって来たわ！
+st[472] = { path=1, file="Emi00_6102", type=0, category=3}; // 後悔するわよ！
+st[480] = { path=1, file="Emi00_6200", type=0, category=3}; // こっからが本番よ！
+st[481] = { path=1, file="Emi00_6201", type=0, category=3}; // 私にも我慢の限界があるわ！
+st[482] = { path=1, file="Emi00_6202", type=0, category=3}; // 絶対に許せない！
+// st[490] = { path=1, file="Emi00_6300", type=0, category=3}; // 殺す！絶対殺す！
+// st[491] = { path=1, file="Emi00_6301", type=0, category=3}; // はぁ…カレー食べたいな…
+
+// st[500] = { path=1, file="Emi00_6400", type=0, category=1}; // ぬうううううう！
+// st[501] = { path=1, file="Emi00_6401", type=0, category=1}; // せああああああ！
+// st[502] = { path=1, file="Emi00_6402", type=0, category=1}; // ぐぬぬぬぎぎぎぎ！
+
+st[510] = { path=1, file="Emi00_7000_b", type=0, category=1}; // 天光飛刃！（てんこうひじん）
+st[511] = { path=1, file="Emi00_7001", type=0, category=1}; // 逃がさない！
+st[512] = { path=1, file="Emi00_7002", type=0, category=1}; // 痛いわよ！
+st[513] = { path=1, file="Emi00_7003", type=0, category=1}; // 切り裂け！
+
+st[520] = { path=1, file="Emi00_7100_b", type=0, category=1}; // 天光氷舞！（てんこうひょうぶ）
+st[521] = { path=1, file="Emi00_7101", type=0, category=1}; // 捉えたわ！
+st[522] = { path=1, file="Emi00_7102", type=0, category=1}; // 凍れ！
+st[523] = { path=1, file="Emi00_7103", type=0, category=1}; // 吹雪け！
+
+st[530] = { path=1, file="Emi00_7200_b", type=0, category=1}; // 天衝光牙！（てんしょうこうが）
+st[531] = { path=1, file="Emi00_7201_b", type=0, category=1}; // 落ちろ！
+st[532] = { path=1, file="Emi00_7202", type=0, category=1}; // そこよ！
+st[533] = { path=1, file="Emi00_7203", type=0, category=1}; // 響け！
+
+// ※収録漏れ
+// st[540] = { path=1, file="Emi00_7300", type=0, category=1}; // 天光風刃！（てんこうふうじん）
+// st[541] = { path=1, file="Emi00_7301", type=0, category=1}; // 邪魔！
+// st[542] = { path=1, file="Emi00_7302", type=0, category=1}; // あっち行ってて！
+// st[543] = { path=1, file="Emi00_7303", type=0, category=1}; // 退いてなさい！
+
+st[550] = { path=1, file="Emi00_7300", type=0, category=1}; // 天衝嵐牙！（てんしょうらんが）
+st[551] = { path=1, file="Emi00_7301", type=0, category=1}; // 撃ちぬけ！
+st[552] = { path=1, file="Emi00_7302", type=0, category=1}; // 受けてみなさい！
+// st[553] = { path=1, file="Emi00_7303", type=0, category=1}; // こンのォ～！
+
+st[560] = { path=1, file="Emi00_7400", type=0, category=1}; // 天光炎斬！（てんこうえんざん）
+st[561] = { path=1, file="Emi00_7401_b", type=0, category=1}; // せいっやぁああ！
+// st[562] = { path=1, file="Emi00_7402", type=0, category=1}; // 焦げろぉぉ！
+st[563] = { path=1, file="Emi00_7403", type=0, category=1}; // 燃え尽きろぉ！
+
+st[570] = { path=1, file="Emi00_7500_e0", type=0, category=1}; // ゴクゴクゴク…ぷはぁ～！
+// st[571] = { path=1, file="Emi00_7501", type=0, category=1}; // やみつきになるのよね
+st[572] = { path=1, file="Emi00_7502", type=0, category=1}; // ファイト一発！
+st[573] = { path=1, file="Emi00_7503", type=0, category=1}; // キタキタキター！
+
+st[580] = { path=1, file="Emi00_8000_s0", type=0, category=1}; // 頭にきたわ！
+st[581] = { path=1, file="Emi00_8000_s1", type=0, category=1}; // 聖法気全開！
+st[582] = { path=1, file="Emi00_8000_s2", type=0, category=1}; // これで最後よ！！
+st[583] = { path=1, file="Emi00_8001_s0", type=0, category=1}; // 私を怒らせたわね
+st[584] = { path=1, file="Emi00_8001_s1", type=0, category=1}; // 命はないと思いなさい！
+st[585] = { path=1, file="Emi00_8001_s2", type=0, category=1}; // くらええええええ！
+st[586] = { path=1, file="Emi00_8002_s0", type=0, category=1}; // 覚悟！
+st[587] = { path=1, file="Emi00_8002_s1", type=0, category=1}; // 調子に乗ってくれるじゃない！
+st[588] = { path=1, file="Emi00_8002_s2", type=0, category=1}; // はああああああ！
+
+st[590] = { path=1, file="Emi00_8100", type=0, category=1}; // エミ「ちょ…、アラス・ラムス？」
+st[591] = { path=1, file="Emi00_8101", type=0, category=2}; // アラス「ままいじめるの、だめ！」
+//st[592] = { path=1, file="Emi00_8102", type=0, category=1}; // エミ「あっ…！」
+st[593] = { path=1, file="Emi00_8103", type=0, category=2}; // アラス「やああああ！」
+// st[594] = { path=1, file="Emi00_8104", type=0, category=2}; // アラス「たあっ！」
+st[595] = { path=1, file="Emi00_8105", type=0, category=1}; // エミ「危ないことしちゃめっ、よ？」
+// st[596] = { path=1, file="Emi00_8106", type=0, category=2}; // アラス「あい！」
+
+st[600] = { path=1, file="Emi00_8110", type=0, category=1}; // エミ「あ、待ちなさい！アラスラムス！」
+//st[601] = { path=1, file="Emi00_8111", type=0, category=2}; // アラス「ままのてき、やっつける！」
+//st[602] = { path=1, file="Emi00_8112", type=0, category=1}; // エミ「ちょっ…！」
+st[603] = { path=1, file="Emi00_8113", type=0, category=2}; // アラス「えーーーい！」
+// st[604] = { path=1, file="Emi00_8114", type=0, category=2}; // アラス「とうっ！」
+st[605] = { path=1, file="Emi00_8115", type=0, category=1}; // エミ「もう、いい子にしてるのよ？」
+// st[606] = { path=1, file="Emi00_8116", type=0, category=2}; // アラス「アラス・ラムスいいこだよ！」
+
+
+st[610] = { path=1, file="Emi00_8120", type=0, category=1}; // エミ「え、あ、ちょ…え！？」
+st[611] = { path=1, file="Emi00_8121", type=0, category=2}; // アラス「まってて、まま！」
+//st[612] = { path=1, file="Emi00_8122", type=0, category=1}; // エミ「あ、こら！」
+st[613] = { path=1, file="Emi00_8123", type=0, category=2}; // アラス「とーーー！」
+// st[614] = { path=1, file="Emi00_8124", type=0, category=2}; // アラス「えいっ！」
+st[615] = { path=1, file="Emi00_8125", type=0, category=1}; // エミ「大丈夫？ケガしてない？」
+//st[616] = { path=1, file="Emi00_8126", type=0, category=2}; // アラス「うん！」
+
+// st[620] = { path=1, file="Emi00_8200", type=0, category=1}; // あなたと戦えてとても助かったわ。今度一緒にカレー食べましょ
+// st[621] = { path=1, file="Emi00_8201", type=0, category=1}; // また一緒に「夢」を見ましょ？
+
+
+// 「姫」ってわりに、魔王みたいなヤツが出てきたわね……
+// 「ＯＬ」みたいな勇者様に、言われたくはないな。
+// 今回は私の勝ちよ。「魔王」みたいな見た目だったけど、本物には遠く及ばないようね……
+// その程度の力で「勇者」を名乗っていては……ゲームの世界ひとつ、救えはしないぞ。
+// アンタが噂の貧乳勇者！？地獄におとしてやるっ！！
+// あんたも似たようなもんでしょうが！！
+// 勇者とか、偉そうなヤツと思ってたけど、意外にいいヤツだったわね……悪いこと言っちゃったかな……
+// 貧乳貧乳って……どいつもこいつも……大きくたって、大きくたって……良い事なんか何もないんだからあ！
+// 成長する剣！？ホントにあったんだああああああ！？
+// ……本当にこいつが、「黒の剣士」なの？
+// とぼけた態度だけど、剣の実力は確かね……その名前……覚えておくわ。
+// 成長する剣……カッコよすぎる！！ＳＡＯにも実装されないかな……
+// 俺だって、世界ひとつぐらいなら……救ったさ。
+// ゲーム好きならわかるでしょ？世界を救う「勇者」の強さが！
+// なんという剣技……「黒の剣士　キリト」……その名前、覚えておくわ！
+// 「勇者」の名前は伊達じゃないな。今回は俺の勝ちだが……次に戦えば、勝敗はわからない。

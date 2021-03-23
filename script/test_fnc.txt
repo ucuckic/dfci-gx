@@ -1,0 +1,7 @@
+
+GameFunc <- {};
+
+GameFunc.CharUpdate <- function()
+{
+	//BMvEff.AttackInfoString_Set({ word="fnc exec" } );		
+}

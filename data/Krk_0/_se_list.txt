@@ -1,0 +1,422 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/cli/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Krk/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(900); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="Val_WarpMove", type=0, category=-1, }; // CAでガラスを飛ばすSE
+st[55] = { path=2, file="ObjectBoundC", type=0, category=-1, }; // 切り札の車いすガコン
+
+// イグニッション選択
+st[80] = { path=1, file="Krk00_6101", type=0, category=1}; // 今が好機ですの！
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+// 登場シーン	
+st[100] = { path=1, file="Krk00_2000", type=0, category=1}; // ジャッジメントですの！　
+st[101] = { path=1, file="Krk00_2001", type=0, category=1}; // 大人しく観念してくださいな。
+st[102] = { path=1, file="Krk00_2002", type=0, category=1}; // あなたを拘束しますの。
+
+// 掛け合い
+st[104] = { path=1, file="Krk00_2060", type=0, category=1}; // ついにこの日が来ましたわね、お姉さま……（対美琴）
+st[105] = { path=1, file="Krk00_2061", type=0, category=1}; // セクシーな下着が似合いそうですわね……（対黒雪姫）
+st[106] = { path=1, file="Krk00_2062_edit", type=0, category=1}; // 私はお姉さまを　（ピーーーーーー）と思っていますわ。（対深雪）
+st[107] = { path=1, file="Krk00_2063", type=0, category=1}; // 理屈で測れない強さ……見せてあげますわ。（対達也）
+
+// 戦闘勝利・汎用	
+st[110] = { path=1, file="Krk00_2100", type=0, category=1}; // 少々やり過ぎてしまった感がありますが……
+st[111] = { path=1, file="Krk00_2101", type=0, category=1}; // もういい加減にしてほしいですの
+
+// 戦闘勝利・辛勝	
+st[112] = { path=1, file="Krk00_2102", type=0, category=1}; // なかなか楽しかったですわ
+// 戦闘勝利・楽勝	
+st[113] = { path=1, file="Krk00_2103", type=0, category=1}; // 相手が悪かったですわね～
+
+// 戦闘勝利（美琴限定）
+// st[114] = { path=1, file="Krk00_2120_s0", type=0, category=1}; // 大丈夫ですの？　ふひひ　おねーえさまあああっ！
+st[115] = { path=1, file="Krk00_2120_s1", type=0, category=1}; // 大丈夫ですの？　ふひひ　おねーえさまあああっ！
+st[116] = { path=1, file="Krk00_2120_s2", type=0, category=1}; // 大丈夫ですの？　ふひひ　おねーえさまあああっ！
+// st[117] = { path=1, file="Krk00_2121_s0", type=0, category=1}; // お、お姉様！？　チャンスですわ　ふふふどぅあああああっ！
+st[118] = { path=1, file="Krk00_2121_s1", type=0, category=1}; // お、お姉様！？　チャンスですわ　ふふふどぅあああああっ！
+// st[119] = { path=1, file="Krk00_2121_s2", type=0, category=1}; // お、お姉様！？　チャンスですわ　ふふふどぅあああああっ！
+
+// ラウンド勝利	
+st[120] = { path=1, file="Krk00_2150", type=0, category=1}; // まだ続けますの？
+st[121] = { path=1, file="Krk00_2151", type=0, category=1}; // 結果は変わりませんのに……
+
+// タイムアップ判定負け	
+st[130] = { path=1, file="Krk00_2200", type=0, category=1}; // 何かの間違いですの！
+st[131] = { path=1, file="Krk00_2201", type=0, category=1}; // ば、ばかなー……
+
+// 弱攻撃	
+st[140] = { path=1, file="Krk00_2300", type=0, category=1}; // ふ
+st[141] = { path=1, file="Krk00_2301", type=0, category=1}; // は
+st[142] = { path=1, file="Krk00_2302", type=0, category=1}; // し
+st[143] = { path=1, file="Krk00_2303", type=0, category=1}; // や
+st[144] = { path=1, file="Krk00_2304", type=0, category=1}; // た
+
+// 中攻撃	
+st[150] = { path=1, file="Krk00_2400", type=0, category=1}; // はい
+st[151] = { path=1, file="Krk00_2401", type=0, category=1}; // たあ
+st[152] = { path=1, file="Krk00_2402", type=0, category=1}; // とう
+st[153] = { path=1, file="Krk00_2403", type=0, category=1}; // はあ
+st[154] = { path=1, file="Krk00_2404", type=0, category=1}; // せい
+st[155] = { path=1, file="Krk00_2405", type=0, category=1}; // やあ
+st[156] = { path=1, file="Krk00_2406", type=0, category=1}; // ふん
+
+// 強攻撃	
+st[160] = { path=1, file="Krk00_2500", type=0, category=1}; // てぇい！
+st[161] = { path=1, file="Krk00_2501", type=0, category=1}; // はぁあ！
+st[162] = { path=1, file="Krk00_2502", type=0, category=1}; // せいや！
+st[163] = { path=1, file="Krk00_2503", type=0, category=1}; // とおりゃ！
+st[164] = { path=1, file="Krk00_2504", type=0, category=1}; // 下ですの！
+st[165] = { path=1, file="Krk00_2505", type=0, category=1}; // たああ！
+st[166] = { path=1, file="Krk00_2506", type=0, category=1}; // そこ！
+
+// 特殊攻撃	
+// st[170] = { path=1, file="Krk00_2600", type=0, category=1}; // でえい！
+// st[171] = { path=1, file="Krk00_2601", type=0, category=1}; // はああ！
+st[172] = { path=1, file="Krk00_2602", type=0, category=1}; // 終わりですわ！
+// st[173] = { path=1, file="Krk00_2603", type=0, category=1}; // ガラ空きですの！
+// st[174] = { path=1, file="Krk00_2604", type=0, category=1}; // 余所見は…
+// st[175] = { path=1, file="Krk00_2605", type=0, category=1}; // 禁物ですの！！
+st[176] = { path=1, file="Krk00_2606", type=0, category=1}; // 隙あり…
+st[177] = { path=1, file="Krk00_2607", type=0, category=1}; // ですわ！！
+
+// 投げ技成功	
+st[180] = { path=1, file="Krk00_2700", type=0, category=1}; // 動かないでくださいな
+st[181] = { path=1, file="Krk00_2701", type=0, category=1}; // 逃（に）がしませんわ
+st[182] = { path=1, file="Krk00_2702", type=0, category=1}; // どこへ行きますの？
+
+// 投げ技失敗	
+// st[190] = { path=1, file="Krk00_2800", type=0, category=1}; // あら？
+// st[191] = { path=1, file="Krk00_2801", type=0, category=1}; // おや？
+
+// 敵の投げ技を回避	
+st[200] = { path=1, file="Krk00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// なにをしますの！
+st[201] = { path=1, file="Krk00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// 乱暴ですのね
+
+// 挑発アクション	
+// st[210] = { path=1, file="Krk00_3100", type=0, category=1}; // もう終わりですの？
+// st[211] = { path=1, file="Krk00_3101", type=0, category=1}; // まあ、降参ですの？
+
+// ジャンプ	
+// st[220] = { path=1, file="Krk00_3200", type=0, category=1}; // やっ
+st[221] = { path=1, file="Krk00_3201", type=0, category=1}; // はっ
+st[222] = { path=1, file="Krk00_3202", type=0, category=1}; // よっ
+
+// ダッシュ	
+st[230] = { path=1, file="Krk00_3300", type=0, category=1}; // ふっ
+st[231] = { path=1, file="Krk00_3301", type=0, category=1}; // 今っ！
+st[232] = { path=1, file="Krk00_3302", type=0, category=1}; // お待ちなさい	
+
+// バックステップ	
+st[240] = { path=1, file="Krk00_3400", type=0, category=1}; // よっと
+st[241] = { path=1, file="Krk00_3401", type=0, category=1}; // あら
+// st[242] = { path=1, file="Krk00_3402", type=0, category=1}; // こちらですわ
+
+// 小攻撃ガード	
+st[250] = { path=1, file="Krk00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// む
+st[251] = { path=1, file="Krk00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// ふふん
+st[252] = { path=1, file="Krk00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// はあ……
+
+// 中攻撃ガード	
+st[260] = { path=1, file="Krk00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// ぐッ
+st[261] = { path=1, file="Krk00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// っつう
+st[262] = { path=1, file="Krk00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// やるっ
+
+// 大攻撃ガード	
+st[270] = { path=1, file="Krk00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// まずっ
+st[271] = { path=1, file="Krk00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// 駄目…
+st[272] = { path=1, file="Krk00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// やば…
+
+// 攻撃を見切り余裕でガード	
+st[280] = { path=1, file="Krk00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 無駄ですの！
+st[281] = { path=1, file="Krk00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 野蛮な……
+st[282] = { path=1, file="Krk00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 無駄ですの！
+
+// ガード失敗	
+st[290] = { path=1, file="Krk00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// そんな！
+st[291] = { path=1, file="Krk00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// まっ…！
+st[292] = { path=1, file="Krk00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// うげっ！
+
+// 受け身	
+st[300] = { path=1, file="Krk00_4000", type=0, category=1}; // 残念ですの
+st[301] = { path=1, file="Krk00_4001", type=0, category=1}; // 同じ手は……！
+st[302] = { path=1, file="Krk00_4002", type=0, category=1}; // よっと
+
+// バリア発動	
+// st[310] = { path=1, file="Krk00_4100", type=0, category=1}; // いつでもどうぞ
+// st[311] = { path=1, file="Krk00_4101", type=0, category=1}; // どうなさいまして？
+// st[312] = { path=1, file="Krk00_4102", type=0, category=1}; // どうぞ？
+
+// バリアガード成功	
+// st[320] = { path=1, file="Krk00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// あらあら
+// st[321] = { path=1, file="Krk00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// 弾きますの！
+// st[322] = { path=1, file="Krk00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// 離れてくださいな！
+
+// 小ダメージ	
+st[330] = { path=1, file="Krk00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// っ！
+st[331] = { path=1, file="Krk00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// きゃ！
+st[332] = { path=1, file="Krk00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// くう！
+
+// 中ダメージ	
+st[340] = { path=1, file="Krk00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// があ！
+st[341] = { path=1, file="Krk00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// ぐう！
+st[342] = { path=1, file="Krk00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// ああう！
+
+// 大ダメージ	
+st[350] = { path=1, file="Krk00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// きゃああっ！！
+st[351] = { path=1, file="Krk00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// っがあ！
+st[352] = { path=1, file="Krk00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// 馬鹿な！
+
+// 電撃ダメージ	
+// st[360] = { path=1, file="Krk00_4600", type=0, category=1}; // くぁわあわわ
+// 麻痺ダメージ	
+// st[361] = { path=1, file="Krk00_4601", type=0, category=1}; // ち、力が……
+// 特殊ダメージ	
+// st[362] = { path=1, file="Krk00_4602", type=0, category=1}; // ど、どういう事ですの！？
+
+// ダウン	
+st[370] = { path=1, file="Krk00_4700", type=0, category=1, prio=Def_SEP_KO };	// んあああっ！
+st[371] = { path=1, file="Krk00_4701", type=0, category=1, prio=Def_SEP_KO };	// 嘘で、すわ……
+st[372] = { path=1, file="Krk00_4702", type=0, category=1, prio=Def_SEP_KO };	// まずい、ですの……
+
+// ダウン・ノックアウト	
+st[380] = { path=1, file="Krk00_4800", type=0, category=1, prio=Def_SEP_KO };	// きゃあああああ！
+st[381] = { path=1, file="Krk00_4801", type=0, category=1, prio=Def_SEP_KO };	// そんなぁあああ！
+st[382] = { path=1, file="Krk00_4802", type=0, category=1, prio=Def_SEP_KO };	// ありえない……ですわ
+
+// 起きあがり	
+st[390] = { path=1, file="Krk00_4900", type=0, category=1}; // まだですの
+st[391] = { path=1, file="Krk00_4901", type=0, category=1}; // まったく……
+st[392] = { path=1, file="Krk00_4902", type=0, category=1}; // 汚（よご）れますわ。
+
+// 起きあがり・瀕死	
+// st[400] = { path=1, file="Krk00_5000", type=0, category=1}; // ……っくう！
+// st[401] = { path=1, file="Krk00_5001", type=0, category=1}; // 流石に……
+// st[402] = { path=1, file="Krk00_5002", type=0, category=1}; // なんて事です……の
+
+// ブラスト	
+st[410] = { path=1, file="Krk00_5100", type=0, category=1}; // 観念していただきますわ！
+st[411] = { path=1, file="Krk00_5101", type=0, category=1}; // 仕方ないですの！
+st[412] = { path=1, file="Krk00_5102", type=0, category=1}; // パワーアップですの！
+
+// コンボブラスト	
+st[420] = { path=1, file="Krk00_5200", type=0, category=1}; // ここからですの！
+st[421] = { path=1, file="Krk00_5201", type=0, category=1}; // 続きますの！
+
+// バウンドブラスト	
+st[430] = { path=1, file="Krk00_5300", type=0, category=1}; // 面倒ですわ！
+st[431] = { path=1, file="Krk00_5301", type=0, category=1}; // だから甘いと！
+st[432] = { path=1, file="Krk00_5302", type=0, category=1}; // そこまでですの！
+
+// 攻撃サポートキャラ呼び出し	
+st[440] = { path=1, file="Krk00_5400", type=0, category=1}; // チャンスですの！
+st[441] = { path=1, file="Krk00_5401", type=0, category=1}; // 畳み掛けますの！
+st[442] = { path=1, file="Krk00_5402", type=0, category=1}; // 行きますわよ！
+
+// 補助サポートキャラ呼び出し	
+// st[450] = { path=1, file="Krk00_5500", type=0, category=1}; // 支援を！
+// st[451] = { path=1, file="Krk00_5501", type=0, category=1}; // 任せますの！
+// st[452] = { path=1, file="Krk00_5502", type=0, category=1}; // お願いしますわ
+
+// 防御サポートキャラ呼び出し	
+// st[460] = { path=1, file="Krk00_5600", type=0, category=1}; // 助かりますわ！
+// st[461] = { path=1, file="Krk00_5601", type=0, category=1}; // フォローを！
+// st[462] = { path=1, file="Krk00_5602", type=0, category=1}; // ディフェンス！
+
+// 固有サポートキャラ呼び出し	
+st[465] = { path=1, file="Krk00_5700", type=0, category=1}; // 初春っ！（ういはる）
+st[466] = { path=1, file="Krk00_5701", type=0, category=1}; // バックアップを！
+st[467] = { path=1, file="Krk00_5702", type=0, category=1}; // 今ですわっ初春！（ういはる）
+
+// 好調時にポテンシャル発動	
+st[470] = { path=1, file="Krk00_6100", type=0, category=9}; // 押し通しますわ！
+st[471] = { path=1, file="Krk00_6101", type=0, category=9}; // 今が好機ですの！
+st[472] = { path=1, file="Krk00_6102", type=0, category=9}; // 黒子、絶好調ですの！
+
+// ピンチ時にポテンシャル発動	
+st[480] = { path=1, file="Krk00_6200", type=0, category=9}; // 許しませんの！
+st[481] = { path=1, file="Krk00_6201", type=0, category=9}; // と、とにかく体制を……
+st[482] = { path=1, file="Krk00_6202", type=0, category=9}; // 大したことありませんわ！
+
+// レアな隠しポテンシャル発動	
+// st[490] = { path=1, file="Krk00_6300", type=0, category=9}; // かかって来いですの！！
+// st[491] = { path=1, file="Krk00_6301", type=0, category=9}; // 望むところですの！
+
+// 激突演出	
+// st[500] = { path=1, file="Krk00_6400", type=0, category=9}; // はああああああああ！
+// st[501] = { path=1, file="Krk00_6401", type=0, category=9}; // くおおおおおおおお！
+// st[502] = { path=1, file="Krk00_6402", type=0, category=9}; // おねえええええさまァァああああああ！！
+
+// 必殺技1
+st[510] = { path=1, file="Krk00_7000", type=0, category=1}; // そこですの！
+st[511] = { path=1, file="Krk00_7001", type=0, category=1}; // 差し上げますわ！
+st[512] = { path=1, file="Krk00_7003", type=0, category=1}; // 止まりなさい！
+
+st[515] = { path=1, file="Krk00_7002_b", type=0, category=1}; // 撃ち込みますの！
+
+// 必殺技2
+st[530] = { path=1, file="Krk00_7100_b_s0", type=0, category=1}; // 食らいなさい！　せいや！
+// st[531] = { path=1, file="Krk00_7100_b_s1", type=0, category=1}; // 食らいなさい！　せいや！
+
+// st[532] = { path=1, file="Krk00_7101_s0", type=0, category=1}; // いかがです？　たああ！
+// st[533] = { path=1, file="Krk00_7101_s1", type=0, category=1}; // いかがです？　たああ！
+
+st[534] = { path=1, file="Krk00_7102_s0", type=0, category=1}; // 遅いですの！　んりゃあ！
+// st[535] = { path=1, file="Krk00_7102_s1", type=0, category=1}; // 遅いですの！　んりゃあ！
+
+st[536] = { path=1, file="Krk00_7103_s0", type=0, category=1}; // 邪魔ですわ！　とおああ！
+// st[537] = { path=1, file="Krk00_7103_s1", type=0, category=1}; // 邪魔ですわ！　とおああ！
+
+// 必殺技3（A+B）
+st[570] = { path=1, file="Krk00_7200", type=0, category=1}; // ハズレですの！
+st[571] = { path=1, file="Krk00_7201", type=0, category=1}; // こっちですわ！
+st[572] = { path=1, file="Krk00_7202", type=0, category=1}; // 甘いですの！
+st[573] = { path=1, file="Krk00_7203", type=0, category=1}; // 読めてますわ！
+
+// 必殺技4（2+A+B）
+st[580] = { path=1, file="Krk00_7300", type=0, category=1}; // 上ですわ！
+st[581] = { path=1, file="Krk00_7301", type=0, category=1}; // 避（よ）けられまして？
+st[582] = { path=1, file="Krk00_7302", type=0, category=1}; // どこを見てますの？
+st[583] = { path=1, file="Krk00_7303", type=0, category=1}; // 打ち崩しますわ！
+
+// 必殺技5（叩き落とす）
+st[590] = { path=1, file="Krk00_7400", type=0, category=1}; // 拘束しますの！
+st[591] = { path=1, file="Krk00_7401", type=0, category=1}; // 捕らえましたわ！
+st[592] = { path=1, file="Krk00_7402_b", type=0, category=1}; // 落ちなさい！
+st[593] = { path=1, file="Krk00_7403_b", type=0, category=1}; // 痛いですわよ！
+
+// 必殺技6（切り札）
+st[595] = { path=1, file="Krk00_7600", type=0, category=1}; // 隙だらけですわ！
+// st[596] = { path=1, file="Krk00_7601", type=0, category=1}; // 大人しくしなさい！
+st[597] = { path=1, file="Krk00_7602", type=0, category=1}; // はあああああ！
+// st[598] = { path=1, file="Krk00_7603", type=0, category=1}; // おりゃあああ！
+
+// 超必殺技1
+st[600] = { path=1, file="Krk00_8000_s0", type=0, category=1}; // 本気を出させて頂きますわ！せい！　はあっ！！　終わりですの！！
+// st[601] = { path=1, file="Krk00_8000_s1", type=0, category=1}; // 本気を出させて頂きますわ！せい！　はあっ！！　終わりですの！！
+// st[602] = { path=1, file="Krk00_8000_s2", type=0, category=1}; // 本気を出させて頂きますわ！せい！　はあっ！！　終わりですの！！
+st[603] = { path=1, file="Krk00_8000_s3", type=0, category=1}; // 終わりですの！！
+
+st[604] = { path=1, file="Krk00_8001_s0", type=0, category=1}; // もう逃げ場はありませんわよ！とう！　やあぁ！！　落ちなさい！！
+// st[605] = { path=1, file="Krk00_8001_s1", type=0, category=1}; // もう逃げ場はありませんわよ！とう！　やあぁ！！　落ちなさい！！
+// st[606] = { path=1, file="Krk00_8001_s2", type=0, category=1}; // もう逃げ場はありませんわよ！とう！　やあぁ！！　落ちなさい！！
+// st[607] = { path=1, file="Krk00_8001_s3", type=0, category=1}; // もう逃げ場はありませんわよ！とう！　やあぁ！！　落ちなさい！！
+
+// st[608] = { path=1, file="Krk00_8002_s0", type=0, category=1}; // これできまりですの
+// st[609] = { path=1, file="Krk00_8002_s1", type=0, category=1}; // もう逃げ場はありませんわよ！とう！　やあぁ！！　落ちなさい！！
+// st[610] = { path=1, file="Krk00_8002_s2", type=0, category=1}; // もう逃げ場はありませんわよ！とう！　やあぁ！！　落ちなさい！！
+st[611] = { path=1, file="Krk00_8002_s3", type=0, category=1}; // 外しませんの！！
+
+// 超必殺技2
+st[615] = { path=1, file="Krk00_8100_s0", type=0, category=1}; // ご招待しますわ！　さあさあ、楽しんでくださいな！
+st[616] = { path=1, file="Krk00_8100_s1", type=0, category=1}; // ご招待しますわ！　さあさあ、楽しんでくださいな！
+
+// st[618] = { path=1, file="Krk00_8101_s0", type=0, category=1}; // ご招待しますわ！　さあさあ、楽しんでくださいな！
+st[619] = { path=1, file="Krk00_8101_s1", type=0, category=1}; // ご招待しますわ！　さあさあ、楽しんでくださいな！
+
+st[621] = { path=1, file="Krk00_8102_s0", type=0, category=1}; // ご招待しますわ！　さあさあ、楽しんでくださいな！
+// st[622] = { path=1, file="Krk00_8102_s1", type=0, category=1}; // とっておき
+
+// // 対人戦３連続勝利
+// 1000	３連勝ですの！あなたも、なかなかのプレイヤーでしたのね
+
+// // 対人戦１０連続勝利
+// 1001	じ、じゅ……１０連勝！？見事ですわー！あなた、もしかしてレベル５の能力者ですの？
+
+// // 汎用勝利
+// 1010	ジャッジメントですのっ！大人しくお縄にかかりなさいな。
+
+// // 汎用勝利
+// 1011	こちら白井黒子。対象者を拘束しましたの。アンチスキルに連絡を。
+
+// // 汎用勝利
+// 1012	どうって事ありませんわね。あっさり過ぎるのが逆に気にかかりますの。
+
+// // 汎用勝利
+// 1013	ようやく以前の傷が塞がってきたというのに！！嫁入り前の大事な体ですのよッ！キィイイイ！！
+
+// // 汎用勝利
+// 1014	外部の人間に、こんな強力な能力者がいたとは驚きですの。
+
+// // 汎用勝利
+// 1015	これ以上、無駄な抵抗を続けるなら直接体内にコレを埋め込みますわよ？
+
+// // 汎用勝利
+// 1016	安心してくださいな、急所は外してありますわ。それで、事情は説明していただけますの？
+
+// // 勝利画面レアボイス
+// 1017	思いをつらぬき通す意志があるなら、結果は後からついてきますわ
+
+// // 勝利画面レアボイス
+// 1018	はっ！　まずいですわ！！不足しがちな「お姉様エナジー」を補給しようにも全然見つかりませんの！
+
+// // 勝利画面（美琴限定）
+// 1019 ああっ！愛しのおねぇさまっ！！ふふ、ふひひひひひひひ！！…………ぐうぇ！！
+
+// // 勝利画面（美琴限定）
+// 1020 お姉様っ！ああ黒子は、黒子はァァああああああああ！！…………おうふ！！
+
+// // 勝利画面（美琴限定）
+// 1021 お姉様あああぁ！クンカクンカ！スーハースーハー！！…………はうあ！！
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	わたくし、治安維持を務めております白井黒子と申しますの。よろしくですの
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	さあ行きますわよ、ジャッジメントに休息はありませんの！
+
+// // キャラセレクト画面キャラクター決定
+// 1130	ジャッジメントですのっ！
+
+// // コンティニュー画面コンテニュー待機
+// 1200	あ、あのコーチの延長お願いできませんか？
+
+// // コンティニュー画面再戦決定
+// 1210	はいっ頑張ります！
+
+// // コンティニュー画面ゲームオーバー
+// 1220	もし良かったら、またコーチをお願いします。　　　※寂しそうな感じでお願いします。
+
+// // 乱入出迎えボイス
+// 1300	私､負けませんよっ!
+
+// // 乱入出迎えボイス
+// 1301	このチームで､戦い抜くよ！慧心女バスーー　ファイトッ！おー！！
+
+// // タイトルコール
+// 1710	ファイティング・クライマックスイグニッション！
+
+// // タイトルコール
+// 1711	電撃文庫、ファイティング・クライマックス！イグニッション！
+
+// // 乱入出迎え
+// 1300	あら？また事件ですの？
+
+// // 乱入出迎え
+// 1301	いいでしょう。返り討ちにして差し上げますわ。
+
+// // エンディング１（5～6秒程度）
+// 8200	あなたがいたお陰で、とても助かりましたわ。またいつかお願いしますの
+
+// // エンディング１（5～6秒程度）
+// 8201	また一緒に「夢」を見ましょう。（いや、どうせならお姉様と夢の中であーんな事やこんな事を…うひひひふふふへへへへへ）

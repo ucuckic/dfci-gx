@@ -1,0 +1,309 @@
+//コマンドテーブル skillは格ゲーコマンド表記
+btl_debPrint2("\n[Sbm_0_cmd.txt]");
+
+local t =
+{
+	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+
+	Skill_236A = {},
+	Skill_236B = {},
+	Skill_236C = {},
+	Skill_236EX = {},
+
+	Skill_214A = {},
+	Skill_214B = {},
+	Skill_214C = {},
+	Skill_214EX = {},
+	Skill_J214A = {},
+	Skill_J214B = {},
+	Skill_J214C = {},
+	Skill_J214EX = {},
+	
+	Skill_Sousai = {},
+	Skill_Sousai2 = {},
+	Skill_Sousai4 = {},
+	Skill_Sousai4_JAdd = {},
+
+	Skill_Kirifuda = {},
+	
+	
+	Skill_236_AddA =
+	{
+		num = def_CN_Skill_AddCommand2, command = ["4+A"],
+		
+		function CmdBeforeFunc()
+		{
+			local spCancelFlag = BCMDTbl.CheckCancelFlag(1);
+			if( spCancelFlag == _CancelFlag_None )
+			{
+				return 0;
+			}
+			
+			return 1;
+		}
+		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0),
+			
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddA", },
+	},
+	
+	Skill_J214_AddA =
+	{
+		num = def_CN_Skill_AddCommand2, command = ["@H,A@"],
+		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_J214A","Mv_Skill_J214B","Mv_Skill_J214C"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0),
+			//HitStatus = "Hit",
+			FrameIDCheck = { Only = 200 },
+			PosState="Air",
+		},
+		UpdateTable = { name = "Mv_Skill_J214_AddA", },
+	},
+	
+	
+	AirDash_F = {
+		CmdCheck = 
+		{
+			SkillType = "Special"
+		},
+	},
+	
+	// 8  : 入れっぱ6が出るタイミング
+	// 32 : 6がでるタイミング
+	// 4  : 4がでるタイミング
+	// 2  : 2がでるタイミング
+	// 38 : 624がでるタイミング
+	// 46 : 624がでて入れっぱで6がでるタイミング
+
+	Skill_JAddDash =
+	{
+		num = def_CN_Skill_AddCommand1, command = ["6"],
+		function CmdBeforeFunc()
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			// local frameid = mvs.FrameID;
+			// if( frameid == 100 ) return 0; // でかかりは出せない
+			if( (mvs.Param3&32)==0 ) return 0;
+			
+			if( BMvTbl.CheckCommandString( "60" ) )
+			{
+				// これは成功かな？
+				_dp("\n ニュートラルにした成功");
+			}
+			else
+			{
+				if( BMvTbl.GetLP(6) <= 5 ) // レバー入れてる時間チェック
+				{
+					return 0;
+				}
+				else
+				{
+					if( (mvs.Param3&8)==0 ) return 0; // 後半だけ
+				}
+				_dp("\n いれっぱ");
+			}
+			return 1;			
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState="Air",
+			MvCheck = { Only = ["Mv_AirDash_F"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_JAddDash6", },
+	}
+	
+	/*
+	Skill_JAddDashIreppa =
+	{
+		num = def_CN_Skill_AddCommand4, command = ["6"],
+		function CmdBeforeFunc()
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			if( (mvs.Param3&8)==0 ) return 0; // 後半だけ
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState="Air",
+			MvCheck = { Only = ["Mv_AirDash_F"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_JAddDash6", },
+	}	
+	*/
+	
+	Skill_JAddDash4 =
+	{
+		num = def_CN_Skill_AddCommand2, command = ["4"],
+		function CmdBeforeFunc()
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			// local frameid = mvs.FrameID;
+			// if( frameid == 100 ) return 0; // でかかりは出せない
+			if( (mvs.Param3&4)==0 ) return 0;
+
+			if( BMvTbl.CheckCommandString( "40" ) )
+			{
+				// これは成功かな？
+				_dp("\n ニュートラルにした成功");
+			}
+			else
+			{
+				if( BMvTbl.GetLP(4) <= 5 ) // レバー入れてる時間チェック
+				{
+					return 0;
+				}
+				_dp("\n いれっぱ");
+			}
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState="Air",
+			MvCheck = { Only = ["Mv_AirDash_F"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_JAddDash4", },
+	}
+	
+	Skill_JAddDash2 =
+	{
+		num = def_CN_Skill_AddCommand3, command = ["2"],
+		function CmdBeforeFunc()
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			// local frameid = mvs.FrameID;
+			// if( frameid == 100 ) return 0; // でかかりは出せない
+			if( (mvs.Param3&2)==0 ) return 0;
+			
+			if( BMvTbl.CheckCommandString( "20" ) )
+			{
+				// これは成功かな？
+				_dp("\n ニュートラルにした成功");
+			}
+			else
+			{
+				if( BMvTbl.GetLP(2) <= 5 ) // レバー入れてる時間チェック
+				{
+					return 0;
+				}
+				_dp("\n いれっぱ");
+			}
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState="Air",
+			MvCheck = { Only = ["Mv_AirDash_F"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_JAddDash2", },
+	}	
+	
+	Skill_41236SP = {},
+	Skill_63214SP = {},	
+	
+}
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_StdA",
+		UpdateMoveName="Mv_Atk_StdB",
+	},
+	{
+		CheckMoveName="Mv_Atk_StdB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_StdB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_StdC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_214EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			FrameIDCheck = { Only = [300,400] },
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 0 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_CroA",
+		UpdateMoveName="Mv_Atk_CroB",
+		ResetTmplName="Atk_CroA",
+	},
+	{
+		CheckMoveName="Mv_Atk_CroB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_CroB"
+	},	
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_StdC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerCro, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_214EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			FrameIDCheck = { Only = [300,400] },
+			Cost = { ComboGauge = 10000 },
+		}
+	},	
+]
+Battle_Std.MakeStdCombo( t, ar, 1 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_AirA",
+		UpdateMoveName="Mv_Atk_AirB",
+		ResetTmplName="Atk_AirA",
+	},
+	{
+		CheckMoveName="Mv_Atk_AirB",
+		UpdateMoveName="Mv_Atk_AirC",
+		ResetTmplName="Std_Atk_AirB",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerAir, //スマートステアアナウンスの追加
+	},	
+]
+Battle_Std.MakeStdCombo( t, ar, 2 );
+
+SBM_CommandTable <- Battle_Std.MakeCommandTable( t );
+
+_dp(" -> Load OK");

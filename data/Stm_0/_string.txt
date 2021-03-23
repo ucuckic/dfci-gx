@@ -1,0 +1,21 @@
+[data]
+// vsAsu00
+100 = So I hear you like cooking, too?
+
+// vsTmk00
+110 = Why am I surrounded by all these tiny titans!?
+
+// vsKrn00
+120 = Sorry... But she's family.
+
+500 = Rentaro Satomi, at your service.
+501 = Target confirmed. Engaging!
+502 = Initiating battle, eliminating all enemies!
+510 = What a pushover!
+511 = No sign of movement. Move out!
+512 = We're done here, right?
+513 = Did I go too far?
+520 = You should just give up.
+521 = That's no way to fight.
+530 = No!
+531 = Ugh... I think I'm gonna be sick...

@@ -1,0 +1,493 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+local pat_num = -1;
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local set_BigScreenObj = function()
+{
+	BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll|_ObjFlags_EraseParentPatChange|_ObjFlags_NoRenderOrder|_ObjFlags_NoRenderOrderPlus } );
+	BMvEff.SetExist( { level = _Exist_NoHantei } );			
+}
+
+local pat_num_RegurusuBack = BMvEff.GetPatternNum( { datatype=0, pat="RegurusuBack" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Regurusu = BMvEff.GetPatternNum( { datatype=0, pat="Regurusu" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Regurusu <-
+{
+	function Init() : (set_BigScreenObj, pat_num_Regurusu, pat_num_RegurusuBack)
+	{
+		BMvTbl.SetPattern( pat_num_Regurusu );
+
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_NoRenderOrder|_ObjFlags_NoRenderOrderPlus } );
+		BMvEff.SetObjectRender( { type=1 } ); // 敵の_ObjFlags_NoRenderOrderを消す
+		
+		// 背景を暗くする
+		local eff = BMvEff.CreateObject( { start_pat=pat_num_RegurusuBack } );
+		if( eff.push() )
+		{
+			set_BigScreenObj();
+			BMvTbl.SetPosition( { x=0, y=0 } );
+			eff.pop();
+		}
+		Battle_Std.BackScreenBlack_Start( 600 ); // 背景を指定レーム黒くする
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvEff.SetObjectRender( { type=0 } ); // 敵の_ObjFlags_NoRenderOrderを消すを元に戻す
+		Battle_Std.BackScreenBlack_End( 10 ); // 背景を指定レームで元に戻す
+	}
+}
+
+local pat_num_Arunasuru = BMvEff.GetPatternNum( { datatype=0, pat="Arunasuru" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_ArunasuruBack1 = BMvEff.GetPatternNum( { datatype=0, pat="ArunasuruBack1" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_ArunasuruBack2 = BMvEff.GetPatternNum( { datatype=0, pat="ArunasuruBack2" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Arunasuru <-
+{
+	function Init() : (set_BigScreenObj, pat_num_Arunasuru, pat_num_ArunasuruBack2)
+	{
+		BMvTbl.SetPattern( pat_num_Arunasuru );
+
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_NoRenderOrder|_ObjFlags_NoRenderOrderPlus|_ObjFlags_NoGround } );
+		BMvEff.SetObjectRender( { type=1 } ); // 敵の_ObjFlags_NoRenderOrderを消す
+		
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		BMvTbl.SetPosition( { x=0, y=0 } );	
+		
+		// 背景を暗くする
+		local eff = BMvEff.CreateObject( { start_pat=pat_num_ArunasuruBack2 } );
+		if( eff.push() )
+		{
+			set_BigScreenObj();
+			BMvTbl.SetPosition( { x=0, y=0 } );
+			eff.pop();
+		}
+		local pos = BMvEff.GetCameraPosition( { x=0, y=0, flags=_GetPos_ViewCamera | _GetPos_Offset | _GetPos_NoMuki } );
+		BMvEff.CreateObject( { mvname="Mv_Sup10AtkObj2", x=pos.x, y=0 } );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		BMvEff.SetObjectRender( { type=0 } ); // 敵の_ObjFlags_NoRenderOrderを消すを元に戻す
+	}
+}
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+local func_GetCallXPos = function()
+{
+	local pos = BMvTbl.GetPosition( 0 );
+	local muki = BMvTbl.GetMuki();
+	local set_xpos = pos.x + (200<<7)*muki; // 自分よりちょい前
+
+	local enemy = BMvCore.GetEnemyCharaData();
+	if( enemy.push() )
+	{
+		local epos = BMvTbl.GetPosition( 0 );
+		set_xpos = epos.x - (0<<7)*muki; // 相手真上
+		enemy.pop();
+	}
+	// Battle_Std.DrawDebugRect( { setx=set_xpos } );
+	return set_xpos;
+}
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		
+		// 表示座標指定
+		// 何も指定しない場合呼び出された座標になる
+		// Battle_Std.AddXPos_CheckFrontStage( 0, 500 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		// 表示座標指定
+		Battle_Std.AddXPos_CheckFrontStage( 0, 600 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		Battle_Std.AddXPos_NearEnemy( 100, 200 ); // 相手との距離が一定以下にならないように近づく
+		
+		BMvTbl.SetLP(0,0); // レグルスと雷のＸ座標
+		
+		BMvTbl.SetLP(7,BMvEff.Random_Limit(2) ); // ボイスタイプ
+	}
+	function Update_After()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		switch( BMvTbl.GetLP(7) )
+		{
+		case 0:
+			switch( mvs.MvCount )
+			{
+			case 10:
+				BSound.SE_Play( { type=_SeType_Player, num=[170] } );
+				break;
+			case 70:
+				BSound.SE_Play( { type=_SeType_Player, num=[172] } );
+			}
+			break;
+		case 1:
+			switch( mvs.MvCount )
+			{
+			case 10:
+				BSound.SE_Play( { type=_SeType_Player, num=[171] } );
+				break;
+			case 80:
+				BSound.SE_Play( { type=_SeType_Player, num=[172] } );
+			}
+			break;
+		}
+	}
+	function FrameUpdate_After() : (func_GetCallXPos)
+	{
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50: // 呼び出し座標決定
+			BMvTbl.SetLP(0, func_GetCallXPos() ); // 呼び出す座標記憶
+			break;
+		case 100: // 眷獣レグルス・アウルムを呼ぶ
+			// 相手がやられ中だったら再度呼び出し座標を更新する
+			if( Battle_Std.CheckEnemyisDamage() )
+			{
+				BMvTbl.SetLP(0, func_GetCallXPos() ); // 呼び出す座標記憶
+			}
+			
+			// 呼び出し開始
+			local set_xpos = BMvTbl.GetLP(0);
+			local eff = BMvEff.CreateObject( { mvname="Mv_Regurusu", x=200<<7 } );
+			if( eff.push() )
+			{
+				if( set_xpos ) BMvTbl.SetPosition( { x=set_xpos } );
+				eff.pop();
+			}
+			break;
+		case 200:
+			local set_xpos = BMvTbl.GetLP(0);
+			local eff = BMvEff.CreateObject( { mvname="Mv_Sup00AtkObj" } );
+			if( eff.push() )
+			{
+				BMvTbl.SetPosition( { x=set_xpos } );
+				eff.pop();
+			}
+			break;
+		}
+	}
+	function HitInterrupt_After()
+	{
+	}
+	function LastUpdate_After()
+	{
+	}
+}
+
+local pat_num_Eff_Sup00AtkObj = BMvEff.GetPatternNum( { datatype=0, pat="Sup00AtkObj" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Sup00AtkObj <-
+{
+	function Init() : (pat_num_Eff_Sup00AtkObj)
+	{
+		BMvTbl.SetPattern( pat_num_Eff_Sup00AtkObj );
+		
+		// 各種補正は最初の１ヒットのみ	
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Eff_Sup10_Hit = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Hit" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 ); // 表示するパターンを設定
+		
+		// 表示座標指定
+		Battle_Std.AddXPos_CheckFrontStage( 0, 600 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		Battle_Std.AddXPos_NearEnemy( 100, 200 ); // 相手との距離が一定以下にならないように近づく
+		
+		// ビームがヒットしたかどうか
+		BMvTbl.SetLP(0,0); // 0:ヒットしてない 1:ヒットを受け取った 2:ヒット後の処理移行済み
+		
+		BMvTbl.SetLP(1,0); // 画面を暗くしたかどうか
+		
+		BMvTbl.SetLP(7,BMvEff.Random_Limit(2) ); // ボイスタイプ
+	}
+	function Update_After()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		switch( BMvTbl.GetLP(7) )
+		{
+		case 0:
+			switch( mvs.MvCount )
+			{
+			case 15:
+				BSound.SE_Play( { type=_SeType_Player, num=[182] } );
+				break;
+			case 90:
+				if( BMvTbl.GetLP(0) == 2 )
+				{
+					// ビームヒット時のみボイス再生
+					BSound.SE_Play( { type=_SeType_Player, num=[181] } );
+				}
+			}
+			break;
+		case 1:
+			switch( mvs.MvCount )
+			{
+			case 15:
+				BSound.SE_Play( { type=_SeType_Player, num=[180] } );
+				break;
+			case 90:
+				if( BMvTbl.GetLP(0) == 2 )
+				{
+					// ビームヒット時のみボイス再生
+					BSound.SE_Play( { type=_SeType_Player, num=[181] } );
+				}
+			}
+			break;
+		}
+	}	
+	function FrameUpdate_After() : (pat_num_Eff_Sup10_Hit)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // ビーム発射
+			Battle_Std.BackScreenBlack_Start( 999 ); // 背景を指定レーム黒くする
+			BMvTbl.SetLP(1,1); // 暗くした
+			local pos = BMvEff.GetCameraPosition( { x=0, y=0, flags=_GetPos_ViewCamera | _GetPos_Offset | _GetPos_NoMuki } );
+			BMvEff.CreateObject( { mvname="Mv_Sup10AtkObj", x=pos.x, y=0 } );
+			break;
+		case 200:
+			Battle_Std.BackScreenBlack_End( 10 ); // 背景を指定レームで元に戻す
+			BMvTbl.SetLP(1,0); // 暗くするの消した
+			break;
+		case 250: // ヒット後
+			break;
+		case 300:
+			Battle_Std.BackScreenBlack_End( 10 ); // 背景を指定レームで元に戻す
+			BMvTbl.SetLP(1,0); // 暗くするの消した
+			break;
+		}
+		
+		if( BMvTbl.GetLP(0) == 1 ) // ビームヒット
+		{
+			BMvTbl.SetLP(0,2); // 処理進める
+			
+			BMvTbl.SetPattern( pat_num_Eff_Sup10_Hit );
+			
+			BMvEff.CreateObject( { mvname="Mv_Arunasuru" } );
+		}
+	}
+	function HitInterrupt_After()
+	{
+	}
+	function LastUpdate_After()
+	{
+		// 暗くしたまま
+		if( BMvTbl.GetLP(1) == 1 )
+		{
+			// 背景暗くした命令が入ってからの抜けなので？
+			Battle_Std.BackScreenBlack_End( 0 ); // 背景を指定レームで元に戻す
+		}
+	}
+}
+
+local pat_num_Eff_Sup10AtkObj = BMvEff.GetPatternNum( { datatype=0, pat="Sup10AtkObj" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Sup10AtkObj <-
+{
+	function Init() : (pat_num_Eff_Sup10AtkObj, pat_num_ArunasuruBack1, set_BigScreenObj)
+	{
+		BMvTbl.SetPattern( pat_num_Eff_Sup10AtkObj );
+
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_NoGround } );
+		
+		// 背景を暗くする
+		local eff = BMvEff.CreateObject( { start_pat=pat_num_ArunasuruBack1 } );
+		if( eff.push() )
+		{
+			set_BigScreenObj();
+			BMvTbl.SetPosition( { x=0, y=0 } );
+			eff.pop();
+		}
+		// 各種補正は最初の１ヒットのみ	
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );
+		
+		BMvTbl.SetLP(0,0); // このビームがヒットしたかどうか
+	}
+	function FrameUpdate()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.FrameID == 100 && BMvTbl.GetLP(0) == 1 )
+		{
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				// 演出開始
+				// 親から出すので、古城が消えると終わる
+				
+				BMvTbl.SetLP(0,1); // ヒットを記憶
+				
+				oya.pop();
+			}		
+		}
+	}
+	function HitInterrupt()
+	{
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
+		{
+			BMvTbl.SetLP(0,1); // このビームがヒットしたかどうか
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Eff_Sup10AtkObj2 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10AtkObj2" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Sup10AtkObj2 <-
+{
+	function Init() : (pat_num_Eff_Sup10AtkObj2)
+	{
+		BMvTbl.SetPattern( pat_num_Eff_Sup10AtkObj2 );
+
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_NoGround } );
+		
+		// 各種補正は最初の１ヒットのみ	
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+// ※00と同じ
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+
+AKJ_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Akj_s );
+
+_dp(" -> Load OK");

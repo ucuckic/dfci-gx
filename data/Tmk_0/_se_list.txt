@@ -1,0 +1,595 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Tmk/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(900); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="BasketBall_Bound", type=0, category=6, }; // ボールバウンド
+st[51] = { path=2, file="BasketBall_Goal", type=0, category=6, }; // ゴール入った音
+st[55] = { path=2, file="OpenUmbrella", type=0, category=-1, }; // かさが開く
+
+// 勝利時のみんな（プログラム指定）
+st[60] = { path=1, file="Tmk00_7150_e", type=0, category=4}; // （ひなた）お～
+st[61] = { path=1, file="Tmk00_7731", type=0, category=5}; // （愛莉）くすくす！
+st[62] = { path=1, file="Tmk00_8116", type=0, category=2}; // （真帆）いぇい！
+st[63] = { path=1, file="Tmk00_7810_s1", type=0, category=3}; // （紗季）ナイスプレイ！
+
+// イグニッション選択
+st[80] = { path=1, file="Tmk00_6201", type=0, category=1}; // みんなで頑張ろっ！
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+// 登場シーン	
+st[100] = { path=1, file="Tmk00_2000", type=0, category=1}; // よ､よろしくお願いしますっ！
+st[101] = { path=1, file="Tmk00_2001", type=0, category=1}; // お､お願いします！
+st[102] = { path=1, file="Tmk00_2002", type=0, category=1}; // お手合わせ願います！
+
+// 掛け合い
+st[104] = { path=1, file="Tmk00_2050", type=0, category=1}; // 私長女
+st[105] = { path=1, file="Tmk00_2051", type=0, category=1}; // 左手は添えるだけ
+st[106] = { path=1, file="Tmk00_2052", type=0, category=1}; // 私はバスケやってるだけ
+st[107] = { path=1, file="Tmk00_2060", type=0, category=1}; // 
+
+// 戦闘勝利・汎用	
+st[110] = { path=1, file="Tmk00_2100", type=0, category=1}; // やったー！　えへへ！
+st[111] = { path=1, file="Tmk00_2101", type=0, category=1}; // みんな､やったよー！
+// 戦闘勝利・辛勝	
+st[112] = { path=1, file="Tmk00_2102", type=0, category=1}; // 勝てた…
+// 戦闘勝利・楽勝	
+st[113] = { path=1, file="Tmk00_2103", type=0, category=1}; // やりました。勝ちましたよ！
+
+// ラウンド勝利	
+st[120] = { path=1, file="Tmk00_2150", type=0, category=1}; // ありがとうございます。えへ。
+st[121] = { path=1, file="Tmk00_2151", type=0, category=1}; // やりましたー。ふふ。
+
+// タイムアップ判定負け	
+st[130] = { path=1, file="Tmk00_2200", type=0, category=1}; // そんな……
+st[131] = { path=1, file="Tmk00_2201", type=0, category=1}; // うぅ、強い。
+
+// 弱攻撃	
+st[140] = { path=1, file="Tmk00_2300", type=0, category=1}; // ふ
+st[141] = { path=1, file="Tmk00_2301", type=0, category=1}; // は
+st[142] = { path=1, file="Tmk00_2302", type=0, category=1}; // や
+st[143] = { path=1, file="Tmk00_2303", type=0, category=1}; // た
+st[144] = { path=1, file="Tmk00_2304", type=0, category=1}; // っん
+
+// 中攻撃	
+st[150] = { path=1, file="Tmk00_2400", type=0, category=1}; // えいっ
+st[151] = { path=1, file="Tmk00_2401", type=0, category=1}; // やっ
+st[152] = { path=1, file="Tmk00_2402", type=0, category=1}; // はっ
+st[153] = { path=1, file="Tmk00_2403", type=0, category=1}; // ふっ
+st[154] = { path=1, file="Tmk00_2404", type=0, category=1}; // ていっ
+st[155] = { path=1, file="Tmk00_2405", type=0, category=1}; // てやっ
+st[156] = { path=1, file="Tmk00_2406", type=0, category=1}; // それっ
+
+// 強攻撃	
+st[160] = { path=1, file="Tmk00_2500_b", type=0, category=1}; // よいしょっと！
+st[161] = { path=1, file="Tmk00_2501", type=0, category=1}; // んしょっ！
+st[162] = { path=1, file="Tmk00_2502", type=0, category=1}; // てぇーい！
+st[163] = { path=1, file="Tmk00_2503_b", type=0, category=1}; // やあぁ！
+st[164] = { path=1, file="Tmk00_2504", type=0, category=1}; // せーのっ！
+st[165] = { path=1, file="Tmk00_2505", type=0, category=1}; // はいっ！
+st[166] = { path=1, file="Tmk00_2506_b", type=0, category=1}; // そりゃー！
+
+// 特殊攻撃	
+st[170] = { path=1, file="Tmk00_2600", type=0, category=1}; // ふふっ(※微笑み。線香花火を微笑みながら　見ているような雰囲気でお願いします)
+st[171] = { path=1, file="Tmk00_2601", type=0, category=1}; // えへへ(※微笑み。線香花火を微笑みながら　見ているような雰囲気でお願いします)
+st[172] = { path=1, file="Tmk00_2602", type=0, category=1}; // えーい！
+// st[173] = { path=1, file="Tmk00_2603", type=0, category=1}; // 今だ！
+st[174] = { path=1, file="Tmk00_2604", type=0, category=1}; // たぁああ！
+st[175] = { path=1, file="Tmk00_2605", type=0, category=1}; // 行きますよ！
+// st[176] = { path=1, file="Tmk00_2606", type=0, category=1}; // 止めてみせる！
+st[177] = { path=1, file="Tmk00_2607", type=0, category=1}; // てりゃぁ！
+
+// 投げ技成功	
+st[180] = { path=1, file="Tmk00_2700", type=0, category=1}; // えーい！
+st[181] = { path=1, file="Tmk00_2701", type=0, category=1}; // よいしょ！
+st[182] = { path=1, file="Tmk00_2702", type=0, category=1}; // はいっ！
+
+// 投げ技失敗	
+// st[190] = { path=1, file="Tmk00_2800", type=0, category=1}; // え！？
+// st[191] = { path=1, file="Tmk00_2801", type=0, category=1}; // そんな！？
+
+// 敵の投げ技を回避	
+st[200] = { path=1, file="Tmk00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// させません！
+st[201] = { path=1, file="Tmk00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// だめ！
+
+// 挑発アクション	
+// st[210] = { path=1, file="Tmk00_3100", type=0, category=1}; // あ､あれ？　これで終わり？
+// st[211] = { path=1, file="Tmk00_3101", type=0, category=1}; // バスケしないんですか？
+
+// ジャンプ	
+st[220] = { path=1, file="Tmk00_3200", type=0, category=1}; // たっ
+// st[221] = { path=1, file="Tmk00_3201", type=0, category=1}; // はっ
+// st[222] = { path=1, file="Tmk00_3202", type=0, category=1}; // やっ
+
+// ダッシュ	
+// st[230] = { path=1, file="Tmk00_3300", type=0, category=1}; // ふっ
+st[231] = { path=1, file="Tmk00_3301", type=0, category=1}; // たっ
+st[232] = { path=1, file="Tmk00_3302", type=0, category=1}; // よっ
+
+// バックステップ	
+st[240] = { path=1, file="Tmk00_3400", type=0, category=1}; // はっ！
+// st[241] = { path=1, file="Tmk00_3401", type=0, category=1}; // やっ！
+st[242] = { path=1, file="Tmk00_3402", type=0, category=1}; // っと！
+
+// 小攻撃ガード	
+st[250] = { path=1, file="Tmk00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// ふ！
+st[251] = { path=1, file="Tmk00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// くっ！
+st[252] = { path=1, file="Tmk00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// まだ！
+
+// 中攻撃ガード	
+st[260] = { path=1, file="Tmk00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// うんっ！
+st[261] = { path=1, file="Tmk00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// ひ！
+st[262] = { path=1, file="Tmk00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// ぐぅ！
+
+// 大攻撃ガード	
+st[270] = { path=1, file="Tmk00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// ううっ！
+st[271] = { path=1, file="Tmk00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// ひゃぁ！
+st[272] = { path=1, file="Tmk00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// これくらい！
+
+// 攻撃を見切り余裕でガード	
+st[280] = { path=1, file="Tmk00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 見えてる！
+st[281] = { path=1, file="Tmk00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// これなら！
+st[282] = { path=1, file="Tmk00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// わかっていました！
+
+// ガード失敗	
+st[290] = { path=1, file="Tmk00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// ひゃっ！
+st[291] = { path=1, file="Tmk00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// ふぇ！
+st[292] = { path=1, file="Tmk00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// どうして！？
+
+// 受け身	
+st[300] = { path=1, file="Tmk00_4000", type=0, category=1}; // 次こそ！
+st[301] = { path=1, file="Tmk00_4001", type=0, category=1}; // まだ行けます！
+st[302] = { path=1, file="Tmk00_4002", type=0, category=1}; // させません！
+
+// バリア発動	
+// st[310] = { path=1, file="Tmk00_4100", type=0, category=1}; // 止める！
+// st[311] = { path=1, file="Tmk00_4101", type=0, category=1}; // 防ぎます！
+// st[312] = { path=1, file="Tmk00_4102", type=0, category=1}; // そこ！
+
+// バリアガード成功	
+// st[320] = { path=1, file="Tmk00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// ふっ！！
+// st[321] = { path=1, file="Tmk00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// 大丈夫！
+// st[322] = { path=1, file="Tmk00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// よし！
+
+// 小ダメージ	
+st[330] = { path=1, file="Tmk00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// うっ！
+st[331] = { path=1, file="Tmk00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// ひゃ！
+st[332] = { path=1, file="Tmk00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// あっ！
+
+// 中ダメージ	
+st[340] = { path=1, file="Tmk00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// くぅ！
+st[341] = { path=1, file="Tmk00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// いや！
+st[342] = { path=1, file="Tmk00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// ああっ！
+
+// 大ダメージ	
+st[350] = { path=1, file="Tmk00_4500_b", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// ダメっ！
+st[351] = { path=1, file="Tmk00_4501_b", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// きゃぁ！
+st[352] = { path=1, file="Tmk00_4502_b", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// う、はぁあ！
+
+// 電撃ダメージ	
+// st[360] = { path=1, file="Tmk00_4600", type=0, category=1}; // し､しびれます！
+// 麻痺ダメージ	
+// st[361] = { path=1, file="Tmk00_4601", type=0, category=1}; // フラフラしますぅ
+// 特殊ダメージ	
+// st[362] = { path=1, file="Tmk00_4602", type=0, category=1}; // ふ、ふあぁ！
+
+// ダウン	
+st[370] = { path=1, file="Tmk00_4700", type=0, category=1, prio=Def_SEP_KO };	// あぅ～～～～
+st[371] = { path=1, file="Tmk00_4701", type=0, category=1, prio=Def_SEP_KO };	// ああーーっ！
+st[372] = { path=1, file="Tmk00_4702", type=0, category=1, prio=Def_SEP_KO };	// きゃーーっ！
+
+// ダウン・ノックアウト	
+st[380] = { path=1, file="Tmk00_4800", type=0, category=1, prio=Def_SEP_KO };	// きゃぁああああ！
+st[381] = { path=1, file="Tmk00_4801", type=0, category=1, prio=Def_SEP_KO };	// そんなぁあああ！
+st[382] = { path=1, file="Tmk00_4802", type=0, category=1, prio=Def_SEP_KO };	// ひ、ひどいです………
+
+// 起きあがり	
+st[390] = { path=1, file="Tmk00_4900", type=0, category=1}; // まだ行けます！
+st[391] = { path=1, file="Tmk00_4901", type=0, category=1}; // 諦めません！
+st[392] = { path=1, file="Tmk00_4902", type=0, category=1}; // 平気です！
+
+// 起きあがり・瀕死	
+// st[400] = { path=1, file="Tmk00_5000", type=0, category=1}; // うぅ…
+// st[401] = { path=1, file="Tmk00_5001", type=0, category=1}; // はぁはぁ…
+// st[402] = { path=1, file="Tmk00_5002", type=0, category=1}; // ま、まだ…
+
+// ブラスト	
+st[410] = { path=1, file="Tmk00_5100", type=0, category=1}; // 一本いくよっ！
+st[411] = { path=1, file="Tmk00_5101", type=0, category=1}; // これからですよ！
+st[412] = { path=1, file="Tmk00_5102", type=0, category=1}; // 決めさせない！
+
+// コンボブラスト	
+st[420] = { path=1, file="Tmk00_5200", type=0, category=1}; // 速攻っ！
+st[421] = { path=1, file="Tmk00_5201", type=0, category=1}; // 飛んでっ！
+
+// バウンドブラスト	
+st[430] = { path=1, file="Tmk00_5300", type=0, category=1}; // 負けられません！
+st[431] = { path=1, file="Tmk00_5301", type=0, category=1}; // インターセプトっ！
+st[432] = { path=1, file="Tmk00_5302", type=0, category=1}; // させません！
+
+// 攻撃サポートキャラ呼び出し	
+st[440] = { path=1, file="Tmk00_5400", type=0, category=1}; // お願いしますっ！
+st[441] = { path=1, file="Tmk00_5401", type=0, category=1}; // チャンスです！
+st[442] = { path=1, file="Tmk00_5402", type=0, category=1}; // 今です！
+
+// 補助サポートキャラ呼び出し	
+// st[450] = { path=1, file="Tmk00_5500", type=0, category=1}; // 任せます！
+// st[451] = { path=1, file="Tmk00_5501", type=0, category=1}; // サポートをっ！
+// st[452] = { path=1, file="Tmk00_5502", type=0, category=1}; // 頼みます！
+
+// 防御サポートキャラ呼び出し	
+// st[460] = { path=1, file="Tmk00_5600", type=0, category=1}; // 助けてください！
+// st[461] = { path=1, file="Tmk00_5601", type=0, category=1}; // 間に合わない！
+// st[462] = { path=1, file="Tmk00_5602", type=0, category=1}; // ディフェンス！
+
+st[465] = { path=1, file="Tmk00_5700_b", type=0, category=1}; // 一緒に行くよ！
+st[466] = { path=1, file="Tmk00_5701_b", type=0, category=1}; // 決めるよ！
+
+// 好調時にポテンシャル発動	
+st[470] = { path=1, file="Tmk00_6100", type=0, category=9}; // 力が沸いてくる！
+st[471] = { path=1, file="Tmk00_6101", type=0, category=9}; // 今なら何でも出来る気がする！
+st[472] = { path=1, file="Tmk00_6102", type=0, category=9}; // 集中していくよっ！
+
+// ピンチ時にポテンシャル発動	
+st[480] = { path=1, file="Tmk00_6200", type=0, category=9}; // ダメだよ､負けない！
+st[481] = { path=1, file="Tmk00_6201", type=0, category=9}; // みんなで頑張ろっ！
+st[482] = { path=1, file="Tmk00_6202", type=0, category=9}; // 止められたりしない！
+
+// レアな隠しポテンシャル発動	
+// st[490] = { path=1, file="Tmk00_6300", type=0, category=9}; // 今はみんなと一緒だもん！
+// st[491] = { path=1, file="Tmk00_6301", type=0, category=9}; // チームの想いを形にしよう！
+
+// 激突演出	
+// st[500] = { path=1, file="Tmk00_6400", type=0, category=9}; // これが、今の私の全部です！
+// st[501] = { path=1, file="Tmk00_6401", type=0, category=9}; // いっきますよ～！
+// st[502] = { path=1, file="Tmk00_6402", type=0, category=9}; // 絶対負けられません！
+
+// 必殺技①ボイス・智花	　シュート
+st[510] = { path=1, file="Tmk00_7000", type=0, category=1}; // お願い！
+st[511] = { path=1, file="Tmk00_7001", type=0, category=1}; // えいっ！
+// st[512] = { path=1, file="Tmk00_7002", type=0, category=1}; // 昴さん、見ててください！
+st[513] = { path=1, file="Tmk00_7003", type=0, category=1}; // シュート！
+
+// ■必殺技①追加ボイス・香椎愛莉
+st[520] = { path=1, file="Tmk00_7050", type=0, category=5}; // ゴール下を支配っ！
+st[521] = { path=1, file="Tmk00_7051", type=0, category=5}; // もう逃げない！
+st[522] = { path=1, file="Tmk00_7052", type=0, category=5}; // させない！
+st[523] = { path=1, file="Tmk00_7053", type=0, category=5}; // だめぇええ！
+
+// 必殺技②ボイス・智花　パス
+st[530] = { path=1, file="Tmk00_7100", type=0, category=1}; // お願い！
+st[531] = { path=1, file="Tmk00_7101", type=0, category=1}; // パス！
+st[532] = { path=1, file="Tmk00_7102", type=0, category=1}; // フリーだよ！
+st[533] = { path=1, file="Tmk00_7103", type=0, category=1}; // はいっ！
+
+// ●必殺技②追加ボイス・袴田ひなた
+st[540] = { path=1, file="Tmk00_7150_s0", type=0, category=4}; // いくぞ～
+st[541] = { path=1, file="Tmk00_7150_s1", type=0, category=4}; // お～
+// st[542] = { path=1, file="Tmk00_7151_s0", type=0, category=4}; // ひな参上～
+st[543] = { path=1, file="Tmk00_7151_s1", type=0, category=4}; // 覚悟～
+// st[544] = { path=1, file="Tmk00_7152", type=0, category=4}; // とぉ～
+// st[545] = { path=1, file="Tmk00_7153", type=0, category=4}; // 今度はひなの番～
+
+// ▲必殺技②追加ボイス・永塚紗季
+st[550] = { path=1, file="Tmk00_7160_s0", type=0, category=3}; // こっち！
+st[551] = { path=1, file="Tmk00_7160_s1", type=0, category=3}; // はっ！
+st[552] = { path=1, file="Tmk00_7161", type=0, category=3}; // えい！
+st[553] = { path=1, file="Tmk00_7162", type=0, category=3}; // はいっ！
+st[554] = { path=1, file="Tmk00_7163", type=0, category=3}; // たぁ！
+
+// ★必殺技②追加ボイス・三沢真帆
+st[560] = { path=1, file="Tmk00_7170_s0", type=0, category=2}; // ぱすぱーす！
+st[561] = { path=1, file="Tmk00_7170_s1", type=0, category=2}; // ほい！
+st[562] = { path=1, file="Tmk00_7171", type=0, category=2}; // 待ちわびたぁ！
+st[563] = { path=1, file="Tmk00_7172", type=0, category=2}; // 舐めんなよぉ～
+st[564] = { path=1, file="Tmk00_7173", type=0, category=2}; // あいよっ！
+
+// 必殺技③ボイス・智花　ドリブル
+st[570] = { path=1, file="Tmk00_7200", type=0, category=1}; // はっ！
+st[571] = { path=1, file="Tmk00_7201", type=0, category=1}; // 今っ！
+st[572] = { path=1, file="Tmk00_7202", type=0, category=1}; // ここっ！
+st[573] = { path=1, file="Tmk00_7203", type=0, category=1}; // 行きます！
+
+// 必殺技④ボイス・智花　舞
+st[580] = { path=1, file="Tmk00_7300", type=0, category=1}; // はいっ！
+st[581] = { path=1, file="Tmk00_7301", type=0, category=1}; // えいっ！
+st[582] = { path=1, file="Tmk00_7302", type=0, category=1}; // 舞います！
+// st[583] = { path=1, file="Tmk00_7303", type=0, category=1}; // そーれっ！
+
+// 必殺技⑤ボイス・智花　切り札
+st[590] = { path=1, file="Tmk00_7500", type=0, category=1}; // いやああぁぁ！！
+st[591] = { path=1, file="Tmk00_7501", type=0, category=1}; // ごめんなさぁーい！
+st[592] = { path=1, file="Tmk00_7502", type=0, category=1}; // だめだめぇー！
+st[593] = { path=1, file="Tmk00_7503", type=0, category=1}; // どいてください～！
+
+// 超必殺技①ボイス・智花	
+st[600] = { path=1, file="Tmk00_8000_s0", type=0, category=1}; // 全力で行きますよ！　はっはっ　ふっ！
+st[601] = { path=1, file="Tmk00_8000_s1", type=0, category=1}; // 全力で行きますよ！　はっはっ　ふっ！
+st[602] = { path=1, file="Tmk00_8000_s2", type=0, category=1}; // 全力で行きますよ！　はっはっ　ふっ！
+st[603] = { path=1, file="Tmk00_8000_s3", type=0, category=1}; // 全力で行きますよ！　はっはっ　ふっ！
+
+// st[604] = { path=1, file="Tmk00_8001_s0", type=0, category=1}; // 付いて来れますか？　はっふっ　えい！
+// st[605] = { path=1, file="Tmk00_8001_s1", type=0, category=1}; // 付いて来れますか？　はっふっ　えい！
+// st[606] = { path=1, file="Tmk00_8001_s2", type=0, category=1}; // 付いて来れますか？　はっふっ　えい！
+// st[607] = { path=1, file="Tmk00_8001_s3", type=0, category=1}; // 付いて来れますか？　はっふっ　えい！
+
+// st[608] = { path=1, file="Tmk00_8002_s0", type=0, category=1}; // これが練習の成果です！ふっふっ　たっ！
+// st[609] = { path=1, file="Tmk00_8002_s1", type=0, category=1}; // これが練習の成果です！ふっふっ　たっ！
+// st[610] = { path=1, file="Tmk00_8002_s2", type=0, category=1}; // これが練習の成果です！ふっふっ　たっ！
+// st[611] = { path=1, file="Tmk00_8002_s3", type=0, category=1}; // これが練習の成果です！ふっふっ　たっ！
+
+// 超必殺技②ボイス・智花 前半	
+st[615] = { path=1, file="Tmk00_8100", type=0, category=1}; // みんなっ力を貸してっ！
+st[616] = { path=1, file="Tmk00_8101", type=0, category=1}; // これが私のチーム！
+st[617] = { path=1, file="Tmk00_8102", type=0, category=1}; // 一緒にいくよっ！
+
+// 超必殺技②ボイス・智花 後半
+// st[615] = { path=1, file="Tmk00_8105", type=0, category=1}; // やったぁ！
+// st[616] = { path=1, file="Tmk00_8106", type=0, category=1}; // いぇい！
+// st[617] = { path=1, file="Tmk00_8107", type=0, category=1}; // 小学生は最高だぜっ！
+
+// ★超必殺技２・後半Ａ・三沢真帆
+st[625] = { path=1, file="Tmk00_8110", type=0, category=2}; // いっくぜ～
+// st[626] = { path=1, file="Tmk00_8111", type=0, category=2}; // 見ててよ～！　
+// st[627] = { path=1, file="Tmk00_8112", type=0, category=2}; // おりゃぁ！
+
+// ★超必殺技２・後半B・三沢真帆
+// st[625] = { path=1, file="Tmk00_8115", type=0, category=2}; // やったぁ！　
+// st[626] = { path=1, file="Tmk00_8116", type=0, category=2}; // いぇい！
+// st[627] = { path=1, file="Tmk00_8117", type=0, category=2}; // 小学生は最高だぜっ
+
+// ▲超必殺技２・後半Ａ・永塚紗季
+// st[630] = { path=1, file="Tmk00_8120", type=0, category=3}; // えい！
+// st[631] = { path=1, file="Tmk00_8121", type=0, category=3}; // はいっ！
+st[632] = { path=1, file="Tmk00_8122", type=0, category=3}; // どうです！？
+
+// ▲超必殺技２・後半B・永塚紗季
+// st[635] = { path=1, file="Tmk00_8125", type=0, category=3}; // やったぁ！　
+// st[636] = { path=1, file="Tmk00_8126", type=0, category=3}; // いぇい！
+// st[637] = { path=1, file="Tmk00_8127", type=0, category=3}; // 小学生は最高だぜっ
+
+// ●超必殺技２・後半Ａ・袴田ひなた
+st[640] = { path=1, file="Tmk00_8130", type=0, category=4}; // おぉ～
+// st[641] = { path=1, file="Tmk00_8131", type=0, category=4}; // しゅーっ！　（シュート）
+// st[642] = { path=1, file="Tmk00_8132", type=0, category=4}; // どんとこーい！
+
+// ●超必殺技２・後半B・袴田ひなた
+// st[645] = { path=1, file="Tmk00_8135", type=0, category=4}; // やったぁ！　
+// st[646] = { path=1, file="Tmk00_8136", type=0, category=4}; // いぇい！
+// st[647] = { path=1, file="Tmk00_8137", type=0, category=4}; // 小学生は最高だぜっ
+
+// ■超必殺技２・後半Ａ・香椎愛莉
+st[650] = { path=1, file="Tmk00_8140", type=0, category=5}; // いきますっ！
+// st[651] = { path=1, file="Tmk00_8141", type=0, category=5}; // たぁ！
+// st[652] = { path=1, file="Tmk00_8142", type=0, category=5}; // ふっ！
+
+// ■超必殺技２・後半B・香椎愛莉
+// st[655] = { path=1, file="Tmk00_8145", type=0, category=5}; // やったぁ！　
+// st[656] = { path=1, file="Tmk00_8146", type=0, category=5}; // いぇい！
+// st[657] = { path=1, file="Tmk00_8147", type=0, category=5}; // 小学生は最高だぜっ
+
+// ♪超必殺技２・後半Ｂ 合成用ナンバー
+st[665] = { path=1, file="Tmk00_8150", type=0, category=1}; // やったぁ！　
+st[666] = { path=1, file="Tmk00_8151", type=0, category=1}; // いぇい！
+st[667] = { path=1, file="Tmk00_8152", type=0, category=1}; // 小学生は最高だぜっ
+
+// 必殺技失敗ボイス（三沢真帆）
+st[700] = { path=1, file="Tmk00_7400", type=0, category=2}; // いたっ
+// st[701] = { path=1, file="Tmk00_7401", type=0, category=2}; // いてて
+st[702] = { path=1, file="Tmk00_7402", type=0, category=2}; // あちゃー
+// st[703] = { path=1, file="Tmk00_7403", type=0, category=2}; // あうー
+
+// 必殺技失敗ボイス（永塚紗季）
+st[705] = { path=1, file="Tmk00_7410", type=0, category=3}; // きゃ！
+// st[706] = { path=1, file="Tmk00_7411", type=0, category=3}; // くう！
+st[707] = { path=1, file="Tmk00_7412", type=0, category=3}; // あっ！
+// st[708] = { path=1, file="Tmk00_7413", type=0, category=3}; // そんな！
+
+// 必殺技失敗ボイス（袴田ひなた）
+st[710] = { path=1, file="Tmk00_7420", type=0, category=4}; // おぉ
+// st[711] = { path=1, file="Tmk00_7421", type=0, category=4}; // あぁー
+st[712] = { path=1, file="Tmk00_7422", type=0, category=4}; // ぶー
+// st[713] = { path=1, file="Tmk00_7423", type=0, category=4}; // ううー
+
+// 必殺技失敗ボイス（香椎愛莉）
+st[715] = { path=1, file="Tmk00_7430", type=0, category=5}; // いや！
+// st[716] = { path=1, file="Tmk00_7431", type=0, category=5}; // ああっ！
+// st[717] = { path=1, file="Tmk00_7432", type=0, category=5}; // あぅ！
+st[718] = { path=1, file="Tmk00_7433", type=0, category=5}; // そんな！
+
+// 呼びかけ用ボイス（智花）
+// st[720] = { path=1, file="Tmk00_7600", type=0, category=1}; // 昴さん！
+st[722] = { path=1, file="Tmk00_7601", type=0, category=1}; // 真帆！
+st[723] = { path=1, file="Tmk00_7602", type=0, category=1}; // 紗季！
+st[724] = { path=1, file="Tmk00_7603", type=0, category=1}; // ひなた！
+st[725] = { path=1, file="Tmk00_7604", type=0, category=1}; // 愛莉！
+
+// 呼びかけ用ボイス（三沢真帆）
+// st[730] = { path=1, file="Tmk00_7610", type=0, category=2}; // すばるん！
+// st[731] = { path=1, file="Tmk00_7611", type=0, category=2}; // もっかん！
+st[733] = { path=1, file="Tmk00_7612", type=0, category=2}; // サキ！
+st[734] = { path=1, file="Tmk00_7613", type=0, category=2}; // ヒナ！
+// st[735] = { path=1, file="Tmk00_7614", type=0, category=2}; // アイリーン！
+
+// 呼びかけ用ボイス（永塚紗季）
+// st[740] = { path=1, file="Tmk00_7620", type=0, category=3}; // 長谷川さん！
+// st[741] = { path=1, file="Tmk00_7621", type=0, category=3}; // トモ！
+// st[742] = { path=1, file="Tmk00_7622", type=0, category=3}; // 真帆！
+// st[744] = { path=1, file="Tmk00_7623", type=0, category=3}; // ひな！
+// st[745] = { path=1, file="Tmk00_7624", type=0, category=3}; // 愛莉！
+
+// 呼びかけ用ボイス（袴田ひなた）
+// st[750] = { path=1, file="Tmk00_7630", type=0, category=4}; // おにーちゃん！
+// st[751] = { path=1, file="Tmk00_7631", type=0, category=4}; // ともか！
+// st[752] = { path=1, file="Tmk00_7632", type=0, category=4}; // まほ！
+// st[753] = { path=1, file="Tmk00_7633", type=0, category=4}; // さき！
+// st[755] = { path=1, file="Tmk00_7634", type=0, category=4}; // あいり！
+
+// 呼びかけ用ボイス（香椎愛莉）
+// st[760] = { path=1, file="Tmk00_7640", type=0, category=5}; // 長谷川さん！
+// st[761] = { path=1, file="Tmk00_7641", type=0, category=5}; // 智花ちゃん！
+// st[762] = { path=1, file="Tmk00_7642", type=0, category=5}; // 真帆ちゃん！
+// st[763] = { path=1, file="Tmk00_7643", type=0, category=5}; // 紗季ちゃん！
+// st[764] = { path=1, file="Tmk00_7644", type=0, category=5}; // ひなちゃん！
+
+// 声援用ボイス（三沢真帆）
+st[770] = { path=1, file="Tmk00_7700", type=0, category=2}; // 流石もっかんっ
+// st[771] = { path=1, file="Tmk00_7701", type=0, category=2}; // あはは！
+
+// シュート成功（三沢真帆）
+st[775] = { path=1, file="Tmk00_7800", type=0, category=2}; // もっかん！ナイッシュー！
+// st[776] = { path=1, file="Tmk00_7801", type=0, category=2}; // いっけぇーもっかん！
+
+// 声援」用ボイス（永塚紗季）
+st[780] = { path=1, file="Tmk00_7710", type=0, category=3}; // やったわねっトモ！
+// st[781] = { path=1, file="Tmk00_7711", type=0, category=3}; // うふふ！
+
+// シュート成功（永塚紗季）
+st[785] = { path=1, file="Tmk00_7810", type=0, category=3}; // トモ！ナイスプレイ！
+// st[786] = { path=1, file="Tmk00_7811", type=0, category=3}; // ナイッシュー､トモ！
+
+// 声援用ボイス（袴田ひなた）
+st[790] = { path=1, file="Tmk00_7720", type=0, category=4}; // ともか､すごい！
+// st[791] = { path=1, file="Tmk00_7721", type=0, category=4}; // にゃんにゃーにゃにゃにゃーん！
+
+// シュート成功（袴田ひなた）
+st[795] = { path=1, file="Tmk00_7820", type=0, category=4}; // ともか､ないす～！
+// st[796] = { path=1, file="Tmk00_7821", type=0, category=4}; // おお､すごいー！
+
+// 声援用ボイス（香椎愛莉）
+st[800] = { path=1, file="Tmk00_7730", type=0, category=5}; // やったね､智花ちゃん！
+// st[801] = { path=1, file="Tmk00_7731", type=0, category=5}; // くすくす！
+
+// シュート成功（香椎愛莉）
+st[805] = { path=1, file="Tmk00_7830", type=0, category=5}; // 智花ちゃんナイッシュー！
+// st[806] = { path=1, file="Tmk00_7831", type=0, category=5}; // ナイスナイスー！
+
+
+
+
+// // 対人戦３連続勝利
+// 1000	やりましたよ！3連勝です！コーチのおかげですね！
+
+// // 対人戦１０連続勝利
+// 1001	すごいです！もう負ける気がしませんね！えへへ！
+
+// // 汎用勝利
+// 1010	ありがとうございました。またバスケ一緒にやりませんか？
+
+// // 汎用勝利
+// 1011	やりました。やりましたよ！このまま勝ち続けたいです！！
+
+// // 汎用勝利
+// 1012	試合楽しかったです。またいつか出来るといいですね！
+
+// // 汎用勝利
+// 1013	え､ふぇええ！　フォームどこかおかしかったですか！？
+
+// // 汎用勝利
+// 1014	ひゃっ……あ、あのええと……勝っちゃいました……ふわわわ……
+
+// // 汎用勝利
+// 1015	私たち、仲の良さなら負けないもん！
+
+// // 汎用勝利
+// 1016	えへへ、コーチが応援してくださったお陰ですっ！
+
+// // 勝利画面レアボイス
+// 1017	ん…ふぅ…。ふぇえっ？ふぁああっ！！勝っちゃいました…えへへ。　　　　※無意識のうちに、気付いたら勝っていた感じでお願いします。
+
+// // 勝利画面レアボイス
+// 1018	私､バスケが大好きです。みんなと一緒にバスケができることが大切なんです。
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	慧心学園初等部6年C組、湊智花です。
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	コーチ、よろしくお願いします！
+
+// // キャラセレクト画面キャラクター決定
+// 1130	頑張っちゃいますよ､私っ！
+
+// // コンティニュー画面コンテニュー待機
+// 1200	あ、あのコーチの延長お願いできませんか？
+
+// // コンティニュー画面再戦決定
+// 1210	はいっ頑張ります！
+
+// // コンティニュー画面ゲームオーバー
+// 1220	もし良かったら、またコーチをお願いします。　　　※寂しそうな感じでお願いします。
+
+// // 乱入出迎えボイス
+// 1300	私､負けませんよっ!
+
+// // 乱入出迎えボイス
+// 1301	このチームで､戦い抜くよ！慧心女バスーー　ファイトッ！おー！！
+
+// // タイトルコール
+// 1700	ファイティング・クライマックス！
+
+// // タイトルコール
+// 1700	ファイティング・クライマックス！
+
+// // タイトルコール
+// 1701	電撃文庫、ファイティング・クライマックス！
+
+// // タイトルコール
+// 1701	電撃文庫、ファイティング・クライマックス！
+
+// // 乱入出迎え（三沢真帆）
+// 7900	ファイトッ！おー！！
+
+// // 乱入出迎え（永塚紗季）
+// 7910	ファイトッ！おー！！
+
+// // 乱入出迎え（袴田ひなた）
+// 7920	ファイトッ！おー！！
+
+// // 乱入出迎え（香椎愛莉）
+// 7930	ファイトッ！おー！！
+
+// // 乱入出迎え・全員（全員ボイス合成　ファイル用ナンバー）
+// 7950	このチームで､戦い抜くよ！慧心女バスーー　ファイトッ！おー！！
+
+// // タイトルコール（三沢真帆）
+// 7960	ファイティング・クライマックス！
+
+// // タイトルコール（永塚紗季）
+// 7970	ファイティング・クライマックス！
+
+// // タイトルコール（袴田ひなた）
+// 7980	ファイティング・クライマックス！
+
+// // タイトルコール（香椎愛莉）
+// 7990	ファイティング・クライマックス！
+
+// // タイトルコール・全員（全員ボイス合成　ファイル用ナンバー）
+// 7995	電撃文庫、ファイティング・クライマックス！
+
+// // エンディング１（5～6秒程度）
+// 8200	ありがとうございました。またコーチお願いしますねっ　えへへ！
+
+// // エンディング１（5～6秒程度）
+// 8201	また「夢」でもバスケで勝負してくださいね。ふふ。！
+
+// // エンディング１（5～6秒程度）
+// 8202	また一緒に、たのしい「夢」をみましょうね！

@@ -1,0 +1,357 @@
+//コマンドテーブル skillは格ゲーコマンド表記
+btl_debPrint2("\n[Yuk_0_cmd.txt]");
+
+// 切り札中じゃない場合は二段ジャンプが限界なのん
+local checkKirifudaJump = function()
+{
+	local isFledge = tDDC.KirifudaWatch_GetParam(0);
+	if( !isFledge )
+	{
+		if( BCMDTbl.CheckAirJump(1) == 0 ) return 0;//ジャンプカウントが1以上だと0
+	}
+	return 1;
+}
+
+// 切り札中の必殺技ジャンキャン
+local checkKirifudaSkillJump = function() : (checkKirifudaJump)
+{
+	// _dp("\n checkKirifudaSkillJump st");
+	local isFledge = tDDC.KirifudaWatch_GetParam(0);
+	if( !isFledge )
+	{
+		// 切り札じゃないときはエクステンドした必殺技でのみ可能
+		if( Battle_Std.MoveCode.CheckFlag( def_MC_Skill ) && Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_ExtendAction ) )
+		{
+			//
+			// _dp("\n エクステンド必殺技中");
+		}
+		else
+		{
+			// _dp("\n だめぽよ:"+Battle_Std.MoveCode.CheckFlag( def_MC_Skill )+" ex:"+Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_ExtendAction ) );
+			return 0; // 切り札中のみ
+		}
+	}
+	
+	if( Battle_Std.CheckDownOiuti() )
+	{
+		// _dp("\n ダウン追い討ち時は不可");
+		return 0; // ダウン追い討ち時は不可
+	}
+	if( Battle_Std.EnemyDamageFlag_Check( def_DF_ChrFlag1ed ) )
+	{
+		// _dp("\n コンボ中1回のみの技");
+		return 0; // コンボ中1回のみの技
+	}
+	
+	// local isFledge = tDDC.KirifudaWatch_GetParam(0);
+	// _dp("\n isFledge:"+isFledge );
+	// if( !isFledge )
+	if( BCMDTbl.CheckPosState(_PosState_Air ) && BCMDTbl.CheckAirJump(2) == 0 ) return 0;//ジャンプカウントが1以上だと0
+	if( BMvTbl.AddAirCount( 0, 0 ) ) return 0;
+	
+	// _dp("\n checkKirifudaSkillJump st2");
+	// 必殺技中or通常技中である
+	if( !Battle_Std.MoveCode.CheckFlag( def_MC_Skill ) && !Battle_Std.MoveCode.CheckFlag( def_MC_Atk ) ) return 0;
+
+	if( !Battle_Std.MoveCode.CheckFlag( def_MC_CharaFlag1 ) ) return 0;
+	
+	// ヒットしてる
+	local hs = BMvTbl.GetMvHitStatus();
+
+	// 判定ツールでヒット時必殺Ｃ以上の設定になっている
+	local spCCFlag = BCMDTbl.CheckCancelFlag(1);
+	if( spCCFlag == _CancelFlag_None )
+	{
+		return 0;
+	}
+	else if( spCCFlag == _CancelFlag_Hit )
+	{
+		if( (hs.Type & _HitType_Hit ) == 0 ) return 0;
+	}
+	else if( spCCFlag == _CancelFlag_Damage )
+	{
+		if( (hs.Type & _HitType_Damage ) == 0 ) return 0;
+	}
+	
+	// インパクトスキルはダメージのみキャンセル可能にする
+	if( Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_AtkImpact ) ) // インパクトスキル
+	{
+		if( (hs.Type & _HitType_Damage ) == 0 ) return 0;
+	}
+	
+	// _dp("\n checkKirifudaSkillJump end");
+	return 1;
+}
+
+local t =
+{
+	MultiJump_F =
+	{
+		function CmdBeforeFunc() : (checkKirifudaJump)
+		{
+			if( !checkKirifudaJump() ) return 0;
+			return 1;
+		},
+		CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 }
+	},
+	MultiJump_N =
+	{
+		function CmdBeforeFunc() : (checkKirifudaJump)
+		{
+			if( !checkKirifudaJump() ) return 0;
+			return 1;
+		},
+		CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 }
+	},
+	MultiJump_B =
+	{
+		function CmdBeforeFunc() : (checkKirifudaJump)
+		{
+			if( !checkKirifudaJump() ) return 0;
+			return 1;
+		},
+		CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 }
+	},
+	MultiJumpCancel_F = 
+	{
+		function CmdBeforeFunc() : (checkKirifudaJump)
+		{
+			if( !checkKirifudaJump() ) return 0;
+			return 1;
+		},
+		CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 }
+	},
+	MultiJumpCancel_N =
+	{
+		function CmdBeforeFunc() : (checkKirifudaJump)
+		{
+			if( !checkKirifudaJump() ) return 0;
+			return 1;
+		},
+		CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 }
+	},
+	MultiJumpCancel_B =
+	{
+		function CmdBeforeFunc() : (checkKirifudaJump)
+		{
+			if( !checkKirifudaJump() ) return 0;
+			return 1;
+		},
+		CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 }
+	},
+
+	Skill_236A = {},
+	Skill_236B = {},
+	Skill_236C = {},
+	Skill_236EX = {},
+
+	Skill_J236A =  {},//{ CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, } },
+	Skill_J236B =  {},//{ CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, } },
+	Skill_J236C =  {},//{ CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, } },
+	Skill_J236EX = {},//{ CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, } },
+
+	Skill_214A = {},
+	Skill_214B = {},
+	Skill_214C = {},
+	Skill_214EX = {},
+	
+	Skill_J214A = {},
+	Skill_J214B = {},
+	Skill_J214C = {},
+	Skill_J214EX = {},
+	
+	Skill_Sousai = {},
+	Skill_Sousai2 = {},
+	Skill_Sousai4 = {},
+	Skill_Sousai4_JAdd = {},
+	Skill_Kirifuda = {},
+	
+	Skill_41236SP = {},
+	Skill_63214SP = {},	
+	
+	AirDash_F =
+	{
+		CmdCheck =
+		{
+			SkillType = "Normal"
+			AirJumpLimit = 2,
+		},		
+		function CmdBeforeFunc()
+		{
+			local isFledge = tDDC.KirifudaWatch_GetParam(0);
+			if( !isFledge )
+			{
+				if( BCMDTbl.CheckAirJump(1) == 0 ) return 0;//ジャンプカウントが1以上だと0
+				// if( BCMDTbl.CheckCancel( _SkillType_None ) == 0 ) return 0;
+			}
+			return 1;
+		}
+	},
+	
+	Skill_JumpCanselWait =
+	{
+		num = def_CN_Skill_AddCommand1, command = ["8","9","7"],
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+		},
+		function CmdBeforeFunc() : (checkKirifudaSkillJump)
+		{
+			if( !checkKirifudaSkillJump() ) return 0;
+			
+			return 1;
+		},
+		function CmdAfterFunc()
+		{
+			local cmdpos = BCMDTbl.GetSuccessButtonPos();
+			BMvTbl.SetPP( def_PP_Yuk_SkillJumpSt, cmdpos );
+			return 1;
+		}
+		UpdateTable = { name = "Mv_Skill_JumpCanselWait", },
+	}
+	
+	Skill_AirJumpCanselWait =
+	{
+		num = def_CN_Skill_AddCommand2, command = ["8","9","7"],
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			PosState = "Air",
+		},
+		function CmdBeforeFunc() : (checkKirifudaSkillJump)
+		{
+			if( !checkKirifudaSkillJump() ) return 0;
+			
+			return 1;
+		},
+		function CmdAfterFunc()
+		{
+			local cmdpos = BCMDTbl.GetSuccessButtonPos();
+			BMvTbl.SetPP( def_PP_Yuk_SkillJumpSt, cmdpos );
+			return 1;
+		}
+		UpdateTable = { name = "Mv_Skill_AirJumpCanselWait", },
+	}
+	
+	Skill_AirDashCanselWait =
+	{
+		num = def_CN_Skill_AddCommand3, command = [ "0606@N,255@@D,12@@L,4@", "0906@N,255@@D,12@@L,4@", "0909@N,255@@D,12@@L,4@" ],
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			PosState = "Air",
+		},
+		function CmdBeforeFunc() : (checkKirifudaSkillJump)
+		{
+			if( !checkKirifudaSkillJump() ) return 0;
+
+			// XXX:仮
+			local mvname = BMvTbl.GetMvName();
+			if( mvname == "Mv_Skill_214A" || mvname == "Mv_Skill_214B" || mvname == "Mv_Skill_214C" || mvname == "Mv_Skill_214EX" )
+			{
+				local isFledge = tDDC.KirifudaWatch_GetParam(0);
+				if( !isFledge )
+				{
+					return 0;
+				}
+			}
+			
+			return 1;
+		},
+		function CmdAfterFunc()
+		{
+			local cmdpos = BCMDTbl.GetSuccessButtonPos();
+			BMvTbl.SetPP( def_PP_Yuk_SkillJumpSt, cmdpos );
+			return 1;
+		}
+		UpdateTable = { name = "Mv_Skill_AirDashCanselWait", },
+	}	
+	
+	Atk_Std6B = {},
+	
+	Atk_Std3C = {},
+	
+}
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_StdA",
+		UpdateMoveName="Mv_Atk_StdB",
+	},
+	{
+		CheckMoveName="Mv_Atk_StdB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_StdB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_StdC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},	
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			FrameIDCheck = { Only = [300,310,320,350,360,370], },
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 0 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_CroA",
+		UpdateMoveName="Mv_Atk_CroB",
+	},
+	{
+		CheckMoveName="Mv_Atk_CroB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_CroB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_StdC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},	
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			FrameIDCheck = { Only = [300,310,320,350,360,370], },
+			Cost = { ComboGauge = 10000 },
+		}
+	},	
+]
+Battle_Std.MakeStdCombo( t, ar, 1 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_AirA",
+		UpdateMoveName="Mv_Atk_AirB",
+	},
+	{
+		CheckMoveName="Mv_Atk_AirB",
+		UpdateMoveName="Mv_Atk_AirC",
+		ResetTmplName="Std_Atk_AirB",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerAir, //スマートステアアナウンスの追加
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 2 );
+
+YUK_CommandTable <- Battle_Std.MakeCommandTable( t );
+
+_dp(" -> Load OK");

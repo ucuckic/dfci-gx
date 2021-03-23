@@ -1,0 +1,4 @@
+btl_debPrint2("\n[Lea_0_cmd.txt]");
+LEA_S_CommandTable <- 0;
+_dp(" -> Load OK");
+

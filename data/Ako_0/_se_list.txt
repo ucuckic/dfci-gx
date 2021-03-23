@@ -1,0 +1,336 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Ako/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="Heal", type=1, category=4, }; // ヒール（214）
+st[51] = { path=2, file="Magic_Chant", type=1, category=4, }; // 魔法詠唱
+st[52] = { path=2, file="Soiya", type=1, category=4, }; // ソイヤでバーを止めた音
+st[53] = { path=2, file="GroundCrap", type=1, category=4, }; // 床バン
+st[54] = { path=2, file="Levelup", type=1, category=4, }; // レベルアップ
+
+// イグニッション選択
+st[80] = { path=1, file="Ako00_6201", type=0, category=1}; // 負けられないです！
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+st[90] = { path=1, file="Ako00_2076", type=0, category=1}; // リア充ネットゲーマー……敵ですね。
+st[91] = { path=1, file="Ako00_2077", type=0, category=1}; // あ、ニート師匠！こんにちわー！！
+st[92] = { path=1, file="Ako00_2079", type=0, category=1}; // 可愛いは……正義です！
+st[93] = { path=1, file="Ako00_2080", type=0, category=1}; // 人生って超難関クエストですね……
+
+
+st[100] = { path=1, file="Ako00_2000", type=0, category=1}; // 負けても怒られないですよね？
+st[101] = { path=1, file="Ako00_2001", type=0, category=1}; // 私だって一度ぐらいは勝ってみせます！
+st[102] = { path=1, file="Ako00_2002", type=0, category=1}; // ルシアンには手を出させません！
+st[103] = { path=1, file="Ako00_2003", type=0, category=1}; // そのきれいな頭をふっとばしてやります！
+
+st[110] = { path=1, file="Ako00_2100", type=0, category=1}; // リア充だいばくはつです！
+st[111] = { path=1, file="Ako00_2101", type=0, category=1}; // やりましたー！
+st[112] = { path=1, file="Ako00_2102", type=0, category=1}; // つ、疲れましたー
+st[113] = { path=1, file="Ako00_2103", type=0, category=1}; // アコちゃん大勝利ですね！
+
+// st[120] = { path=1, file="Ako00_2150", type=0, category=1}; // やりましたー！
+// st[121] = { path=1, file="Ako00_2151", type=0, category=1}; // 一瞬の油断が命取りです
+st[122] = { path=1, file="Ako00_2152", type=0, category=1}; // れ、レベルアップしました！
+st[123] = { path=1, file="Ako00_2153", type=0, category=1}; // せ、成長しましたー！
+
+st[130] = { path=1, file="Ako00_2200", type=0, category=1}; // たはー……。
+st[131] = { path=1, file="Ako00_2201", type=0, category=1}; // 時すでに時間切れです……。
+
+st[140] = { path=1, file="Ako00_2300", type=0, category=1}; // は
+st[141] = { path=1, file="Ako00_2301", type=0, category=1}; // よ
+st[142] = { path=1, file="Ako00_2302", type=0, category=1}; // ふ
+st[143] = { path=1, file="Ako00_2303", type=0, category=1}; // や
+st[144] = { path=1, file="Ako00_2304", type=0, category=1}; // た
+
+st[150] = { path=1, file="Ako00_2400", type=0, category=1}; // えいっ
+st[151] = { path=1, file="Ako00_2401", type=0, category=1}; // ていっ
+st[152] = { path=1, file="Ako00_2402", type=0, category=1}; // やあっ
+st[153] = { path=1, file="Ako00_2403", type=0, category=1}; // せいっ
+st[154] = { path=1, file="Ako00_2404", type=0, category=1}; // とうっ
+st[155] = { path=1, file="Ako00_2405", type=0, category=1}; // てやっ
+st[156] = { path=1, file="Ako00_2406", type=0, category=1}; // はあっ
+
+st[160] = { path=1, file="Ako00_2500", type=0, category=1}; // えーいっ！
+st[161] = { path=1, file="Ako00_2501", type=0, category=1}; // とーっ！
+st[162] = { path=1, file="Ako00_2502", type=0, category=1}; // やぁーっ！
+st[163] = { path=1, file="Ako00_2503_c", type=0, category=1}; // えいやーっ！
+st[164] = { path=1, file="Ako00_2504", type=0, category=1}; // はぁーっ！
+st[165] = { path=1, file="Ako00_2505", type=0, category=1}; // たぁーっ！
+st[166] = { path=1, file="Ako00_2506", type=0, category=1}; // てやーっ！
+
+st[170] = { path=1, file="Ako00_2600_b", type=0, category=1}; // わわわっ！
+// st[171] = { path=1, file="Ako00_2601", type=0, category=1}; // ごめんなさーい！
+// st[172] = { path=1, file="Ako00_2602", type=0, category=1}; // むー！
+// st[173] = { path=1, file="Ako00_2603", type=0, category=1}; // そこです！
+// st[174] = { path=1, file="Ako00_2604", type=0, category=1}; // そーれっ！
+// st[175] = { path=1, file="Ako00_2605", type=0, category=1}; // キラッ☆
+
+st[176] = { path=1, file="Ako00_2606", type=0, category=1}; // こうして……
+st[177] = { path=1, file="Ako00_2607", type=0, category=1}; // こうです！
+
+st[180] = { path=1, file="Ako00_2700_s0", type=0, category=1}; // えいやっ　たあっ！
+st[181] = { path=1, file="Ako00_2700_s1", type=0, category=1}; // えいやっ　たあっ！
+st[182] = { path=1, file="Ako00_2701_s0", type=0, category=1}; // 刺しますっ　せやっ！
+st[183] = { path=1, file="Ako00_2701_s1", type=0, category=1}; // 刺しますっ　せやっ！
+st[184] = { path=1, file="Ako00_2702_s0", type=0, category=1}; // 動かない　でっ！
+st[185] = { path=1, file="Ako00_2702_s1", type=0, category=1}; // 動かない　でっ！
+
+// st[190] = { path=1, file="Ako00_2800", type=0, category=1}; // あれっ！？
+// st[191] = { path=1, file="Ako00_2801", type=0, category=1}; // そんなっ！？
+
+st[200] = { path=1, file="Ako00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // いやっ！
+st[201] = { path=1, file="Ako00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 触らないで！
+
+// st[210] = { path=1, file="Ako00_3100", type=0, category=1}; // チャット中ですか？
+// st[211] = { path=1, file="Ako00_3101", type=0, category=1}; // あれ？AFKしてます？
+
+// st[220] = { path=1, file="Ako00_3200", type=0, category=1}; // たっ
+// st[221] = { path=1, file="Ako00_3201", type=0, category=1}; // ほっ
+// st[222] = { path=1, file="Ako00_3202", type=0, category=1}; // やっ
+
+st[230] = { path=1, file="Ako00_3300", type=0, category=1}; // ふえええ
+// st[231] = { path=1, file="Ako00_3301", type=0, category=1}; // 待ってっ
+st[232] = { path=1, file="Ako00_3302", type=0, category=1}; // わーんっ
+
+st[240] = { path=1, file="Ako00_3400", type=0, category=1}; // よっ
+st[241] = { path=1, file="Ako00_3401", type=0, category=1}; // おっと
+st[242] = { path=1, file="Ako00_3402", type=0, category=1}; // ささっ
+
+st[250] = { path=1, file="Ako00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // ふふ
+st[251] = { path=1, file="Ako00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // 甘いです
+st[252] = { path=1, file="Ako00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // 平気です
+
+st[260] = { path=1, file="Ako00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // わわ！？
+st[261] = { path=1, file="Ako00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // まだです！
+st[262] = { path=1, file="Ako00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // むぅー
+
+st[270] = { path=1, file="Ako00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // いた…っ
+st[271] = { path=1, file="Ako00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // つよ…っ
+st[272] = { path=1, file="Ako00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // あぶな…っ
+
+st[280] = { path=1, file="Ako00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 見えます
+st[281] = { path=1, file="Ako00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // ふふーん
+st[282] = { path=1, file="Ako00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 甘いですね
+
+st[290] = { path=1, file="Ako00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // うそっ！？
+st[291] = { path=1, file="Ako00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // あれれっ！？
+st[292] = { path=1, file="Ako00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // なんでっ！？
+
+st[300] = { path=1, file="Ako00_4000", type=0, category=1}; // うんしょ
+st[301] = { path=1, file="Ako00_4001", type=0, category=1}; // 失敗しました
+st[302] = { path=1, file="Ako00_4002", type=0, category=1}; // まさに外道です
+// st[303] = { path=1, file="Ako00_4003", type=0, category=1}; // 外道です
+
+// st[310] = { path=1, file="Ako00_4100", type=0, category=1}; // さぁどうぞ
+// st[311] = { path=1, file="Ako00_4101", type=0, category=1}; // これなら
+// st[312] = { path=1, file="Ako00_4102", type=0, category=1}; // 準備OKです
+
+// st[320] = { path=1, file="Ako00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // 効きません
+// st[321] = { path=1, file="Ako00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // 無駄です
+// st[322] = { path=1, file="Ako00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // 残念でした
+
+st[330] = { path=1, file="Ako00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // きゃっ！
+st[331] = { path=1, file="Ako00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // ひゃっ！
+st[332] = { path=1, file="Ako00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // わぁっ！
+
+st[340] = { path=1, file="Ako00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // ひいっ！
+st[341] = { path=1, file="Ako00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // きゃんっ！
+st[342] = { path=1, file="Ako00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // ひゃうっ！
+
+st[350] = { path=1, file="Ako00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // きゃーっ！
+st[351] = { path=1, file="Ako00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // 無理ですー！
+st[352] = { path=1, file="Ako00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // 痛いですっ！
+
+// st[360] = { path=1, file="Ako00_4600", type=0, category=1}; // 麻痺です…
+// st[361] = { path=1, file="Ako00_4601", type=0, category=1}; // あわわ…
+// st[362] = { path=1, file="Ako00_4602", type=0, category=1}; // ふわわっ
+
+st[370] = { path=1, file="Ako00_4700", type=0, category=1, prio=Def_SEP_KO }; // いやーっ！
+st[371] = { path=1, file="Ako00_4701", type=0, category=1, prio=Def_SEP_KO }; // ルシアーンっ！
+st[372] = { path=1, file="Ako00_4702", type=0, category=1, prio=Def_SEP_KO }; // 嘘ですーっ！
+
+st[380] = { path=1, file="Ako00_4800", type=0, category=1, prio=Def_SEP_KO }; // 無理でずうぅぅぅ
+st[381] = { path=1, file="Ako00_4801", type=0, category=1, prio=Def_SEP_KO }; // 出荷は嫌です……
+st[382] = { path=1, file="Ako00_4802", type=0, category=1, prio=Def_SEP_KO }; // 明日から本気出します……
+
+st[390] = { path=1, file="Ako00_4900", type=0, category=1}; // いたた…
+st[391] = { path=1, file="Ako00_4901", type=0, category=1}; // よいしょ
+st[392] = { path=1, file="Ako00_4902", type=0, category=1}; // ううう
+
+// st[400] = { path=1, file="Ako00_5000", type=0, category=1}; // 痛いです……
+// st[401] = { path=1, file="Ako00_5001", type=0, category=1}; // ひ、ひどい……
+// st[402] = { path=1, file="Ako00_5002", type=0, category=1}; // もう死にそうです
+
+st[410] = { path=1, file="Ako00_5100", type=0, category=1}; // 本気出します！
+st[411] = { path=1, file="Ako00_5101", type=0, category=1}; // バフをかけます！
+st[412] = { path=1, file="Ako00_5102", type=0, category=1}; // はああああっ！
+
+st[420] = { path=1, file="Ako00_5200", type=0, category=1}; // 続けます！
+st[421] = { path=1, file="Ako00_5201", type=0, category=1}; // まだまだ！
+
+st[430] = { path=1, file="Ako00_5300", type=0, category=1}; // 来ないでっ！
+st[431] = { path=1, file="Ako00_5301", type=0, category=1}; // やめてください！
+st[432] = { path=1, file="Ako00_5302", type=0, category=1}; // 待ってください！
+
+st[440] = { path=1, file="Ako00_5400", type=0, category=1}; // 今です！
+st[441] = { path=1, file="Ako00_5401", type=0, category=1}; // 行ってください！
+st[442] = { path=1, file="Ako00_5402", type=0, category=1}; // そこ！
+
+// st[450] = { path=1, file="Ako00_5500", type=0, category=1}; // お願いします！
+// st[451] = { path=1, file="Ako00_5501", type=0, category=1}; // 一緒に！
+// st[452] = { path=1, file="Ako00_5502", type=0, category=1}; // 援護してください！
+
+// st[460] = { path=1, file="Ako00_5600", type=0, category=1}; // 助けてください！
+// st[461] = { path=1, file="Ako00_5601", type=0, category=1}; // こっちです！
+// st[462] = { path=1, file="Ako00_5602", type=0, category=1}; // ピンチです！
+
+st[465] = { path=1, file="Ako00_5700", type=0, category=1}; // 助けてルシアン！
+st[466] = { path=1, file="Ako00_5701", type=0, category=1}; // ルシアン愛してる
+st[467] = { path=1, file="Ako00_5702", type=0, category=1}; // ルシアン！
+
+st[470] = { path=1, file="Ako00_6100", type=0, category=3}; // テンション上がってきました！
+st[471] = { path=1, file="Ako00_6101", type=0, category=3}; // いい感じです！
+st[472] = { path=1, file="Ako00_6102", type=0, category=3}; // 来ました！
+st[480] = { path=1, file="Ako00_6200", type=0, category=3}; // まだ諦めません
+st[481] = { path=1, file="Ako00_6201", type=0, category=3}; // 負けられないです！
+st[482] = { path=1, file="Ako00_6202", type=0, category=3}; // 私の怒りが有頂天です！
+// st[490] = { path=1, file="Ako00_6300", type=0, category=3}; // リア充ゆるすまじ！
+// st[491] = { path=1, file="Ako00_6301", type=0, category=3}; // ルシアンだいすき！
+
+// st[500] = { path=1, file="Ako00_6400", type=0, category=1}; // やあああああああ！
+// st[501] = { path=1, file="Ako00_6401", type=0, category=1}; // むううううううううう！
+// st[502] = { path=1, file="Ako00_6402", type=0, category=1}; // ぐううううううううう！
+
+st[510] = { path=1, file="Ako00_7000", type=0, category=1}; // アイスボルト！
+st[511] = { path=1, file="Ako00_7001", type=0, category=1}; // サンダースピア！
+st[512] = { path=1, file="Ako00_7002", type=0, category=1}; // フレイムチャージ！
+st[513] = { path=1, file="Ako00_7003_b", type=0, category=1}; // メテオストライク！
+// st[514] = { path=1, file="Ako00_7004", type=0, category=1}; // アイシクルウォール！　
+// st[515] = { path=1, file="Ako00_7005", type=0, category=1}; // パーフェクトブリザード！
+
+st[520] = { path=1, file="Ako00_7100", type=0, category=1}; // ヒール！
+st[521] = { path=1, file="Ako00_7101", type=0, category=1}; // 回復します！
+st[522] = { path=1, file="Ako00_7102", type=0, category=1}; // やります！　※ヒールじゃないときこれにする
+st[523] = { path=1, file="Ako00_7103_b", type=0, category=1}; // ハイヒール！
+
+st[530] = { path=1, file="Ako00_7200_b", type=0, category=1}; // 回ります！
+st[531] = { path=1, file="Ako00_7201", type=0, category=1}; // とりゃー！
+st[532] = { path=1, file="Ako00_7202", type=0, category=1}; // あわわわ！
+st[533] = { path=1, file="Ako00_7203", type=0, category=1}; // えいえいっ！
+
+st[540] = { path=1, file="Ako00_7300", type=0, category=1}; // 突撃ですー！
+// st[541] = { path=1, file="Ako00_7301", type=0, category=1}; // いっきまーす！
+st[542] = { path=1, file="Ako00_7302", type=0, category=1}; // どいてください！
+st[543] = { path=1, file="Ako00_7303", type=0, category=1}; // 邪魔しないで！
+
+st[550] = { path=1, file="Ako00_7400_b", type=0, category=1}; // そいや！
+// st[551] = { path=1, file="Ako00_7401", type=0, category=1}; // 飛ばします！
+st[552] = { path=1, file="Ako00_7402_b", type=0, category=1}; // それっ！
+// st[553] = { path=1, file="Ako00_7303", type=0, category=1}; // よいしょ！
+
+st[560] = { path=1, file="Ako00_7600_b", type=0, category=1}; // これが課金の力です！
+st[561] = { path=1, file="Ako00_7601_b", type=0, category=1}; // どーん！
+// st[562] = { path=1, file="Ako00_7602", type=0, category=1}; // せーの！
+st[563] = { path=1, file="Ako00_7603_b", type=0, category=1}; // カキーン！
+
+st[570] = { path=1, file="Ako00_8000_s0", type=0, category=1}; // ルシアン愛してる！
+st[571] = { path=1, file="Ako00_8000_s1", type=0, category=1}; // ずっと一緒です！
+st[572] = { path=1, file="Ako00_8000_s2", type=0, category=1}; // エクストラダメージ！
+st[573] = { path=1, file="Ako00_8001_s0", type=0, category=1}; // ルシアンお願いします！
+st[574] = { path=1, file="Ako00_8001_s1", type=0, category=1}; // 頑張って！
+st[575] = { path=1, file="Ako00_8001_s2", type=0, category=1}; // いっけええー！
+st[576] = { path=1, file="Ako00_8002_s0", type=0, category=1}; // ルシアーン！
+st[577] = { path=1, file="Ako00_8002_s1", type=0, category=1}; // メイン盾来た！
+st[578] = { path=1, file="Ako00_8002_s2", type=0, category=1}; // これで勝つります！
+
+// st[580] = { path=1, file="Rus00_8010_s0", type=0, category=2}; // 急に呼ぶな！
+// st[581] = { path=1, file="Rus00_8010_s1", type=0, category=2}; // ああもぅ、喰らえー！
+st[582] = { path=1, file="Rus00_8011_s0", type=0, category=2}; // せえいっ！
+st[583] = { path=1, file="Rus00_8011_b_s1", type=0, category=2}; // オーバード！　シールドォ！！
+st[584] = { path=1, file="Rus00_8012_s0", type=0, category=2}; // でりゃぁっ！
+st[585] = { path=1, file="Rus00_8012_s1", type=0, category=2}; // トドメだぁぁーーっ！
+
+st[590] = { path=1, file="Ako00_8100_s0", type=0, category=1}; // いきます！
+st[591] = { path=1, file="Ako00_8100_s1", type=0, category=1}; // やぁぁぁー！
+st[592] = { path=1, file="Ako00_8100_s2", type=0, category=1}; // これが愛の力です
+st[593] = { path=1, file="Ako00_8101_s0", type=0, category=1}; // 逃がしません！
+st[594] = { path=1, file="Ako00_8101_s1", type=0, category=1}; // そいやぁーーーっ！
+st[595] = { path=1, file="Ako00_8101_s2", type=0, category=1}; // どんどんいきます！
+st[596] = { path=1, file="Ako00_8102_s0", type=0, category=1}; // これでっ！
+st[597] = { path=1, file="Ako00_8102_s1", type=0, category=1}; // たぁぁぁー！
+st[598] = { path=1, file="Ako00_8102_s2", type=0, category=1}; // 出し惜しみはなしです！
+
+// st[620] = { path=1, file="Ako00_8200", type=0, category=1}; // またログインしてくださいねっ！
+// st[621] = { path=1, file="Ako00_8201", type=0, category=1}; // ありがとうございました！また一緒に夢を見ましょうね！
+
+
+// // 対人戦３連続勝利
+// 1000	すごいです！3連勝ですよ！
+
+// // 対人戦１０連続勝利
+// 1001	ルシアン見ました！？　10連勝ですよ！10連勝！
+
+// // 汎用勝利
+// 1010	負けた人は出荷ですよー！
+
+// // 汎用勝利
+// 1011	私の勝ちは”確定的に明らか”ですね！
+
+// // 汎用勝利
+// 1012	疲れました……　一時間ぐらいチャットしてましょうよう。
+
+// // 汎用勝利
+// 1013	ルシアンに近づかないでください！
+
+// // 汎用勝利
+// 1014	ルシアン、どいてください！　そいつ殺せません！
+
+// // 汎用勝利
+// 1015	これはもしかして、勝っちゃったんでしょうか？
+
+// // 汎用勝利
+// 1016	こう見えてもレベル上げてるんですよ。
+
+// // 勝利画面レアボイス
+// 1017	ヒーラーって意外と強いんですね！
+
+// // 勝利画面レアボイス
+// 1018	それじゃルシアン、一緒に帰りましょう！
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	私はアコです。LAではクレリックしてます。
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	名前は玉置亜子です。よろしくおねがいします。
+
+// // キャラセレクト画面キャラクター決定
+// 1130	はーい、頑張ります♪
+
+// // コンティニュー画面コンテニュー待機
+// 1200	うう……こんな所でデスペナが……。
+
+// // コンティニュー画面再戦決定
+// 1210	やります、私だって逃げません。
+
+// // ゲームオーバー
+// 1220　はうう……　ゲームオーバーです……。

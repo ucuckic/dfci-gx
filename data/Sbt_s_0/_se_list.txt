@@ -1,0 +1,73 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Sbt_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Sbt00_4900", type=0, category=1}; // いつでも呼んでくれ。
+// クライマックスブースト発動
+st[81] = { path=1, file="Sbt00_7103", type=0, category=1}; // 諦めろ。
+// ブラストＯＫ
+st[82] = { path=1, file="Sbt00_4902", type=0, category=1}; // 準備完了だ。
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Sbt00_2100", type=0, category=1}; // 当然の勝利だ。
+st[101] = { path=1, file="Sbt00_2101", type=0, category=1}; // まずまずの結果だな。
+
+// ラウンド敗北	
+st[110] = { path=1, file="Sbt00_2200", type=0, category=1}; // 馬鹿な…！
+st[111] = { path=1, file="Sbt00_2201", type=0, category=1}; // 何かの間違いでは…？
+
+// 通常攻撃	
+st[120] = { path=1, file="Sbt00_2500", type=0, category=1}; // は
+st[121] = { path=1, file="Sbt00_2501", type=0, category=1}; // ふ
+st[122] = { path=1, file="Sbt00_2502", type=0, category=1}; // せあ
+
+// 撤退	
+st[130] = { path=1, file="Sbt00_4000", type=0, category=1}; // 一旦下がる！
+st[131] = { path=1, file="Sbt00_4001", type=0, category=1}; // 後は頼んだ！
+
+// ダメージ	
+st[140] = { path=1, file="Sbt00_4500", type=0, category=1}; // ぐっ
+st[141] = { path=1, file="Sbt00_4501", type=0, category=1}; // ちっ
+st[142] = { path=1, file="Sbt00_4502", type=0, category=1}; // 何っ
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Sbt00_4600", type=0, category=1}; // 不本意だが…っ
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Sbt00_4900", type=0, category=1}; // いつでも呼んでくれ。
+st[161] = { path=1, file="Sbt00_4902", type=0, category=1}; // 準備完了だ。
+// st[162] = { path=1, file="Sbt00_4901", type=0, category=1}; // 少し休憩する。
+
+// 必殺技１	
+// st[170] = { path=1, file="Sbt00_7000", type=0, category=1}; // キャスト・ジャミング！　※キャストジャミング程度の技じゃないので無し
+st[171] = { path=1, file="Sbt00_7001", type=0, category=1}; // ムン！
+st[172] = { path=1, file="Sbt00_7002", type=0, category=1}; // 無駄だ！
+st[173] = { path=1, file="Sbt00_7003", type=0, category=1}; // 無効化する！
+
+// 必殺技2	
+st[180] = { path=1, file="Sbt00_7100", type=0, category=1}; // 雲散霧消（ミスト・ディスパージョン）！
+st[181] = { path=1, file="Sbt00_7101", type=0, category=1}; // 雲散霧消（うんさんむしょう）。
+// st[182] = { path=1, file="Sbt00_7102", type=0, category=1}; // 足元がお留守だ！
+st[183] = { path=1, file="Sbt00_7103", type=0, category=1}; // 諦めろ。
+
+// 追加	
+st[190] = { path=1, file="Sbt00_7200", type=0, category=1}; // 深雪！
+st[191] = { path=1, file="Sbt00_7201", type=0, category=1}; // 大丈夫か深雪！

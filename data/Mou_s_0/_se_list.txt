@@ -1,0 +1,85 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Mou_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Mou00_4910", type=0, category=1}; // 準備完了だ……！
+// クライマックスブースト発動
+st[81] = { path=1, file="Mou00_7102_b", type=0, category=1}; // おら、神に許しでも請えよ　（キメポーズ・力こぶを作って）
+// ブラストＯＫ
+st[82] = { path=1, file="Mou00_4900", type=0, category=1}; // 準備完了だ！
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Mou00_2100", type=0, category=1}; // ハーッハハハハ！
+st[101] = { path=1, file="Mou00_2101", type=0, category=1}; // よっしゃー！完全勝利だ！
+
+// ラウンド敗北	
+st[110] = { path=1, file="Mou00_2200", type=0, category=1}; // 洒落になってねぇぜ…
+st[111] = { path=1, file="Mou00_2201", type=0, category=1}; // くっ、責任は俺にある…
+
+// 通常攻撃	
+// st[120] = { path=1, file="Mou00_2500", type=0, category=1}; // くらえ
+// st[121] = { path=1, file="Mou00_2501", type=0, category=1}; // でや
+// st[122] = { path=1, file="Mou00_2502", type=0, category=1}; // おらっ
+
+// 撤退	
+st[130] = { path=1, file="Mou00_4000", type=0, category=1}; // 一旦下がるぞ！
+st[131] = { path=1, file="Mou00_4001", type=0, category=1}; // やっべぇバイト遅刻しちまう！
+
+// 魔王撤退	
+st[135] = { path=1, file="Mou00_4010", type=0, category=1}; // チィッ…！
+st[136] = { path=1, file="Mou00_4011", type=0, category=1}; // うおわ、ヤッベェ！
+
+// ダメージ	
+st[140] = { path=1, file="Mou00_4500", type=0, category=1}; // ぐあ
+st[141] = { path=1, file="Mou00_4501", type=0, category=1}; // うお
+st[142] = { path=1, file="Mou00_4502", type=0, category=1}; // うぎ
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Mou00_4600", type=0, category=1}; // 次はこうはいかねえ！
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Mou00_4900", type=0, category=1}; // 準備完了だ！
+st[161] = { path=1, file="Mou00_4901", type=0, category=1}; // 戦闘再開だ！
+st[162] = { path=1, file="Mou00_4910", type=0, category=1}; // 準備完了だ……！
+st[163] = { path=1, file="Mou00_4911", type=0, category=1}; // 戦闘再開だ……！
+
+// 必殺技１	
+st[170] = { path=1, file="Mou00_7000", type=0, category=1}; // いくぜ！　　（登場）
+st[171] = { path=1, file="Mou00_7001", type=0, category=1}; // うおー！　　（登場）
+st[172] = { path=1, file="Mou00_7002", type=0, category=1}; // よっこいしょォ！　　（パンチ）
+st[173] = { path=1, file="Mou00_7003", type=0, category=1}; // 痛ってぇ～　　　　　（パンチ）
+
+// 必殺技2	
+st[180] = { path=1, file="Mou00_7100_b", type=0, category=1}; // このパンツは最新の素材でできている！　（登場）
+st[181] = { path=1, file="Mou00_7101_b", type=0, category=1}; // 喧嘩の相手は……選ぶべきだったな！　　（登場）
+st[182] = { path=1, file="Mou00_7102_b", type=0, category=1}; // おら、神に許しでも請えよ　（キメポーズ・力こぶを作って）
+st[183] = { path=1, file="Mou00_7103", type=0, category=1}; // ムン！　　　　　　　　　　（キメポーズ・力こぶを作って）
+
+
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	俺がただのバイトクルーだと思ったら大間違いだぜ！
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	俺はこの世界で正社員になってみせる！
+
+// キャラセレクト画面キャラクター決定
+// 1130	よし、俺について来い！

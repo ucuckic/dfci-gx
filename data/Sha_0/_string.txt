@@ -1,0 +1,24 @@
+[data]
+// vsKrt00
+100 = This isn't some game.
+
+// vsKrn00
+110 = Shut up! Shut up! Shut up!
+
+// vsSbm00
+120 = All shall burn...in a crimson blaze!
+
+// vsTgr00
+130 = And I feel like I know you...
+
+500 = Hmph, want to fight?
+501 = Stand in my way and be destroyed! 
+502 = I sense something...
+510 = My next battle awaits.
+511 = This is my duty as a Flame Haze.
+512 = I must...do better.
+513 = Where did that fighting spirit go?
+520 = Is that all you've got?
+521 = Going to give up already?
+530 = Time was my enemy...
+531 = I wasn't strong enough...

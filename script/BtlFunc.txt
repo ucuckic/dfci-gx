@@ -1,0 +1,181 @@
+print("\n[btl_debug_Func]");
+debuglog.write_r("debug_log\n"); //‹N“®‚Ì‚½‚Ñ‚Éˆê‰ž
+
+
+Battle_Std.DebugFunc <- {};
+
+Battle_Std.DebugFunc.CallDebugUpdate <- function()
+{
+}
+
+Battle_Std.DebugFunc.CallAtkInitScript <- function()
+{
+
+	local e = BMvEff.CreateObject( { mvname="Mv_Obj_CheckStarupFrame_Debug", datatype=1, start_pat=999 } );
+		BMvCore.PushCharaData( e ); //	
+			BMvTbl.SetLP(0,1); //1F‘ª’è‚ð’x‚ç‚¹‚é
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentStop|_ObjFlags_FromParentStop|_ObjFlags_ToParentHitBack|_ObjFlags_ToParentHitStatus } );
+		BMvCore.PopCharaData(); //
+		
+	if( Def_Dbg_StateChecker==1 )
+	{
+		local a = BMvEff.CreateObject( { mvname="Mv_Obj_CheckState_Debug", datatype=1, start_pat=999 } );
+		BMvCore.PushCharaData( a ); //	
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentStop|_ObjFlags_FromParentStop|_ObjFlags_ToParentHitBack|_ObjFlags_ToParentHitStatus } );
+		BMvCore.PopCharaData(); //
+	}
+	/*
+	if( Def_Dbg_CancelChecker==1 )
+	{
+		local b = BMvEff.CreateObject( { mvname="Mv_Obj_CheckCancel_Debug", datatype=1, start_pat=999 } );
+		BMvCore.PushCharaData( b ); //	
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentStop|_ObjFlags_FromParentStop|_ObjFlags_ToParentHitBack|_ObjFlags_ToParentHitStatus } );
+		BMvCore.PopCharaData(); //
+	}
+	
+	if( Def_Dbg_CheckInvuln==1 )
+	{
+		local b = BMvEff.CreateObject( { mvname="Mv_Obj_CheckInvuln_Debug", datatype=1, start_pat=999 } );
+		BMvCore.PushCharaData( b ); //	
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentStop|_ObjFlags_FromParentStop|_ObjFlags_ToParentHitBack|_ObjFlags_ToParentHitStatus } );
+		BMvCore.PopCharaData(); //
+	}	
+	*/
+}
+	
+Battle_Std.DebugFunc.CallStartupDebugScript <- function()
+{
+	local e = BMvEff.CreateObject( { mvname="Mv_ErrorCheckObject" } );
+	
+	if( e.IsDone )
+	{
+		BMvCore.PushCharaData( e );
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoRender|_ObjFlags_NoGround } );
+			BMvEff.SetExist( { level = _Exist_NoHantei } );
+			BMvTbl.SetPosition( {y=1024, flags=_Position_CaptureShift } ); //‰B‚·‚—			
+		BMvCore.PopCharaData();
+	}
+	
+	if( Def_Dbg_CheckInvulnMode2 == 1 )
+	{
+		local b = BMvEff.CreateObject( { mvname="Mv_Obj_CheckInvulnAlt" } );
+		BMvCore.PushCharaData( b ); //	
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_FromParentStop | _ObjFlags_NoGround | _ObjFlags_NoRender | _ObjFlags_MoveTimeStopAll } );
+			BMvEff.SetExist( { level = _Exist_NoHantei } );
+		BMvCore.PopCharaData(); //
+	}
+	
+	if ( Def_Dbg_DrawComboMeter==1 )
+	{
+		local eff1 = Battle_Std.DrawRect({ mvname="Mv_Obj_ComboMeter_Debug", width=100, height=6, y=-150, x=-180, color=0x00ff00 });
+		if(eff1.push())
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_ParentMove | _ObjFlags_ParentMuki|_ObjFlags_MukiXPosMove | _ObjFlags_MoveTimeStopAll } );
+			eff1.pop();
+		}
+		
+		local eff2 = Battle_Std.DrawRect({ mvname="Mv_Obj_ComboDmgMeter_Debug", width=100, height=6, y=-120, x=-180, color=0x00ff00 });
+		if(eff2.push())
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_ParentMove | _ObjFlags_ParentMuki|_ObjFlags_MukiXPosMove | _ObjFlags_MoveTimeStopAll } );
+			eff2.pop();
+		}
+		
+		local eff3 = Battle_Std.DrawRect({ mvname="Mv_Obj_ComboMinHosei_Debug", width=100, height=6, y=-90, x=-180, color=0x00ff00 });
+		if(eff3.push())
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_ParentMove | _ObjFlags_ParentMuki|_ObjFlags_MukiXPosMove | _ObjFlags_MoveTimeStopAll } );
+			eff3.pop();
+		}
+	}
+	
+	if ( Def_Dbg_DrawComboMeterDisplay==1 )
+	{
+		for( local i=0, b=-180; i<3; i++, b+=15 )
+		{
+			local eff1 = BMvEff.CreateObject( { datatype=1, mvname="Mv_Obj_ComboMeterDisplay_Debug", start_pat="dbg_obj_number", y=-160*128, x=( (b)*128 )*BMvTbl.GetMuki() } );
+			if(eff1.push())
+			{
+				BMvTbl.SetLP(0,i);
+				
+				BMvTbl.SetLP(1,b);
+				
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_ParentMove | _ObjFlags_MukiXPosMove | _ObjFlags_MoveTimeStopAll } );
+				
+				BMvTbl.SetMuki( _Direction_Right );
+				
+				BMvTbl.SetScale( { x=10000/3, y=10000/3 } );
+				
+				eff1.pop();
+			}
+		}
+	}
+	
+	if ( Def_Dbg_DrawComboMeterDmgDisplay==1 )
+	{
+		for( local i=0, b=-180; i<3; i++, b+=15 )
+		{
+			local eff1 = BMvEff.CreateObject( { datatype=1, mvname="Mv_Obj_ComboMeterDmgDisplay_Debug", start_pat="dbg_obj_number", y=-130*128, x=( (b)*128 )*BMvTbl.GetMuki() } );
+			if(eff1.push())
+			{
+				BMvTbl.SetLP(0,i);
+				
+				BMvTbl.SetLP(1,b);
+				
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_ParentMove | _ObjFlags_MukiXPosMove | _ObjFlags_MoveTimeStopAll } );
+				
+				BMvTbl.SetMuki( _Direction_Right );
+				
+				BMvTbl.SetScale( { x=10000/3, y=10000/3 } );
+				
+				eff1.pop();
+			}
+		}
+	}
+	
+	if ( Def_Dbg_DrawComboMeterMinHoseiDisplay==1 )
+	{
+		for( local i=0, b=-180; i<3; i++, b+=15 )
+		{
+			local eff1 = BMvEff.CreateObject( { datatype=1, mvname="Mv_Obj_ComboMinHoseiDisplay_Debug", start_pat="dbg_obj_number", y=-100*128, x=( (b)*128 )*BMvTbl.GetMuki() } );
+			if(eff1.push())
+			{
+				BMvTbl.SetLP(0,i);
+				
+				BMvTbl.SetLP(1,b);
+				
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_ParentMove | _ObjFlags_MukiXPosMove | _ObjFlags_MoveTimeStopAll } );
+				
+				BMvTbl.SetMuki( _Direction_Right );
+				
+				BMvTbl.SetScale( { x=10000/3, y=10000/3 } );
+				
+				eff1.pop();
+			}
+		}
+	}
+	
+	/*
+	if( ( isTraining && Def_Dbg_DrawCharaMarker==2 ) || Def_Dbg_DrawCharaMarker==1 )
+	{
+		Battle_Std.DrawPoint({});
+	}
+	*/
+	
+			
+	if( Def_Dbg_DebugFunctions==1 )
+	{
+		local eff = BMvEff.CreateObject( { datatype=1, mvname="Mv_DebugFunctions_Debug" } );
+		if(eff.isdone())
+		{
+			if(eff.push())
+			{
+				//BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_ParentMove | _ObjFlags_ParentMuki|_ObjFlags_MukiXPosMove | _ObjFlags_MoveTimeStopAll  } );
+				//BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseParentNull|_ObjProcFlags_EraseChangeParentMv|_ObjProcFlag_EraseParentDelete } );
+				eff.pop();
+			}
+		}		
+	}
+
+	
+}

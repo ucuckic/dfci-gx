@@ -1,0 +1,17 @@
+
+FinishList_Table <- [];
+
+FinishList_Table.resize(10); // 確保
+local st = FinishList_Table; // 登録しやすいように
+
+// name = 文字列
+// type = name種別  0 行動Mv  1 パターン文字列
+// category = 1 通常KO（書かないでいい）  2 超技  3 さらに超技
+
+st[0] = { name="Mv_Skill_41236SP", type=0,  category=2, }; 
+st[1] = { name="Mv_Skill_41236SP_Hit", type=0,  category=2, }; 
+st[2] = { name="Mv_Skill_63214SP_Hit", type=0,  category=2, }; 
+st[3] = { name="Mv_Skill_63214SP_Hit2", type=0,  category=2, }; 
+
+// 空振りチェック用
+st[4] = { name="Mv_Skill_63214SP", type=0,  category=2, }; 

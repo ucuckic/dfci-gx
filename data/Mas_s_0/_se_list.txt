@@ -1,0 +1,75 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Mas_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Mas00_4901", type=0, category=1}; // おはよう
+// クライマックスブースト発動
+st[81] = { path=1, file="Mas00_7002_d", type=0, category=1}; // プランA.B.Cよ
+// ブラストＯＫ
+st[82] = { path=1, file="Mas00_4900", type=0, category=1}; // いけるわ
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Mas00_2100", type=0, category=1}; // わたし達の勝ちよ
+st[101] = { path=1, file="Mas00_2101", type=0, category=1}; // うれしいわ
+
+// ラウンド敗北	
+st[110] = { path=1, file="Mas00_2200", type=0, category=1}; // パンツは私が脱ぐわ
+st[111] = { path=1, file="Mas00_2201", type=0, category=1}; // 立ち止まっては駄目よ
+st[112] = { path=1, file="Mas00_2202", type=0, category=1}; // わたし…どうしたら……
+
+// 通常攻撃	
+// st[120] = { path=1, file="Mas00_2500", type=0, category=1}; // た
+// st[121] = { path=1, file="Mas00_2501", type=0, category=1}; // や
+// st[122] = { path=1, file="Mas00_2502", type=0, category=1}; // えい
+
+// 撤退	
+st[130] = { path=1, file="Mas00_4000", type=0, category=1}; // パンツ忘れたわ
+st[131] = { path=1, file="Mas00_4001", type=0, category=1}; // どうして…
+st[132] = { path=1, file="Mas00_4002", type=0, category=1}; // 機は熟してないわ
+
+// ダメージ	
+st[140] = { path=1, file="Mas00_4500", type=0, category=1}; // 痛いわ…（あまり痛くなさそうに）
+st[141] = { path=1, file="Mas00_4501", type=0, category=1}; // 何するの…？（あまり痛くなさそうに）
+st[142] = { path=1, file="Mas00_4502", type=0, category=1}; // きゃっ
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Mas00_4600", type=0, category=1}; // おやすみ
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Mas00_4900", type=0, category=1}; // いけるわ
+st[161] = { path=1, file="Mas00_4901", type=0, category=1}; // おはよう
+
+// 必殺技１	
+st[170] = { path=1, file="Mas00_7000", type=0, category=1}; // 私の出番
+st[171] = { path=1, file="Mas00_7001", type=0, category=1}; // わかったわ（呼び出しに応じた）
+st[172] = { path=1, file="Mas00_7002_d", type=0, category=1}; // プランA.B.Cよ
+st[173] = { path=1, file="Mas00_7003_b", type=0, category=1}; // 私に任せて
+
+
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	ん、なに？
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	わたしを選ぶといいわ
+
+// キャラセレクト画面キャラクター決定
+// 1130	ん、やるわ

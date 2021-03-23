@@ -1,0 +1,23 @@
+[data]
+// vsSha00
+100 = So tiny! So cute!
+
+// vsTmk00
+110 = Tomoka! Be my little sister!
+
+// vsSbm00
+120 = My brother is an idiot, but...well... *mumble, mumble*
+
+// vsStm00
+130 = Please! Gimme Enju! I want her as my sister!
+
+500 = You're hella gross...
+501 = You actually think you can win?
+502 = This'll be interesting. Bring it!
+510 = I am a super genius, after all!
+511 = Whee! Kiririn for the win!
+512 = Think of me when you're playing your EroGe!
+513 = Starting today, you're my little sister!
+520 = Easy peasy!
+530 = Grrr! Rats! Rats! Double rats!
+531 = Wait, what? No way...

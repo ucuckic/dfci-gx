@@ -1,0 +1,8 @@
+_dp("\n[sc.txt]");
+
+Battle_Status <-
+{
+}
+
+Battle_Std.InsertTable( Battle_Status, Battle_Std.GetStd_BattleStatusTable() ); //デフォルト
+_dp(" -> Load OK");

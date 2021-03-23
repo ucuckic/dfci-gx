@@ -1,0 +1,87 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Ero_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Ero00_4900", type=0, category=1}; // 宇宙からの指示を受信
+// クライマックスブースト発動
+st[81] = { path=1, file="Ero00_7002_b_s2", type=0, category=1}; // もふ！　もっふ　！もーふ！
+// ブラストＯＫ
+st[82] = { path=1, file="Ero00_4901", type=0, category=1}; // イトコー星見るぞー
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Ero00_2100", type=0, category=1}; // 私達の勝ち！
+st[101] = { path=1, file="Ero00_2101", type=0, category=1}; // 青春ポイント＋１００だね
+
+// ラウンド敗北	
+st[110] = { path=1, file="Ero00_2200", type=0, category=1}; // そんな、負けるはずが
+st[111] = { path=1, file="Ero00_2201", type=0, category=1}; // 宇宙からの電波が来ないの…
+
+// 通常攻撃	
+st[120] = { path=1, file="Ero00_2500_d", type=0, category=1}; // ん！
+// st[121] = { path=1, file="Ero00_2501", type=0, category=1}; // えい
+// st[122] = { path=1, file="Ero00_2502", type=0, category=1}; // やあ
+
+// 撤退	
+st[130] = { path=1, file="Ero00_4000", type=0, category=1}; // うううー
+st[131] = { path=1, file="Ero00_4001", type=0, category=1}; // た、助けてー
+
+// ダメージ	
+st[140] = { path=1, file="Ero00_4500", type=0, category=1}; // きゃ
+st[141] = { path=1, file="Ero00_4501", type=0, category=1}; // うぅっ
+st[142] = { path=1, file="Ero00_4502", type=0, category=1}; // んーんー
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Ero00_4600", type=0, category=1}; // 地ひゅうは狙われているー！
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Ero00_4900", type=0, category=1}; // 宇宙からの指示を受信
+st[161] = { path=1, file="Ero00_4901", type=0, category=1}; // イトコー星見るぞー
+
+// 必殺技１	
+st[170] = { path=1, file="Ero00_7000", type=0, category=1}; // （登場）すててててててて～
+st[171] = { path=1, file="Ero00_7001", type=0, category=1}; // （登場）宇宙が呼んでいるー
+
+st[172] = { path=1, file="Ero00_7002_s0", type=0, category=1}; // もふ！　もっふ　！もーふ！
+st[173] = { path=1, file="Ero00_7002_s1", type=0, category=1}; // もふ！　もっふ　！もーふ！
+st[174] = { path=1, file="Ero00_7002_s2", type=0, category=1}; // もふ！　もっふ　！もーふ！
+
+st[175] = { path=1, file="Ero00_7003_s0", type=0, category=1}; // う～　うう～　う～う～
+st[176] = { path=1, file="Ero00_7003_b_s0", type=0, category=1}; // う～　うう～　う～う～
+st[177] = { path=1, file="Ero00_7003_s1", type=0, category=1}; // う～　うう～　う～う～
+
+st[178] = { path=1, file="Ero00_7002_b_s0", type=0, category=1}; // もふ！　もっふ　！もーふ！
+st[179] = { path=1, file="Ero00_7002_b_s1", type=0, category=1}; // もふ！　もっふ　！もーふ！
+st[180] = { path=1, file="Ero00_7002_b_s2", type=0, category=1}; // もふ！　もっふ　！もーふ！
+
+st[181] = { path=1, file="Ero00_7003_b_s0", type=0, category=1}; // う～　うう～　う～う～
+st[182] = { path=1, file="Ero00_7003_s0", type=0, category=1}; // う～　うう～　う～う～
+st[183] = { path=1, file="Ero00_7003_b_s1", type=0, category=1}; // う～　うう～　う～う～
+
+
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	これは世を忍ぶ仮の姿…
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	わたしという宇ひゅうに内ふうする存在を公にさらふのはとふさふじゃないの（私という宇宙に内封する存在を　公に晒すのは得策じゃないの）
+
+// キャラセレクト画面キャラクター決定
+// 1130	私は宇宙人！

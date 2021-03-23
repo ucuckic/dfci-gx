@@ -1,0 +1,80 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Pai_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(400); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Pai00_4900", type=0, category=1}; // 手加減しないわよ！
+// クライマックスブースト発動
+st[81] = { path=1, file="Pai00_2102", type=0, category=1}; // あなたにはクンフーが足りないわ！
+// ブラストＯＫ
+st[82] = { path=1, file="Pai00_4901", type=0, category=1}; // 怪我してもしらないわよ！
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Pai00_2100", type=0, category=1}; // またいつでもかかってらっしゃい！
+st[101] = { path=1, file="Pai00_2101", type=0, category=1}; // わたしのほうが強かったみたいね
+st[102] = { path=1, file="Pai00_2102", type=0, category=1}; // あなたにはクンフーが足りないわ！
+
+// ラウンド敗北	
+st[110] = { path=1, file="Pai00_2200", type=0, category=1}; // 嘘、こんなはずじゃ・・・
+
+// 通常攻撃	
+// st[120] = { path=1, file="Pai00_2500", type=0, category=1};
+// st[121] = { path=1, file="Pai00_2500_a", type=0, category=1};
+// st[122] = { path=1, file="Pai00_2501", type=0, category=1};
+// st[123] = { path=1, file="Pai00_2501_a", type=0, category=1};
+// st[124] = { path=1, file="Pai00_2502", type=0, category=1};
+// st[125] = { path=1, file="Pai00_2502_a", type=0, category=1};
+// st[126] = { path=1, file="Pai00_2503", type=0, category=1};
+// st[127] = { path=1, file="Pai00_2503_a", type=0, category=1};
+
+// 撤退	
+// st[130] = { path=1, file="Pai00_4000", type=0, category=1}; // 
+// st[131] = { path=1, file="Pai00_4001", type=0, category=1}; // 
+
+// ダメージ	
+st[140] = { path=1, file="Pai00_4500", type=0, category=1}; // きゃっ！
+st[141] = { path=1, file="Pai00_4501", type=0, category=1}; // ぐうぅ！
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Pai00_4600", type=0, category=1}; // 今度はまけないわ！
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Pai00_4900", type=0, category=1}; // 手加減しないわよ！
+st[161] = { path=1, file="Pai00_4901", type=0, category=1}; // 怪我してもしらないわよ！
+
+// 必殺技１	
+st[170] = { path=1, file="Pai00_7000"  , type=0, category=1}; // 
+// st[171] = { path=1, file="Pai00_7000_a", type=0, category=1}; // 
+// st[172] = { path=1, file="Pai00_7000_b", type=0, category=1}; // 
+st[173] = { path=1, file="Pai00_7001"  , type=0, category=1}; // 
+// st[174] = { path=1, file="Pai00_7001_a", type=0, category=1}; // 
+// st[175] = { path=1, file="Pai00_7001_b", type=0, category=1}; // 
+// st[176] = { path=1, file="Pai00_7002"  , type=0, category=1}; // 
+// st[177] = { path=1, file="Pai00_7002_a", type=0, category=1}; // 
+st[178] = { path=1, file="Pai00_7002_b", type=0, category=1}; // 
+st[179] = { path=1, file="Pai00_7003"  , type=0, category=1}; // 
+// st[180] = { path=1, file="Pai00_7003_a", type=0, category=1}; // 
+// st[181] = { path=1, file="Pai00_7003_b", type=0, category=1}; // 
+st[182] = { path=1, file="Pai00_7003_c", type=0, category=1}; // 
+// st[183] = { path=1, file="Pai00_7004"  , type=0, category=1}; // 
+// st[184] = { path=1, file="Pai00_7005"  , type=0, category=1}; // 
+// st[185] = { path=1, file="Pai00_7005_a", type=0, category=1}; // 
+// st[186] = { path=1, file="Pai00_7006"  , type=0, category=1}; // 
+// st[187] = { path=1, file="Pai00_7006_a", type=0, category=1}; // 

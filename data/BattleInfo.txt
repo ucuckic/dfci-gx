@@ -1,0 +1,75 @@
+BattleInfo <-
+{
+	// UŒ‚‘¤
+	EXS_LimitVal_Attack = 48, // UŒ‚‘¤‚ª§ŒÀ’†‚ÌC³’luŒW”v ¦®” 100‚Å‚»‚Ì‚Ü‚Ü‚Ì’l
+	EXS_GuardPlusVal_Attack = 85, // ƒK[ƒh‚³‚ê‚½‚Æ‚«‚Ìu‘‰ÁŒW”v ¦®” 100‚Å‚»‚Ì‚Ü‚Ü‚Ì’l(‹óU‚è•”•ª‚Ì‘‰Á‚Í‰e‹¿Žó‚¯‚È‚¢B•KŽE‹Z‚Ö‚Ì‰e‹¿‚ª‘å‚«‚¢B) ver.102:85
+
+	// ‚â‚ç‚ê‘¤AUŒ‚‘¤C³‘O‚Ì‘‰Á’l‚É‘Î‚µ‚ÄŒvŽZ‚³‚ê‚é
+	EXS_LimitVal_Defence = 78, // –hŒä‘¤‚ª§ŒÀ’†‚ÌC³’luŒW”v ¦®” 100‚Å‚»‚Ì‚Ü‚Ü‚Ì’l
+	EXS_DamagePlusVal = 38, // ‚â‚ç‚êŽž‚ÌUŒ‚‘¤‘‰Á‚É‘Î‚·‚éƒRƒ“ƒ{ƒQ[ƒWu‘‰ÁŒW”v ¦®” 100‚Å‚»‚Ì‚Ü‚Ü‚Ì’l ver.1.02:30
+	EXS_GuardPlusVal = 40, // ƒK[ƒhŽž‚ÉUŒ‚‘¤‘‰Á‚É‘Î‚·‚éƒRƒ“ƒ{ƒQ[ƒWu‘‰ÁŒW”v ¦®” 100‚Å‚»‚Ì‚Ü‚Ü‚Ì’l ver.1.02:40
+
+	EXS_DamagePlusZero = 111, // ‚â‚ç‚êŽž‚ÉAUŒ‚‘¤‘‰Á—Ê‚ª‚O‚¾‚Á‚½ê‡‚É‘‰Á‚³‚¹‚é—Ê ver.1.02:111
+	EXS_GuardPlusZero = 89, // ƒK[ƒhŽž‚ÉAUŒ‚‘¤‘‰Á—Ê‚ª‚O‚¾‚Á‚½ê‡‚É‘‰Á‚³‚¹‚é—Ê ver.1.02:89
+
+	// Œ»•â®‚É‚æ‚é‚â‚ç‚ê‘¤ã¸—Ê‚Ì•Ï“®A16ŒÂ‚Ü‚Å‘‚¯‚é
+	// valuƒ_ƒ[ƒW•â®v paramuEXSŒW”v
+	//EXS_DamagePlusVal‚É‘Î‚µ‚Ä‚ÌŒW”
+	EXS_PlusCorrect = 
+	[
+		// { val= 2, param=400 }, // 
+		// { val= 10, param=380 }, // 
+		// { val= 20, param=280 }, // 
+		// { val= 30, param=270 }, // 
+		// { val= 40, param=260 }, // 
+		// { val= 50, param=200 }, // 
+		// { val= 60, param=190 }, // 
+		// { val= 70, param=180 }, // 
+		// { val= 80, param=140 }, // 
+		// { val= 90, param=130 }, // 
+		// { val=100, param=120 }, //
+		// { val=150, param=100 }, //
+		{ val=100, param=100 }, // •â® val 100u–¢–žv‚Ì‚Æ‚«AŒW” param 100
+	],
+
+	// ƒRƒ“ƒ{ŽžŠÔ‚É‚æ‚éC³A16ŒÂ‚Ü‚Å‘‚¯‚é
+	// ¦ŽžŠÔ‚Ì‘å‚«‚¢‚Ù‚¤‚©‚ç‘‚­
+	// timeuƒRƒ“ƒ{ŽžŠÔƒtƒŒ[ƒ€v paramuEXSŒW”v
+	// ‚PT‚ÍGRDJudge_FirstTime
+	// 1/1:840 1/2:420@1/4:210
+	// 1/3‚Ý‚É•ÏX@F@280 560 840
+	// šMEMO:”z—ñ‚Ì”•Ï‚¦‚½‚çBMvEff.SpGauge_GetPlusCorrect_ComboTimePos()‚É’ˆÓ‚·‚é‚±‚Æ
+	// EXS_PlusCorrect_ComboTime = 
+	// [
+		// { time=840, param=230, flags=1 }, // 
+		// { time=420, param=220, flags=1 }, // 90
+		// { time=210, param=200, flags=1 }, // 72
+		// { time=120, param=100, flags=0 }, //
+		// { time=  0, param=40 } //
+		// // { time=  0, param=100 } // ŽžŠÔ val 100u–¢–žv‚Ì‚Æ‚«AŒW” param 100
+	// ],
+	EXS_PlusCorrect_ComboTime = 
+	[
+		{ time=420, param=200, flags=0 },	// 0 3 LV3 GRD:2 EXS:20
+		{ time=210, param=150, flags=0 },	// 1 2 LV2 GRD:1 EXS:10 
+		{ time=105, param=100, flags=0 },	// 2 1 LV1 GRD:1 EXS:5
+		{ time=  0, param=50 }			// 3 0     GRD:1 EXS:5
+		// { time=  0, param=100 } // ŽžŠÔ val 100u–¢–žv‚Ì‚Æ‚«AŒW” param 100
+	],	
+	EXS_PlusCorrectMessage = "EXS OVER FLOW x",
+	
+
+	//ƒ_ƒ[ƒW•â³ ¦Ž©•ª‚Ì‹­“x‚È‚Ì‚Å’ˆÓA ®”‚É‚È‚è‚Ü‚µ‚½ 100‚Å‚»‚Ì‚Ü‚Ü‚Ì’l
+	DamageVal_Ground = 100,
+	//DamageVal_Air = 90, // MB 88
+	DamageVal_Air = 100, // MB 88
+	DamageVal_Crouch = 100, // MB 108
+	DamageVal_Down = 50, // 
+	
+	// GRDƒWƒƒƒbƒWÝ’è
+	GRDJudge_FirstTime = 60000*60, //>!‚P‰ñ–Ú‚Ì’l
+	GRDJudge_DefaultTime = 60*14, //>!‚Q‰ñ–ÚˆÈ~‚Ì’l
+	GRDJudge_Add = 0, //>!XVŽž‚Ì‰ÁŽZ’l
+	GRDJudge_Limit = 60*14, //>!ŒÀŠE’l
+};
+//print("\nBattleInfo Load.")

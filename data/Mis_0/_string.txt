@@ -1,0 +1,24 @@
+[data]
+// vsKur00
+100 = Don't underestimate a Level 5!
+
+// vsHiw00
+110 = Vending machines aren't meant for throwing!
+
+// vsSbm00
+120 = I only need a single coin for that piece of junk.
+
+// vsYkn00
+130 = Gekota is the cutest mascot in the world!
+
+500 = You're my opponent?
+501 = You dare to challenge me?
+502 = You better make this interesting.
+510 = Hmph.
+511 = Hehe, looks like I won!
+512 = I did it... somehow.
+513 = Hmph. Gekota...?! Wait up!
+520 = Hmph... All in a day's work.
+521 = That better not be it.
+530 = I-I lost?!
+531 = Crap!

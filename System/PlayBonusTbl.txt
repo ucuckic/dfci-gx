@@ -1,0 +1,30 @@
+
+PlayBonus_Table <-
+{
+	// 状況での加算値
+	GameStart = 24, // ゲームスタート時
+	VsStart = 0, // 対戦スタート時（双方に入る）
+
+	VsWin = 12, // 対戦勝利時
+
+	VsWinHiRank = 0, // 高ランクに勝利したボーナス
+
+	CpuClear = 0, // CPU戦クリアボーナス
+
+	CpuWin = 0, // CPU戦勝利ボーナス（ステージ）
+	CpuWinRound = 0, // CPU戦ラウンド勝利ボーナス
+	
+	WinIFW = 0, // IFWフィニッシュボーナス
+	WinIFWEX = 0, // IFWEXフィニッシュボーナス
+	WinPerfect = 0, // パーフェクトボーナス
+
+	DayBonus = 0, // １日１回スタート時に入るボーナス
+	WeekdayBonus = 0, // 平日スタートボーナス
+	StartStreakBonus = 0, // 前回終了から短時間でのスタートボーナス
+
+
+	// 経験値テーブル生成用
+	LevelVal_Base = 100, // Lv1のNext
+	LevelVal_Plus = 300, // Lv毎に足されるNext
+};
+

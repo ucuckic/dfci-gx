@@ -1,0 +1,101 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Izy_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(210); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Izy00_4901", type=0, category=1}; // さてと…
+// クライマックスブースト発動
+st[81] = { path=1, file="Izy00_7103_b01", type=0, category=1}; // (A)そこだ！(B)ふははははははっ！
+// ブラストＯＫ
+st[82] = { path=1, file="Izy00_4900", type=0, category=1}; // いやぁ　待たせたね。
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Izy00_2100", type=0, category=1}; // いやあ　おめでとー君の勝利だ。
+st[101] = { path=1, file="Izy00_2101", type=0, category=1}; // あらー、もうゲームセット？
+
+// ラウンド敗北	
+st[110] = { path=1, file="Izy00_2200", type=0, category=1}; // おやおや…
+st[111] = { path=1, file="Izy00_2201", type=0, category=1}; // まったく情けないねえ……
+
+// 通常攻撃	
+// st[120] = { path=1, file="Izy00_2500", type=0, category=1}; // ふふっ！
+// st[121] = { path=1, file="Izy00_2501", type=0, category=1}; // よっ…っと！
+// st[122] = { path=1, file="Izy00_2502", type=0, category=1}; // ほらっ！
+
+// 撤退	
+st[130] = { path=1, file="Izy00_4000", type=0, category=1}; // おっと、残念。
+st[131] = { path=1, file="Izy00_4001", type=0, category=1}; // おつかれー！
+
+// ダメージ	
+st[140] = { path=1, file="Izy00_4500", type=0, category=1}; // ガッ！
+st[141] = { path=1, file="Izy00_4501", type=0, category=1}; // グッ！
+st[142] = { path=1, file="Izy00_4502", type=0, category=1}; // マジで…！？
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Izy00_4600", type=0, category=1}; // 不愉快だ…！
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Izy00_4900", type=0, category=1}; // いやぁ　待たせたね。
+st[161] = { path=1, file="Izy00_4901", type=0, category=1}; // さてと…
+
+// 必殺技１	
+st[170] = { path=1, file="Izy00_7000_a01", type=0, category=1}; // (A)アハ、降参ー(B)おおっと      (C)……嘘だよ
+st[171] = { path=1, file="Izy00_7000_b01", type=0, category=1}; // (A)アハ、降参ー(B)おおっと      (C)……嘘だよ
+st[172] = { path=1, file="Izy00_7000_c01", type=0, category=1}; // (A)アハ、降参ー(B)おおっと      (C)……嘘だよ
+
+st[173] = { path=1, file="Izy00_7001_a01", type=0, category=1}; // (A)参った参ったー(B)あらら     (C)可愛そうに
+st[174] = { path=1, file="Izy00_7001_b01", type=0, category=1}; // (A)参った参ったー(B)あらら     (C)可愛そうに
+st[175] = { path=1, file="Izy00_7001_c01", type=0, category=1}; // (A)参った参ったー(B)あらら     (C)可愛そうに
+
+st[176] = { path=1, file="Izy00_7002_a01", type=0, category=1}; // (A)こっちだよー(B)よっと      (C)ほら楽しいだろ？
+st[177] = { path=1, file="Izy00_7002_b01", type=0, category=1}; // (A)こっちだよー(B)よっと      (C)ほら楽しいだろ？
+st[178] = { path=1, file="Izy00_7002_c01", type=0, category=1}; // (A)こっちだよー(B)よっと      (C)ほら楽しいだろ？
+
+st[179] = { path=1, file="Izy00_7003_a01", type=0, category=1}; // (A)おお、怖い怖い(B)ふはは（※臨也っぽいあざ笑いでお願いします）      (C)カマイタチ参上
+st[180] = { path=1, file="Izy00_7003_b01", type=0, category=1}; // (A)おお、怖い怖い(B)ふはは（※臨也っぽいあざ笑いでお願いします）      (C)カマイタチ参上
+st[181] = { path=1, file="Izy00_7003_c01", type=0, category=1}; // (A)おお、怖い怖い(B)ふはは（※臨也っぽいあざ笑いでお願いします）      (C)カマイタチ参上
+
+// 必殺技2	
+st[185] = { path=1, file="Izy00_7100_a01", type=0, category=1}; // (A)っそら！(B)っよ、ははっ　あははっ！     
+st[186] = { path=1, file="Izy00_7100_b01", type=0, category=1}; // (A)っそら！(B)っよ、ははっ　あははっ！     
+
+st[188] = { path=1, file="Izy00_7101_a01", type=0, category=1}; // (A)ダメだよー！(B)あははははははっ！
+st[189] = { path=1, file="Izy00_7101_b01", type=0, category=1}; // (A)ダメだよー！(B)あははははははっ！
+
+st[191] = { path=1, file="Izy00_7102_a01", type=0, category=1}; // (A)隙あり！(B)えいやっえいやっ　はははっ！ 
+st[192] = { path=1, file="Izy00_7102_b01", type=0, category=1}; // (A)隙あり！(B)えいやっえいやっ　はははっ！ 
+
+st[194] = { path=1, file="Izy00_7103_a01", type=0, category=1}; // (A)そこだ！(B)ふははははははっ！
+st[195] = { path=1, file="Izy00_7103_b01", type=0, category=1}; // (A)そこだ！(B)ふははははははっ！
+
+// プレイヤー勝利	
+st[200] = { path=1, file="Izy00_2000", type=0, category=1}; // しずちゃん用
+st[201] = { path=1, file="Izy00_2001", type=0, category=1}; // 
+st[202] = { path=1, file="Izy00_2002", type=0, category=1}; // 
+st[203] = { path=1, file="Izy00_2003", type=0, category=1}; // 
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	ああ、自己紹介がまだだったね、俺は折原臨也。よろしく。
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	必要だったら、いつでも力になるよ。
+
+// キャラセレクト画面キャラクター決定
+// 1130	そこまで言うなら協力してあげてもいいかな。

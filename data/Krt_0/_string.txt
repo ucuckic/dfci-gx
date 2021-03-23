@@ -1,0 +1,23 @@
+[data]
+// vsSha00
+100 = A flame sword? That's really rare... Does it drop if I win...!?
+
+// vsAsu00
+110 = The loser picks up dinner!
+
+// vsAsu01
+120 = Asuna...? What's the meaning of this?!
+
+// vsYkn00
+130 = That weapon?! So rare... Too rare!
+
+500 = Alright... Looks like I'm up.
+502 = Sorry, but this is the end of the line.
+510 = That's what I call a solid match.
+511 = This isn't just a game, right?
+512 = Not bad... You put Heathcliff to shame.
+513 = At that level, you won't leave a scratch.
+520 = I'm just getting started.
+521 = Whew...
+530 = Damn it...
+531 = Time's up? Really?

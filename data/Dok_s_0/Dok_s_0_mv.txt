@@ -1,0 +1,325 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+local pat_num = -1;
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		
+		Battle_Std.AddXPos_CheckFrontStage( 350, 100 ); // X移動距離, ステージ端とこれ以上近づかない距離
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // 落下開始
+			BSound.SE_Play( { type=_SeType_Player, num=[170,171,172,173] } );
+			break;
+		case 200: // 着地
+			break;
+		}
+	}
+	function HitInterrupt_After()
+	{
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 ); // 表示するパターンを設定
+		
+		Battle_Std.AddXPos_CheckFrontStage( 180, 100 ); // X移動距離, ステージ端とこれ以上近づかない距離
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50: // かまえる
+			BSound.SE_Play( { type=_SeType_Player, num=[180,181,182,183] } );
+			break;
+		case 100: // 投げる
+			local eff = BMvEff.CreateObject( { mvname="Mv_Sup10AtkObj", x=100<<7, y=-170<<7 } );
+			break;
+		}
+	}
+	function HitInterrupt_After()
+	{
+	}
+}
+
+local pat_num_Sup10AtkObj = BMvEff.GetPatternNum( { datatype=0, pat="Sup10AtkObj" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_hiteff_sp10 = BMvEff.GetPatternNum( { datatype=0, pat="hiteff_sp10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Sup10AtkObj <-
+{
+	function Init() : (pat_num_Sup10AtkObj)
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+		BMvTbl.SetPattern( pat_num_Sup10AtkObj );
+
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=255, flag=_ClearFlag_ChangeMv } ); // 弾無敵にスカる
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+		
+		BMvTbl.SetLP(0,0); // ヒットエフェクトを呼んだかどうか
+	}
+	function FrameUpdate()
+	{
+		Battle_Std.CheckSousai(); // def_MC_Sousai と触れたら相殺し合う
+		if( Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Sousai_MySubSuccess ) )
+		{
+			BMvTbl.SetFinalize(0); // 相殺したら消える
+		}
+	}
+	function HitInterrupt() : (pat_num_hiteff_sp10)
+	{
+		if( BMvTbl.GetLP(0) == 0 && Battle_Std.CheckDamageTiming() )
+		{
+			BMvTbl.SetLP(0,1); // ヒットエフェクトを呼んだフラグ
+
+			// 演出いれたきゃここに入れる
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_hiteff_sp10 } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+				eff.pop();
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+// ※00を使う
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+// 回避１
+//-----------------------------------------------------------------------------
+
+local pat_num_EscSup00 = BMvEff.GetPatternNum( { datatype=0, pat="EscSup00" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_EscSup01 = BMvEff.GetPatternNum( { datatype=0, pat="EscSup01" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_EscapeSupportChara <-
+{
+	function Init_After() : (pat_num_EscSup00)
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+		BMvTbl.SetPattern( pat_num_EscSup00 );
+	}
+	function FrameUpdate_After() : (pat_num_EscSup01)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50: // 投げる
+			BSound.SE_Play( { type=_SeType_Player, num=[180,181,182,183] } );
+			break;
+		case 100: // 投げる
+			local eff = BMvEff.CreateObject( { mvname="Mv_EscSup00AtkObj", x=100<<7, y=-170<<7 } );
+			break;
+		case 200: // 回復
+			BSound.SE_Play( { type=_SeType_Player, num=[190] } );
+			break;
+		case 300:
+			break;
+		}
+		
+		if( BMvTbl.GetPP(def_PP_SupEscSuppoort)==1 )
+		{
+			BMvTbl.SetPP(def_PP_SupEscSuppoort, 0);
+			
+			BMvTbl.SetPattern( pat_num_EscSup01 );
+			
+			_dp("\n ぴぴる開始");
+			
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				local pos = BMvTbl.GetPosition( 0 );
+				local mvname = BMvTbl.GetMvName();
+
+				if( mvname=="Mv_CallEscapeSupportChara" )
+				{
+					BMvTbl.SetFinalizeCode( 256 );
+				}
+				
+				main.pop();
+				
+				BMvTbl.SetPosition( { x=pos.x-(50<<7)*BMvTbl.GetMuki() } ); // メインキャラの上に出現
+			}
+			
+
+		}
+	}
+	function LastUpdate_After()
+	{
+	}
+}
+
+local pat_num_EscSup00AtkObj = BMvEff.GetPatternNum( { datatype=0, pat="EscSup00AtkObj" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_EscSup00AtkObj <-
+{
+	function Init() : (pat_num_EscSup00AtkObj)
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+		BMvTbl.SetPattern( pat_num_EscSup00AtkObj );
+
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=255, flag=_ClearFlag_ChangeMv } ); // 弾無敵にスカる
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+		
+		BMvTbl.SetLP(0,0); // ヒットエフェクトを呼んだかどうか
+	}
+	function FrameUpdate()
+	{
+		Battle_Std.CheckSousai(); // def_MC_Sousai と触れたら相殺し合う
+		if( Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Sousai_MySubSuccess ) )
+		{
+			BMvTbl.SetFinalize(0); // 相殺したら消える
+		}
+	}
+	function HitInterrupt() : (pat_num_hiteff_sp10)
+	{
+		if( BMvTbl.GetLP(0) == 0 && Battle_Std.CheckDamageTiming() )
+		{
+			BMvTbl.SetLP(0,1); // ヒットエフェクトを呼んだフラグ
+
+			// 演出いれたきゃここに入れる
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_hiteff_sp10 } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+				eff.pop();
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+DOK_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Dok_s );
+
+_dp(" -> Load OK");

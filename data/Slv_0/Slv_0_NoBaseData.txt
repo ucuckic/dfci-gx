@@ -1,0 +1,12 @@
+[System]
+ProjectName=Slv
+[DataFile]
+FileNum= 2
+File00=_temp.HA6
+File01=Slv.HA6
+[BmpcutFile]
+FileNum= 1
+File00=Slv.cg
+[PAniFile]
+FileNum= 1
+File00=Slv_ef00.pat

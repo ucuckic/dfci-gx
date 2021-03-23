@@ -1,0 +1,12 @@
+[System]
+ProjectName=Lea_s
+[DataFile]
+FileNum= 2
+File00=_temp.HA6
+File01=Lea_s.HA6
+[BmpcutFile]
+FileNum= 1
+File00=Lea_s.cg
+[PAniFile]
+FileNum= 1
+File00=Lea_s_ef00.pat

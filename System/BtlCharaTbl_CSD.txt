@@ -1,0 +1,587 @@
+/******************************************************************************
+ * CS向けデバッグモードあり時の定義ファイルです
+ * ある程度各種リソースが揃っていないキャラは使える様にしないで下さい。(色々ファイルが無いと落ちるので)
+ * ※リリース時にこのファイルは入れないでください
+ ******************************************************************************/
+
+/*
+	※今現在は、アキラ、セルベリア＆そのサポートと、
+	  CSで追加キャラは"isAlive=0"で設定して、
+	  デモループ等に出てこない様にしてある。
+
+*/
+
+
+Chara_Table <-
+{
+	// キャラセレクト用配置 99 がランダム、必ず２次元配列になるように
+	// ・配列は内部の値です、アイコンの位置が移動したりはしません。
+	// ・同じキャラ番号が配置されているとたぶん正常に動作しない
+	// ・長さ０の配列があると落ちる
+	// ・配列数は縦x横が100未満になるように
+	SelectTable = 
+	[
+		[ 13,15, 8, 6, 2,11, 4, 0, 1, 3, 5,10, 9, 7,16,14 ], //初期列
+		[ -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1 ],
+	],
+	SelectDefault = [ 0, 1 ],  // 初期位置 1P 2P
+
+	// 強制でフラグを立てる仕様 ※セーブデータが上書きされる
+	//_SecretFlag = 0, // クリア
+	// _SecretFlag = (1<<0), // エルトナムが使える
+
+	Status = [],
+};
+
+Chara_Table.Status.resize(100); // てきとう
+local chara_no = Chara_Table.Status; // 登録しやすいように
+
+/*
+	※ name_short, name_long, の文字列がないと失敗
+	※ name_short は読み込み時に内部で全て小文字にされる
+	※ name_str はBtlCharaTbl_str.txtの値で上書きされるので空定義のみ行うように
+	※ name_master はプログラム側から日本語キャラ名を使用したい場合とそのデータで使用される(主に勝利メッセージ抽選で使用される)
+	norandom : ＣＰＵ専用キャラにして、ランダムの抽選で選ばれなくなる（デモ抽選、キャラセレランダム）
+ */
+
+// 
+chara_no[0] =
+{
+	name_short="SHA",
+	name_long="Shana",
+	name_str="",
+	name_master="シャナ",
+	isAlive=1,
+	
+	order = 0,
+}; // 
+
+// 
+chara_no[1] = 
+{
+	name_short="ASU",
+	name_long="Asuna",
+	name_str="",
+	name_master="アスナ",
+	isAlive=1,
+	
+	order = 1,
+}; // 
+
+// 
+chara_no[2] = 
+{
+	name_short="KRT",
+	name_long="Kirito",
+	name_str="",
+	name_master="キリト",
+	isAlive=1,
+	
+	order = 7,	
+}; // 
+
+// 
+chara_no[3] = 
+{
+	name_short="MIS", // Mikじゃないので注意
+	name_long="Mikoto",
+	name_str="",
+	name_master="御坂 美琴",
+	isAlive=1,
+	
+	order = 2,
+}; // 
+
+//
+chara_no[4] = 
+{
+	name_short="KRN",
+	name_long="Kirino",
+	name_str="",
+	name_master="高坂 桐乃",
+	isAlive=1,
+	
+	order = 3,
+}; // 
+
+chara_no[5] = 
+{
+	name_short="KUR",
+	name_long="Kuroyukihime",
+	name_str="",
+	name_master="黒雪姫",
+	isAlive=1,
+	
+	order = 5,
+}; //
+
+chara_no[6] = 
+{
+	name_short="TGR",
+	name_long="Taiga",
+	name_str="",
+	name_master="逢坂 大河",
+	isAlive=1,
+	
+	order = 9,
+}; //
+
+chara_no[7] = 
+{
+	name_short="STM",
+	name_long="Rentaro",
+	name_str="",
+	name_master="里見 蓮太郎",
+	isAlive=1,
+	
+	order = 11,
+}; // 
+
+chara_no[8] = 
+{
+	name_short="YKN",
+	name_long="Yukina",
+	name_str="",
+	name_master="姫柊 雪菜",
+	isAlive=1,
+	
+	order = 10,
+}; // 
+
+chara_no[9] = 
+{
+	name_short="SBM",
+	name_long="Miyuki",
+	name_str="",
+	name_master="司波 深雪",
+	isAlive=1,
+	
+	order = 8,
+}; // 
+
+chara_no[10] = 
+{
+	name_short="TMK",
+	name_long="Tomoka",
+	name_str="",
+	name_master="湊 智花",
+	isAlive=1,
+	
+	order = 6,
+}; // 
+
+chara_no[11] = 
+{
+	name_short="HIW",
+	name_long="Shizuo",
+	name_str="",
+	name_master="平和島 静雄",
+	isAlive=1,
+	
+	order = 4,
+}; // 
+
+chara_no[13] = 
+{
+	name_short="YAK",
+	name_long="Akira",
+	name_str="",
+	name_master="アキラ",
+	isAlive=1,
+	
+	order = 14,
+}; // 
+
+chara_no[14] = 
+{
+	name_short="SLV",
+	name_long="Selvaria",
+	name_str="",
+	name_master="セルベリア",
+	isAlive=1,
+	
+	order = 15,
+}; // 
+
+chara_no[15] = 
+{
+	name_short="EMI",
+	name_long="Emiria",
+	name_str="",
+	name_master="遊佐 恵美",
+	isAlive=1,
+	
+	order = 12,
+}; // 
+
+chara_no[16] = 
+{
+	name_short="QEN",
+	name_long="Qwenthur",
+	name_str="",
+	name_master="クウェンサー",
+	isAlive=1,
+	
+	order = 13,
+}; // 
+
+chara_no[17] = 
+{
+	name_short="ONI",
+	name_long="Tatsuya",
+	name_str="",
+	name_master="司波達也",
+	isAlive=0,
+	
+	order = 18,
+}; // 
+
+// サポートキャラリスト
+// ※※※ 0番は「サポートなし」として定義するので使用不可
+// type は 1以上、0だとサポートキャラとして認識されなくなってしまう
+Support_Table <-
+{
+	//
+	// ・配列数は縦x横が100未満になるように
+	// ・0は使用不可アイコン（カーソルはあわせられる）
+	// ・-1を入れると空白にできる
+	SelectTable = 
+	[
+		// 適当配置 140718
+		[  1, 2, 4, 3, 9,12,10,13, ], //
+		[ 18,11,14,15,16,17, 6, 5, ], //
+		[  8, 7,21,22,23,19,20,24 ], //
+	],
+
+	Status = [],
+};
+
+Support_Table.Status.resize(30);
+
+local support_no = Support_Table.Status; // 登録しやすいように
+
+// 
+support_no[1] = // ヴィルヘルミナ
+{
+	name_short="WIL_S",
+	name_long="Wilhelmina",
+	name_str="",
+	name_master="ヴィルヘルミナ",
+	isAlive=1,
+	type=2, // 補助
+	icon=16, // キャラセレクト用サポートアイコン
+	
+	order = 0,
+}; // 
+
+// 
+support_no[2] = // リーファ
+{
+	name_short="LEA_S",
+	name_long="Leafa",
+	name_str="",
+	name_master="リーファ",
+	isAlive=1,
+	type=1, // 攻撃
+	icon=17, // キャラセレクト用サポートアイコン
+
+	order = 1,
+}; // 
+
+support_no[3] = // 上条 当麻
+{
+	name_short="TOM_S",
+	name_long="Touma",
+	name_str="",
+	name_master="上条 当麻",
+	isAlive=1,
+	type=2, // 補助
+	icon=18, // キャラセレクト用サポートアイコン
+
+	order = 2,
+}; // 
+
+// 
+support_no[4] = // 黒猫
+{
+	name_short="KRO_S",
+	name_long="Kuroneko",
+	name_str="",
+	name_master="黒猫",
+	isAlive=1,
+	type=1, // 攻撃
+	icon=19, // キャラセレクト用サポートアイコン
+
+	order = 3,
+}; // 
+
+support_no[5] = // 司波 達也
+{
+	name_short="SBT_S",
+	name_long="Tatsuya",
+	name_str="",
+	name_master="司波 達也",
+	isAlive=1,
+	type=2, // 補助
+	icon=20, // キャラセレクト用サポートアイコン
+
+	order = 14,
+}; // 
+
+support_no[6] = // 高須 竜児
+{
+	name_short="TKS_S",
+	name_long="Ryuji",
+	name_str="",
+	name_master="高須 竜児",
+	isAlive=1,
+	type=2, // 補助
+	icon=21, // キャラセレクト用サポートアイコン
+
+	order = 15,
+}; // 
+
+support_no[7] = // 藍原 延珠
+{
+	name_short="AEN_S",
+	name_long="Enjyu",
+	name_str="",
+	name_master="藍原 延珠",
+	isAlive=1,
+	type=2, // 補助
+	icon=22, // キャラセレクト用サポートアイコン
+
+	order = 17,
+}; // 
+
+// 
+support_no[8] = // 暁 古城
+{
+	name_short="AKJ_S",
+	name_long="Kojyo",
+	name_str="",
+	name_master="暁 古城",
+	isAlive=1,
+	type=1, // 攻撃
+	icon=23, // キャラセレクト用サポートアイコン
+
+	order = 16,
+}; // 
+
+support_no[9] = // セルティ
+{
+	name_short="CRT_S",
+	name_long="Celty",
+	name_str="",
+	name_master="セルティ",
+	isAlive=1,
+	type=2, // 補助
+	icon=24, // キャラセレクト用サポートアイコン
+
+	order = 4,
+}; // 
+
+support_no[10] = // ホロ
+{
+	name_short="HOL_S",
+	name_long="Holo",
+	name_str="",
+	name_master="ホロ",
+	isAlive=1,
+	type=2, // 補助
+	icon=25, // キャラセレクト用サポートアイコン
+
+	order = 7,
+}; // 
+
+support_no[11] = // 加賀 香子
+{
+	name_short="KGK_S",
+	name_long="Kouko",
+	name_str="",
+	name_master="加賀 香子",
+	isAlive=1,
+	type=2, // 補助
+	icon=26, // キャラセレクト用サポートアイコン
+
+	order = 8,
+}; // 
+
+// 
+support_no[12] = // ハルユキ
+{
+	name_short="HAR_S",
+	name_long="Haruyuki",
+	name_str="",
+	name_master="ハルユキ",
+	isAlive=1,
+	type=1, // 攻撃
+	icon=27, // キャラセレクト用サポートアイコン
+
+	order = 5,
+}; // 
+
+support_no[13] = // ブギーポップ
+{
+	name_short="BOG_S",
+	name_long="Boogiepop",
+	name_str="",
+	name_master="ブギーポップ",
+	isAlive=1,
+	type=1, // 攻撃
+	icon=28, // キャラセレクト用サポートアイコン
+
+	order = 9,
+}; // 
+
+// 
+support_no[14] = // イノセント・チャーム
+{
+	name_short="INO_S",
+	name_long="InnocentCharm",
+	name_str="",
+	name_master="イノセント・チャーム",
+	isAlive=1,
+	type=1, // 攻撃
+	icon=29, // キャラセレクト用サポートアイコン
+
+	order = 6,
+}; // 
+
+support_no[15] = // キノ
+{
+	name_short="KIN_S",
+	name_long="Kino",
+	name_str="",
+	name_master="キノ",
+	isAlive=1,
+	type=2, // 補助
+	icon=30, // キャラセレクト用サポートアイコン
+
+	order = 10,
+}; // 
+
+// 
+support_no[16] = // 椎名 ましろ
+{
+	name_short="MAS_S",
+	name_long="Mashiro",
+	name_str="",
+	name_master="椎名 ましろ",
+	isAlive=1,
+	type=1, // 攻撃
+	icon=31, // キャラセレクト用サポートアイコン
+
+	order = 11,
+}; // 
+
+support_no[17] = // 藤和 エリオ
+{
+	name_short="ERO_S",
+	name_long="Erio",
+	name_str="",
+	name_master="藤和 エリオ",
+	isAlive=1,
+	type=2, // 補助
+	icon=32, // キャラセレクト用サポートアイコン
+
+	order = 12,
+}; // 
+
+// 
+support_no[18] = // 真奥 貞夫
+{
+	name_short="MOU_S",
+	name_long="Sadao",
+	name_str="",
+	name_master="真奥 貞夫",
+	isAlive=1,
+	type=1, // 攻撃
+	icon=33, // キャラセレクト用サポートアイコン
+
+	order = 13,
+}; // 
+
+support_no[19] = // パイ
+{
+	name_short="PAI_S",
+	name_long="Pai",
+	name_str="",
+	name_master="パイ",
+	isAlive=1,
+	type=2, // 補助
+	icon=34, // キャラセレクト用サポートアイコン
+
+	order = 22,
+}; // 
+
+// ＣＳ追加
+
+support_no[20] = // アリシア
+{
+	name_short="ALC_S",
+	name_long="Alicia",
+	name_str="",
+	name_master="アリシア",
+	isAlive=1,
+	type=2, // 補助
+	icon=35, // キャラセレクト用サポートアイコン
+
+	order = 23,
+}; // 
+
+support_no[21] = // ドクロちゃん
+{
+	name_short="DOK_S",
+	name_long="Dokuro-chan",
+	name_str="",
+	name_master="ドクロちゃん",
+	isAlive=1,
+	type=2, // 補助
+	icon=36, // キャラセレクト用サポートアイコン
+
+	order = 18,
+}; // 
+
+support_no[22] = // 一方通行
+{
+	name_short="ACR_S",
+	name_long="Accelerator",
+	name_str="",
+	name_master="一方通行",
+	isAlive=1,
+	type=2, // 補助
+	icon=37, // キャラセレクト用サポートアイコン
+
+	order = 19,
+}; // 
+
+support_no[23] = // 折原 臨也
+{
+	name_short="IZY_S",
+	name_long="Izaya",
+	name_str="",
+	name_master="折原 臨也",
+	isAlive=1,
+	type=2, // 補助
+	icon=38, // キャラセレクト用サポートアイコン
+
+	order = 20,
+}; // 
+
+support_no[24] = // フローレイティア
+{
+	name_short="FRO_S",
+	name_long="Froletia",
+	name_str="",
+	name_master="フローレイティア",
+	isAlive=1,
+	type=2, // 補助
+	icon=39, // キャラセレクト用サポートアイコン
+
+	order = 21,
+}; // 
+
+
+//print("\n>>> BtlCharaTbl Running");
+

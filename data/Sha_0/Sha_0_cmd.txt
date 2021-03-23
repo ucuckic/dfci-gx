@@ -1,0 +1,209 @@
+//コマンドテーブル skillは格ゲーコマンド表記
+_dp("\n[Sha_0_cmd.txt]");
+
+/*
+
+t.Atk_StdBandC <- 
+{ //-------------------------------
+	num = def_CN_AtkBandC, name = "Cmd_Atk_StdBandC", command = "B+C",
+	flags = [ "lastdelay" ],
+	CmdCheck = { SkillType = "SpecialDouji", ComboLimit = DEF_BS_CL_ATKBANDC },
+	UpdateTable = { name = "Mv_Atk_StdBandC", }
+}
+
+*/
+
+local t =
+{
+	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},	
+	
+	Skill_236A = {},
+	Skill_236B = {},
+	Skill_236C = {},
+	Skill_236EX = {},
+
+	Skill_J236A = {},
+	Skill_J236B = {},
+	Skill_J236C = {},
+	Skill_J236EX = {},
+
+	Skill_214A = {},
+	Skill_214B = {},
+	Skill_214C = {},
+	Skill_214EX = {},
+	
+	Skill_J214A = {},
+	Skill_J214B = {},
+	Skill_J214C = {},
+	Skill_J214EX = {},	
+	
+	Skill_Sousai = {},
+	Skill_Sousai2 = {},
+	
+	/*
+	Skill_236_DashAdd =
+	{
+		num = def_CN_Skill_AddCommand1,
+		command = ["0606"],
+		flags = [ "lastdelay" ],
+		CmdCheck = 
+		{
+			PosState = "Air",
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C",] },
+		},
+		CmdBeforeFunc = function()
+		{
+			// 必殺ＣがＨＩＴ時の時のみ出せる
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			
+			local hs = BMvTbl.GetMvHitStatus();
+			if( !(hs.Type & _HitType_Damage) ) return 0;
+			
+			return 1;
+		},
+		UpdateTable = { name = "Mv_AirDash_F", }			
+	}
+	*/
+	
+	Skill_Sousai2_Add =
+	{
+		num = def_CN_Skill_AddCommand1,
+		command = ["A","B","C"],
+		flags = [ "lastdelay" ],
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_Sousai2"] },
+		},
+		CmdBeforeFunc = function()
+		{
+			// 必殺ＣがＨＩＴ時の時のみ出せる
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			return 1;
+		},
+		UpdateTable = { name = "Mv_Skill_Sousai2_Add", }			
+	}
+	
+	Skill_Sousai4 = {},
+	Skill_Sousai4_JAdd = {},
+	
+	Skill_Kirifuda = {},	
+	
+	Skill_41236SP = {},
+	Skill_63214SP = {},
+
+	AirDash_F = {
+	CmdBeforeFunc = function()
+	{
+		if( Battle_Std.CancelCheck_SpecialSkill()==0 ) return 0;
+		return 1;
+	},
+	CmdCheck =
+		{
+			SkillType = "Special", PosState = "Air",
+			MvCheck = { Fail = 0 }	
+		},
+	},
+	
+	Atk_Std6C = { num = def_CN_Atk_StdC-1 },
+	
+	Std_Throw_F = { command = ["4+C"] },
+	
+	//Atk_Air4B = {},
+}
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_StdA",
+		UpdateMoveName="Mv_Atk_StdB",
+	},
+	{
+		CheckMoveName="Mv_Atk_StdB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_StdB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_StdC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_214EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			Cost = { ComboGauge = 10000 },
+			FrameIDCheck = { Only = [300,400] },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 0 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_CroA",
+		UpdateMoveName="Mv_Atk_CroB",
+		ResetTmplName="Atk_CroA",
+	},
+	{
+		CheckMoveName="Mv_Atk_CroB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_CroB"
+	},	
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_Sousai",
+		ResetTmplName="Std_Atk_StdC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerCro, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_Sousai",
+		UpdateMoveName="Mv_Skill_214EX",
+		ResetTmplName="Skill_Sousai",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			Cost = { ComboGauge = 10000 },
+			FrameIDCheck = { Only = [300,400] },
+		}
+	},	
+]
+Battle_Std.MakeStdCombo( t, ar, 1 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_AirA",
+		UpdateMoveName="Mv_Atk_AirB",
+		ResetTmplName="Atk_AirA",
+	},
+	{
+		CheckMoveName="Mv_Atk_AirB",
+		UpdateMoveName="Mv_Atk_AirC",
+		ResetTmplName="Std_Atk_AirB",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerAir, //スマートステアアナウンスの追加
+	},	
+]
+Battle_Std.MakeStdCombo( t, ar, 2 );
+
+//local ar = ["Mv_Atk_StdB","Mv_Atk_Std3C","Mv_Skill_214A","Mv_Skill_214EX"]
+
+SHA_CommandTable <- Battle_Std.MakeCommandTable( t );
+
+
+Battle_Std.WriteCommandList( { filename="CL00_Shana.txt", cmdtmpl=t } );
+
+_dp(" -> Load OK");

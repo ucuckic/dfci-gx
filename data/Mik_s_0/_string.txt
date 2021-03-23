@@ -1,0 +1,10 @@
+[data]
+// 100 win
+// 110 lose
+// 120 chargeô
+100 = As expected
+101 = Hehe... Congratulations
+110 = No way...
+111 = Let's do our best on the next one
+120 = It's ready!
+121 = Let's GO!ô

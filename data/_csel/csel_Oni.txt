@@ -1,0 +1,10 @@
+[System]
+ProjectName=csel_Oni
+[DataFile]
+FileNum= 1
+File00=csel_Oni.HA6
+[BmpcutFile]
+FileNum= 1
+File00=csel_Oni.cg
+[PAniFile]
+FileNum= 0

@@ -1,0 +1,20 @@
+_dp("\n[_sc.txt]");
+
+Battle_Status <-
+{
+	// ‚«‚è‚Ó‚¾
+	Kirifuda_PointMax = 2, // Ø‚èŽDÅ‘å’liŠî–{’l‚Rj
+	Kirifuda_Type = 1, // Ø‚èŽDƒ^ƒCƒvi0:UŒ‚“IÔ 1:–hŒä“IÂj		
+	
+	// HpSource_StopFrame_KirifudaPar = 50, // 100‚Å’ÊíB”¼•ª‚ÌŽžŠÔ‚Å‰ñ•œ@¦Ø‚èŽDŽg—p‘O‚É”­¶‚µ‚½”’ƒ_ƒ‚Ì‰ñ•œ‘Ò‚¿ŽžŠÔ‚É‚Í‰e‹¿‚µ‚È‚¢‚Ì‚Å’ˆÓ
+	// HpSource_Heal_KirifudaPar = 400, // 100‚Å’ÊíB4”{‚Ì‘¬“x‚Å‰ñ•œ
+	
+	// Jem_0‚ÆJem_1‚ÍÝ’èÏ‚Ý‚È‚Ì‚ÅJem_2‚ÆJem_3‚ÉÝ’è‚·‚é
+	// Jem_2 = 3003, // UŒ‚‚ð‚Q‚O‰ñŽó‚¯‚½‚ç‚P‚O•bŠÔ–hŒä—Í‚ª‚P‚O“ƒAƒbƒv
+	// Jem_2 = 15021012, // ƒRƒ}ƒ“ƒh“Š‚°‚ð‚Q‰ñƒqƒbƒg‚³‚¹‚½‚ç‚P‚O•bŠÔUŒ‚—Í‚ª‚P‚O“ƒAƒbƒvA‚Q‰ñ‚ÅÁ–Å
+	// 1A(Slot)BB(‰ñ”)C(ŽžŠÔ)D(Œø‰Ê)E(Œø‰Ê’l)F(Á–Å‰ñ”)
+	Jem_2 = 15042422, // [á‚ð‚S‰ñŽç‚é‚Æ‚Q‚O•bŠÔƒXƒe‚P‚Q“ƒAƒbƒvA‚Q‰ñ‚ÅÁ–Å
+}
+
+Battle_Std.InsertTable( Battle_Status, Battle_Std.GetStd_BattleStatusTable() ); //ƒfƒtƒHƒ‹ƒg
+_dp(" -> Load OK");

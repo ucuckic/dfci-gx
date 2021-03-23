@@ -1,0 +1,15 @@
+
+FinishList_Table <- [];
+
+FinishList_Table.resize(10); // Šm•Û
+local st = FinishList_Table; // “o˜^‚µ‚â‚·‚¢‚æ‚¤‚É
+
+// name = •¶Žš—ñ
+// type = nameŽí•Ê  0 s“®Mv  1 ƒpƒ^[ƒ“•¶Žš—ñ
+// category = 1 ’ÊíKOi‘‚©‚È‚¢‚Å‚¢‚¢j  2 ’´‹Z  3 ‚³‚ç‚É’´‹Z
+
+st[0] = { name="Mv_Skill_41236SP", type=0,  category=2, }; 
+st[1] = { name="Mv_Skill_41236SP_Hit", type=0,  category=2, }; 
+st[2] = { name="Mv_Skill_63214SP", type=0,  category=2, }; 
+st[3] = { name="Mv_Skill_63214SP_Hit", type=0,  category=2, }; 
+

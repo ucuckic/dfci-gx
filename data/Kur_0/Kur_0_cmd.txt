@@ -1,0 +1,330 @@
+//コマンドテーブル skillは格ゲーコマンド表記
+btl_debPrint2("\n[_cmd.txt]");
+
+local t =
+{
+	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+
+	Skill_236A = {},
+	Skill_236B = {},
+	Skill_236C = {},
+	Skill_236EX = {},
+
+	Skill_J236A = {},
+	Skill_J236B = {},
+	Skill_J236C = {},
+	Skill_J236EX = {},
+	
+	Skill_214A = {},
+	Skill_214B = {},
+	Skill_214C = {},
+	Skill_214EX = {},
+
+	Skill_214_AddA =
+	{
+		num = def_CN_Skill_AddCommand1, command = "A",
+		function CmdBeforeFunc()
+		{
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		function CmdAfterFunc()
+		{
+			if( BMvTbl.GetLP(2)==0 ) return 0; // 出せるタイミングじゃない
+			return 1;
+		}
+		UpdateTable = { name = "Mv_Skill_214_AddA", },
+	},	
+	Skill_214_AddB =
+	{
+		num = def_CN_Skill_AddCommand2, command = "B",
+		function CmdBeforeFunc()
+		{
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		function CmdAfterFunc()
+		{
+			if( BMvTbl.GetLP(2)==0 ) return 0; // 出せるタイミングじゃない
+			return 1;
+		}
+		UpdateTable = { name = "Mv_Skill_214_AddB", },
+	},	
+	Skill_214_AddC =
+	{
+		num = def_CN_Skill_AddCommand3, command = "C",
+		function CmdBeforeFunc()
+		{
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		function CmdAfterFunc()
+		{
+			if( BMvTbl.GetLP(2)==0 ) return 0; // 出せるタイミングじゃない
+			return 1;
+		}
+		UpdateTable = { name = "Mv_Skill_214_AddC", },
+	},	
+	
+	Skill_J214_JAddA =
+	{
+		num = def_CN_Skill_AddCommand4, command = "A",
+		function CmdBeforeFunc()
+		{
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_J214A","Mv_Skill_J214B","Mv_Skill_J214C"] },
+			PosState = "Air",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		function CmdAfterFunc()
+		{
+			if( BMvTbl.GetLP(2)==0 ) return 0; // 出せるタイミングじゃない
+			return 1;
+		}
+		UpdateTable = { name = "Mv_Skill_J214_JAddA", },
+	},
+	Skill_J214_JAddB =
+	{
+		num = def_CN_Skill_AddCommand5, command = "B",
+		function CmdBeforeFunc()
+		{
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_J214A","Mv_Skill_J214B","Mv_Skill_J214C"] },
+			PosState = "Air",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		function CmdAfterFunc()
+		{
+			if( BMvTbl.GetLP(2)==0 ) return 0; // 出せるタイミングじゃない
+			return 1;
+		}
+		UpdateTable = { name = "Mv_Skill_J214_JAddB", },
+	},	
+
+	Skill_J214_JAddC =
+	{
+		num = def_CN_Skill_AddCommand6, command = "C",
+		function CmdBeforeFunc()
+		{
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_J214A","Mv_Skill_J214B","Mv_Skill_J214C"] },
+			PosState = "Air",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		function CmdAfterFunc()
+		{
+			if( BMvTbl.GetLP(2)==0 ) return 0; // 出せるタイミングじゃない
+			return 1;
+		}
+		UpdateTable = { name = "Mv_Skill_J214_JAddC", },
+	},	
+	Skill_214AddC_JAddA =
+	{
+		num = def_CN_Skill_AddCommand7, command = "A",
+		function CmdBeforeFunc()
+		{
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Always  ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214_AddC","Mv_Skill_J214_JAddC"] },
+			PosState = "Air",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_214AddC_JAddA", },
+	},		
+	Skill_214AddC_JAddB =
+	{
+		num = def_CN_Skill_AddCommand8, command = "B",
+		function CmdBeforeFunc()
+		{
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Always  ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214_AddC","Mv_Skill_J214_JAddC"] },
+			PosState = "Air",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_214AddC_JAddB", },
+	},	
+	Skill_214AddC_JAddC =
+	{
+		num = def_CN_Skill_AddCommand9, command = "C",
+		function CmdBeforeFunc()
+		{
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Always  ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214_AddC","Mv_Skill_J214_JAddC"] },
+			PosState = "Air",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_214AddC_JAddC", },
+	},		
+	
+	Skill_J214A = {},
+	Skill_J214B = {},
+	Skill_J214C = {},
+	Skill_J214EX = {},	
+
+	Skill_Sousai = {},
+	Skill_Sousai2 = {},
+	Skill_Sousai4 = {},
+	Skill_Sousai4_JAdd = {},
+	
+	Skill_Kirifuda = {
+		function CmdAfterFunc()
+		{
+			local stick = 0;
+			// レバー方向を記憶 色々重複してるけどまぁいいか
+			if( BMvTbl.CheckStickHold( (1<<4)|(1<<7)|(1<<1) ) ) stick = 4;
+			if( BMvTbl.CheckStickHold( (1<<6)|(1<<9)|(1<<3) ) ) stick = 6;
+			if( BMvTbl.CheckStickHold( (1<<1)|(1<<2)|(1<<3) ) ) stick = 2;
+			BMvTbl.SetPP( def_PP_Kur_KirifudaStick, stick );
+			_dp("\n レバー方向記憶:"+stick );
+			return 1;
+		}
+	},
+
+	Skill_41236SP = {},
+	Skill_63214SP = {},	
+}
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_StdA",
+		UpdateMoveName="Mv_Atk_StdB",
+	},
+	{
+		CheckMoveName="Mv_Atk_StdB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_StdB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_214A",
+		ResetTmplName="Std_Atk_StdC",
+	},
+	{
+		CheckMoveName="Mv_Skill_214A",
+		UpdateMoveName="Mv_Skill_214_AddB",
+		ResetTmplName="Skill_214A",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_214_AddB",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_214_AddB",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 0 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_CroA",
+		UpdateMoveName="Mv_Atk_CroB",
+	},
+	{
+		CheckMoveName="Mv_Atk_CroB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_CroB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_214A",
+		ResetTmplName="Std_Atk_StdC",
+	},
+	{
+		CheckMoveName="Mv_Skill_214A",
+		UpdateMoveName="Mv_Skill_214_AddB",
+		ResetTmplName="Skill_214A",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_214_AddB",
+		UpdateMoveName="Mv_Skill_236EX",
+		ResetTmplName="Skill_214_AddB",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 1 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_AirA",
+		UpdateMoveName="Mv_Atk_AirB",
+	},
+	{
+		CheckMoveName="Mv_Atk_AirB",
+		UpdateMoveName="Mv_Atk_AirC",
+		ResetTmplName="Std_Atk_AirB",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerAir, //スマートステアアナウンスの追加
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 2 );
+
+KUR_CommandTable <- Battle_Std.MakeCommandTable( t );
+
+//Battle_Std.WriteCommandList( { filename="CL01_Asuna.txt", cmdtmpl=t } );
+
+_dp(" -> Load OK");

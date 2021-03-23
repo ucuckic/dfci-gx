@@ -1,0 +1,846 @@
+//コマンドテーブル skillは格ゲーコマンド表記
+btl_debPrint2("\n[HYD_CommandTable]");
+
+local t =
+{
+	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	
+	//Skill_41236SP_ABC = {},
+	//Skill_41236SP = {},
+	//Skill_41236EX = {},
+	
+	Skill_236EX = { num = def_CN_Skill_236236EX, command = ["23623B","236236B"] },
+	Skill_236BorC = {},
+	Skill_236A = {},
+
+	// 行動可能時（空振り）とかで出せる派生
+	Skill_236_236A =
+	{
+		num = def_CN_Skill_AddCommand1,
+		command = "236A",
+		CmdCheck =
+		{
+			BallCount = { [6] = 1 },
+			BallLimit = { [7] = 1 }, //EX波動のときはでない
+		}
+		UpdateTable = { name = "Mv_Skill_236_236A", }
+	},
+
+	// モーション中に出す追加派生
+	Skill_236_236A_ADD =
+	{
+		num = def_CN_Skill_AddCommand2,
+		// command = ["236A","6+A"],
+		command = ["236A"],
+		function CmdBeforeFunc()
+		{
+			//FrameIDが20　か　飛び道具がヒットしてれば追加は出せる
+			local mvs = BMvTbl.GetMvStatus();
+			local hs = BMvTbl.GetMvHitStatus();
+			if( mvs.FrameID!=20 && !(hs.Type & _HitType_Hit) ) return 0;
+			return 1;
+		},
+		CmdCheck =
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B"] },
+			BallCount = { [6] = 1 },
+			BallLimit = { [7] = 1 }, //EX波動のときはでない
+		}	
+		UpdateTable = { name = "Mv_Skill_236_236A", }
+	},	
+	
+	Skill_236_236B =
+	{
+		num = def_CN_Skill_AddCommand3,
+		command = ["236B","236C"],
+		CmdCheck = 
+		{
+			BallCount = { [6] = 1 },
+			BallLimit = { [7] = 1 }, //EX波動のときはでない
+		},
+		UpdateTable = { name = "Mv_Skill_236_236B", }
+	},	
+	
+	Skill_236_236B_ADD =
+	{
+		num = def_CN_Skill_AddCommand4,
+		// command = ["236B","236C","6+B","6+C"],
+		command = ["236B","236C"],
+		function CmdBeforeFunc()
+		{
+			//FrameIDが20　か　飛び道具がヒットしてれば追加は出せる
+			local mvs = BMvTbl.GetMvStatus();
+			local hs = BMvTbl.GetMvHitStatus();
+			if( mvs.FrameID!=20 && !(hs.Type & _HitType_Hit) ) return 0;
+			return 1;
+		},		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B"] },
+			BallCount = { [6] = 1 },
+			BallLimit = { [7] = 1 }, //EX波動のときはでない
+		},
+		UpdateTable = { name = "Mv_Skill_236_236B", }
+	},
+	
+	//Skill_623EX = {},
+	//Skill_623BorC = {},
+	Skill_623A = {
+		function CmdBeforeFunc()
+		{
+			local persona_status = BMvTbl.GetPP(def_PP_Naoto_PersonaStatus);
+			if( persona_status == 1 )
+			{
+				return 0;
+			}
+			
+			return 1;
+		},
+	},
+	
+	Skill_623BorC = {
+		function CmdBeforeFunc()
+		{
+			local persona_status = BMvTbl.GetPP(def_PP_Naoto_PersonaStatus);
+			if( persona_status == 1 )
+			{
+				return 0;
+			}
+			
+			return 1;
+		},
+	},
+	
+	Std_Atk_StdC = 
+	{
+		function CmdBeforeFunc()
+		{
+			local persona_status = BMvTbl.GetPP(def_PP_Naoto_PersonaStatus);
+			if( persona_status == 1 )
+			{
+				return 0;
+			}
+			
+			return 1;
+		},
+	},
+	
+	Atk_Cro3C = 
+	{
+		function CmdBeforeFunc()
+		{
+			local persona_status = BMvTbl.GetPP(def_PP_Naoto_PersonaStatus);
+			if( persona_status == 1 )
+			{
+				return 0;
+			}
+			
+			return 1;
+		},
+	},
+	
+	Std_Atk_AirC = 
+	{
+		function CmdBeforeFunc()
+		{
+			local persona_status = BMvTbl.GetPP(def_PP_Naoto_PersonaStatus);
+			if( persona_status == 1 )
+			{
+				return 0;
+			}
+			
+			return 1;
+		},
+	},
+	
+	Skill_0202A = 
+	{
+		function CmdBeforeFunc()
+		{
+			local persona_status = BMvTbl.GetPP(def_PP_Naoto_PersonaStatus);
+			if( persona_status == 1 )
+			{
+				return 0;
+			}
+			
+			return 1;
+		},
+	},
+	
+	Skill_0202BorC = {},
+	
+	Skill_J214A = { 
+		command = ["214A","0202A"],
+		function CmdBeforeFunc()
+		{
+			local persona_status = BMvTbl.GetPP(def_PP_Naoto_PersonaStatus);
+			if( persona_status == 1 )
+			{
+				return 0;
+			}
+			
+			return 1;
+		},
+		CmdCheck = { MvCheck={ SkillFail=0 } } 
+	},
+	
+	//Skill_214EX = {},
+	Skill_236236SP = { 
+	CmdCheck = { Cost = { ComboGauge = 10000 } },
+	command = ["23623D","236236D"]
+	function CmdBeforeFunc()
+		{
+			local persona_status = BMvTbl.GetPP(def_PP_Naoto_PersonaStatus);
+			if( persona_status == 1 )
+			{
+				return 0;
+			}
+			
+			return 1;
+		},
+	},
+	Skill_214214SP = { 
+	CmdCheck = { Cost = { ComboGauge = 10000 } },
+	command = ["23623C","236236C"]
+	function CmdBeforeFunc()
+		{
+			local persona_status = BMvTbl.GetPP(def_PP_Naoto_PersonaStatus);
+			if( persona_status == 1 )
+			{
+				return 0;
+			}
+			
+			return 1;
+		},
+	},
+
+	Skill_214BorC = {},
+	Skill_214A = {},
+	
+	Skill_214EX = {
+		CmdCheck = { Cost = { ComboGauge = 5000 } },
+	},
+	
+	/*
+	{ //-------------------------------
+	num = def_CN_Skill_214EX, name = "Cmd_Skill_214EX", command = "214C", usegauge = 10000,
+	CmdBeforeStdFunc = function()
+	{
+		if( Battle_Std.CancelCheck_EXSpecialSkill() == 0 ) return 0;
+		return 1;
+	},	
+	CmdCheck = { MvCheck={ SkillFail="Mv_Skill_214EX"}, Cost = { ComboGauge = 10000 }, SkillType = "ExSpecial", CommandButton = def_PP_CBS_ButtonC },
+	UpdateTable = { name = "Mv_Skill_214EX", }
+	}
+	*/
+	
+	Skill_214214EX = { command = ["21421A","214214A"], CmdCheck = { Cost = { ComboGauge = 10000 }, SkillType = "SpSpecial" } },
+	Skill_236236EX = { command = ["23623A","236236A"], CmdCheck = { Cost = { ComboGauge = 10000 } } },
+	
+	Skill_236236EX_AddShotgun = 
+	{
+		posstatus = _PosState_Air,
+		num = def_CN_Skill_AddCommand5,
+		command = ["A","@H,A@"],
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			FrameIDCheck = { Only = 300 },
+			MvCheck = { Only = ["Mv_Skill_236236EX","Mv_Skill_J236236EX"] },
+			PosState = "Air",
+			Cost = { ComboGauge = 5000 }
+		},
+		UpdateTable = { name = "Mv_Skill_J236236EX_AddShotgunEX", }
+	},
+	
+	Skill_J236236EX = { command = ["23623A","236236A"], CmdCheck = { Cost = { ComboGauge = 10000 } } },
+	
+	Skill_GunStance_AddFlip = 
+	{
+		num = def_CN_Skill_AddCommand1,
+		command = ["214B"],
+		flags = [ "lastdelay" ],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 == 1 )
+			{
+				return 1;
+			}
+			
+			return 0;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceA","Mv_Skill_GunStanceB","Mv_Skill_GunStanceC","Mv_Skill_GunShootA","Mv_Skill_GunShootB","Mv_Skill_GunShootC"] },
+		},
+		UpdateTable = { name = "Mv_Skill_214B", }
+	},
+	
+	Skill_GunStance_AddRoll = 
+	{
+		num = def_CN_Skill_AddCommand4,
+		command = ["214C"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 == 1 )
+			{
+				return 1;
+			}
+			
+			return 0;
+		},
+		CmdCheck = 
+		{
+			Cost = { ComboGauge = 5000 }
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceA","Mv_Skill_GunStanceB","Mv_Skill_GunStanceC","Mv_Skill_GunShootA","Mv_Skill_GunShootB","Mv_Skill_GunShootC"] },
+		},
+		UpdateTable = { name = "Mv_Skill_214EX", }
+	},
+	
+	Skill_214214EX_AddShot = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["A"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param3 != 1 ) return 0;
+			if( BMvTbl.GetLP(0) > 4 ) return 0;
+			
+			//Battle_Std.DrawDebugAttackInfo("jump ex shot");
+			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_214214EX","Mv_Skill_214214EX_Reset"] },
+		},
+		
+		UpdateTable = { name = "Mv_Skill_214214EX_AddShot", }
+	},
+	
+	Skill_214214EX_AddKickB = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["@H,B@"],
+		CmdCheck = 
+		{
+			FrameIDCheck = { Only = 100 },
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_214214EX","Mv_Skill_214214EX_Reset"] },
+		},
+		
+		UpdateTable = { name = "Mv_Skill_214214EX_AddKickEX", }
+	},
+	
+	Skill_214214EX_AddKickC = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["@H,C@"],
+		CmdCheck = 
+		{
+			FrameIDCheck = { Only = 100 },
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_214214EX","Mv_Skill_214214EX_Reset"] },
+		},
+		function CmdAfterFunc()
+		{
+			BMvTbl.SetLP(1,1); //reverse the kicking direction
+			
+			return 1;
+		},
+		
+		UpdateTable = { name = "Mv_Skill_214214EX_AddKickEX", }
+	},
+	
+	
+	Skill_GunShootA = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["A"],	
+		function CmdBeforeFunc()
+		{
+			//Battle_Std.DrawDebugAttackInfo("how many attempts ");
+			
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 != 1 ) return 0;
+			
+			if( BMvTbl.GetPP(def_PP_Naoto_Bullets) >= 5) return 0;
+			if( BMvTbl.GetPP(def_PP_Naoto_ReloadTime) != 0) return 0;
+			return 1;
+		},
+		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceA","Mv_Skill_GunStanceB","Mv_Skill_GunStanceC","Mv_Skill_GunShootA","Mv_Skill_GunShootB","Mv_Skill_GunShootC"] },
+			CommandButton = def_PP_CBS_ButtonA,
+		},
+		
+		function CmdAfterFunc()
+		{
+			//Battle_Std.DrawDebugAttackInfo("how many after");
+			//BMvTbl.SetLP(0,0); //set the frame jump
+			
+			return 1;
+		},
+	},
+	
+	
+	/*
+	Skill_GunShootA_FromB = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["A"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 != 1 ) return 0;
+			
+			if( BMvTbl.GetPP(def_PP_Naoto_Bullets) >= 5) return 0;
+			if( BMvTbl.GetPP(def_PP_Naoto_ReloadTime) != 0) return 0;
+			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceB","Mv_Skill_GunShootB"] },
+		},
+		
+		function CmdAfterFunc()
+		{
+			BMvTbl.SetLP(0,1); //set the frame jump
+			return 1;
+		},
+		UpdateTable = { name = "Mv_Skill_GunShootA", },
+	},
+	
+	Skill_GunShootA_FromC = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["A"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 != 1 ) return 0;
+			
+			if( BMvTbl.GetPP(def_PP_Naoto_Bullets) >= 5) return 0;
+			if( BMvTbl.GetPP(def_PP_Naoto_ReloadTime) != 0) return 0;
+			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceC","Mv_Skill_GunShootC"] },
+		},
+		
+		function CmdAfterFunc()
+		{
+			BMvTbl.SetLP(0,2); //set the frame jump
+
+			return 1;
+		},
+		UpdateTable = { name = "Mv_Skill_GunShootA", },
+	},
+	*/
+	
+	
+	Skill_GunShootB = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["B"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 != 1 ) return 0;
+			
+			if( BMvTbl.GetPP(def_PP_Naoto_Bullets) >= 5) return 0;
+			if( BMvTbl.GetPP(def_PP_Naoto_ReloadTime) != 0) return 0;
+			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceA","Mv_Skill_GunStanceB","Mv_Skill_GunStanceC","Mv_Skill_GunShootA","Mv_Skill_GunShootB","Mv_Skill_GunShootC"] },
+		},
+		
+		function CmdAfterFunc()
+		{
+			//BMvTbl.SetLP(0,0); //set the frame jump
+			return 1;
+		},
+	},
+	
+	
+	/*
+	Skill_GunShootB_FromA = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["B"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 != 1 ) return 0;
+			
+			if( BMvTbl.GetPP(def_PP_Naoto_Bullets) >= 5) return 0;
+			if( BMvTbl.GetPP(def_PP_Naoto_ReloadTime) != 0) return 0;
+			
+			return 1;
+		},
+		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceA","Mv_Skill_GunShootA"] },
+		},
+		
+		function CmdAfterFunc()
+		{
+			BMvTbl.SetLP(0,1); //set the frame jump
+			return 1;
+		},
+		
+		UpdateTable = { name = "Mv_Skill_GunShootB", },
+	},
+	
+	Skill_GunShootB_FromC = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["B"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 != 1 ) return 0;
+			
+			if( BMvTbl.GetPP(def_PP_Naoto_Bullets) >= 5) return 0;
+			if( BMvTbl.GetPP(def_PP_Naoto_ReloadTime) != 0) return 0;
+
+			return 1;
+		},
+		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceC","Mv_Skill_GunShootC"] },
+		},
+		
+		function CmdAfterFunc()
+		{
+			BMvTbl.SetLP(0,2); //set the frame jump
+			return 1;
+		},
+		
+		UpdateTable = { name = "Mv_Skill_GunShootB", },
+	},
+	*/
+	
+	
+	Skill_GunShootC = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["C"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 != 1 ) return 0;
+			
+			if( BMvTbl.GetPP(def_PP_Naoto_Bullets) >= 5) return 0;
+			if( BMvTbl.GetPP(def_PP_Naoto_ReloadTime) != 0) return 0;
+			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceA","Mv_Skill_GunStanceB","Mv_Skill_GunStanceC","Mv_Skill_GunShootA","Mv_Skill_GunShootB","Mv_Skill_GunShootC"] },
+		},
+		
+		function CmdAfterFunc()
+		{
+			//BMvTbl.SetLP(0,0); //set the frame jump
+			return 1;
+		},
+	},
+	
+	
+	/*
+	Skill_GunShootC_FromA = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["C"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 != 1 ) return 0;
+			
+			if( BMvTbl.GetPP(def_PP_Naoto_Bullets) >= 5) return 0;
+			if( BMvTbl.GetPP(def_PP_Naoto_ReloadTime) != 0) return 0;
+
+			return 1;
+		},
+		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceA","Mv_Skill_GunShootA"] },
+		},
+		
+		function CmdAfterFunc()
+		{
+			BMvTbl.SetLP(0,2); //set the frame jump
+			return 1;
+		},
+		
+		UpdateTable = { name = "Mv_Skill_GunShootC", },
+	},
+	
+	Skill_GunShootC_FromB = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["C"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param2 != 1 ) return 0;
+			
+			if( BMvTbl.GetPP(def_PP_Naoto_Bullets) >= 5) return 0;
+			if( BMvTbl.GetPP(def_PP_Naoto_ReloadTime) != 0) return 0;
+			
+			return 1;
+		},
+		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceB","Mv_Skill_GunShootB"] },
+		},
+		
+		function CmdAfterFunc()
+		{
+			BMvTbl.SetLP(0,2); //set the frame jump
+			return 1;
+		},
+		
+		UpdateTable = { name = "Mv_Skill_GunShootC", },
+	},
+	*/
+	Skill_EndStance = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["D","@H,D@"],
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceA","Mv_Skill_GunStanceB","Mv_Skill_GunStanceC"] },
+		},
+		
+		UpdateTable = { name = "Mv_Skill_EndStance", },
+	},
+	
+	Skill_Shoot6D = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["6+D","@H,6+D@"],
+		function CmdBeforeFunc()
+		{
+			local s = BMvTbl.GetMvStatus();
+			if( s.Param3 == 1 )
+			{
+				return 1;
+			}
+			
+			return 0;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand",
+			MvCheck = { Only = ["Mv_Skill_GunStanceA","Mv_Skill_GunStanceB","Mv_Skill_GunStanceC","Mv_Skill_GunShootA","Mv_Skill_GunShootB","Mv_Skill_GunShootC"] },
+		},
+		
+		UpdateTable = { name = "Mv_Skill_GunShoot6D", },
+	},
+	
+	Skill_214_JAdd1 = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["4+A","4+B","4+C"], posstatus = _PosState_Air,
+		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B"] },
+			FrameIDCheck = { Only = 100 },
+			PosState = "Air",
+		},
+		UpdateFrameID = 101,
+		UpdateTable = { name = "Mv_Skill_214_JAdd1", },
+	},
+	
+	Skill_214_JAdd2 = 
+	{
+		num = def_CN_Skill_AddCommand6,
+		command = ["4+A","4+B","4+C"], posstatus = _PosState_Air,
+
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_214_JAdd1"] },
+			FrameIDCheck = { Only = 200 },
+			PosState = "Air",
+		},		
+		UpdateFrameID = 201,
+		UpdateTable = { name = "Mv_Skill_214_JAdd2", },
+	},
+	
+	/*
+	Skill_421A = 
+	{
+		command = ["A"],
+		UpdateTable = { name = "Mv_RoundWinPattern", },
+	},
+	*/
+	
+	Atk_Std6C = {},
+	
+	//Skill_0202EX = {},	
+	//Skill_0202BorC = {},
+	//Skill_0202A = {},
+
+	Skill_J236EX = { command = ["23623B","236236B"] },
+	
+	Skill_J236BorC = {},
+	
+	Skill_J236A = {},
+	
+	//Atk_Std6B = {},
+	//Atk_Cro1C = {},
+	
+	//Atk_Air6C = {},
+	//Atk_Air2C = {},
+	
+	Atk_Air6Atk_Clear = {}, // 低空6+攻の暴発を防ぐ
+	
+	Atk_StdBandC = {},
+	
+	BandC_AddShot = 
+	{
+		num = def_CN_Skill_AddCommand4,
+		command = ["6+A","6+B","6+C"],
+		
+		function CmdBeforeFunc()
+		{
+			if( BMvTbl.GetLP(0) == 0 ) return 0;
+			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Atk_StdBandC"] },
+			FrameIDCheck = { Only = 200 },
+		},
+		UpdateTable = { name = "Mv_Skill_BandC_AddShot", },
+	},
+	
+	BandC_AddBackDash = 
+	{
+		num = def_CN_Skill_AddCommand4,
+		command = ["4+A","4+B","4+C"],
+		
+		function CmdBeforeFunc()
+		{
+			if( BMvTbl.GetLP(0) == 0 ) return 0;
+			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Atk_StdBandC"] },
+			FrameIDCheck = { Only = 200 },
+		},
+		UpdateTable = { name = "Mv_Dash_B", },
+	},
+	
+	BandC_AddAtk = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["A","B","C"],
+		
+		function CmdBeforeFunc()
+		{
+			if( BMvTbl.GetLP(0) == 0 ) return 0;
+			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Atk_StdBandC"] },
+			FrameIDCheck = { Only = 200 },
+		},
+		UpdateTable = { name = "Mv_Atk_BandC_AddAtk", },
+	},
+	
+	Throw_A = {}
+	
+	Skill_Throw_Add3C = 
+	{
+		num = def_CN_Skill_AddCommand5,
+		command = ["A","B","C"],
+		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Throw_F_Hit"] },
+			FrameIDCheck = { Only = 1001 },
+		},
+		UpdateTable = { name = "Mv_Skill_Throw_F_Hit_Add", },
+	},
+
+}
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_StdA",
+		UpdateMoveName="Mv_Atk_A_A",
+	},
+	{
+		ResetTmplName="Atk_A_A",
+		CheckMoveName="Mv_Atk_A_A",
+		UpdateMoveName="Mv_Atk_A_A_A",
+	},
+	{
+		ResetTmplName="Atk_A_A_A",
+		CheckMoveName="Mv_Atk_A_A_A",
+		UpdateMoveName="Mv_Skill_236A",
+		
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer,
+	},
+	{
+		ResetTmplName="Skill_236A",
+		CheckMoveName="Mv_Skill_GunStanceA",
+		UpdateMoveName="Mv_Skill_GunShootA",
+
+	},
+]
+Battle_Std.MakeStdCombo( t, ar );
+
+NAOTO_CommandTable <- Battle_Std.MakeCommandTable( t );
+

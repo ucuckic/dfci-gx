@@ -1,0 +1,401 @@
+print("\n>>_se_list");
+
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Hiw/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="ObjectBoundA", type=0, category=2, }; // ゴイン
+st[51] = { path=2, file="ObjectBoundB", type=0, category=2, }; // ドスン
+st[52] = { path=2, file="ObjectBoundC", type=0, category=2, }; // ガコン
+
+// イグニッション選択
+st[80] = { path=1, file="Hiw00_2101", type=0, category=1}; // 俺に暴力を振るわせやがって……
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+// 登場シーン	
+st[100] = { path=1, file="Hiw00_2000", type=0, category=1}; // （ちっ…）気にいらねぇ…
+st[101] = { path=1, file="Hiw00_2001", type=0, category=1}; // 覚悟はできてるんだよなぁ？
+st[102] = { path=1, file="Hiw00_2002", type=0, category=1}; // いい度胸してるじゃねぇか………。
+// st[105] = { path=1, file="Hiw00_2000_s0", type=0, category=1}; // ちっ…（気にいらねぇ…）
+
+// 掛け合い
+st[104] = { path=1, file="Hiw00_2050", type=0, category=1}; // 蹴っ飛ばすもんでもねーよ
+st[105] = { path=1, file="Hiw00_2051", type=0, category=1}; // もののぶん投げ方を
+st[106] = { path=1, file="Hiw00_2052", type=0, category=1}; // 目つきの悪い（ｖｓ大河）
+
+// 戦闘勝利・汎用	
+st[110] = { path=1, file="Hiw00_2100", type=0, category=1}; // フー　(息を吐く)
+st[111] = { path=1, file="Hiw00_2101", type=0, category=1}; // 俺に暴力を振るわせやがって……
+// 戦闘勝利・辛勝	
+st[112] = { path=1, file="Hiw00_2102", type=0, category=1}; // ちっ、くだらねぇ
+// 戦闘勝利・楽勝	
+st[113] = { path=1, file="Hiw00_2103", type=0, category=1}; // たいした事ねえなぁ
+
+// ラウンド勝利	
+st[120] = { path=1, file="Hiw00_2150", type=0, category=1}; // これで終わりか？
+st[121] = { path=1, file="Hiw00_2151", type=0, category=1}; // 完全にはすっきりしないだよなぁ…　なんでだ？
+
+// タイムアップ判定負け	
+st[130] = { path=1, file="Hiw00_2200", type=0, category=1}; // ああ！？
+st[131] = { path=1, file="Hiw00_2201", type=0, category=1}; // くそっ！
+
+// 弱攻撃	
+st[140] = { path=1, file="Hiw00_2300", type=0, category=1}; // しっ
+st[141] = { path=1, file="Hiw00_2301", type=0, category=1}; // はっ
+st[142] = { path=1, file="Hiw00_2302a", type=0, category=1}; // オラ
+st[143] = { path=1, file="Hiw00_2303", type=0, category=1}; // あ！？
+st[144] = { path=1, file="Hiw00_2304", type=0, category=1}; // ふっ
+
+// 中攻撃	
+st[150] = { path=1, file="Hiw00_2400", type=0, category=1}; // オラァ！
+st[151] = { path=1, file="Hiw00_2401", type=0, category=1}; // ふんっ！
+st[152] = { path=1, file="Hiw00_2402", type=0, category=1}; // てぇめ！
+st[153] = { path=1, file="Hiw00_2403", type=0, category=1}; // 殺す！
+st[154] = { path=1, file="Hiw00_2404", type=0, category=1}; // でえい！
+st[156] = { path=1, file="Hiw00_2405a", type=0, category=1}; // うらぁ！
+st[157] = { path=1, file="Hiw00_2406", type=0, category=1}; // おおお！
+
+// 強攻撃	
+st[160] = { path=1, file="Hiw00_2500", type=0, category=1}; // うおおらっ！
+st[161] = { path=1, file="Hiw00_2501", type=0, category=1}; // でぇええあ！
+st[162] = { path=1, file="Hiw00_2502", type=0, category=1}; // おおおおおおおーらッ！
+st[163] = { path=1, file="Hiw00_2503", type=0, category=1}; // ぁああ！
+st[164] = { path=1, file="Hiw00_2504", type=0, category=1}; // ぶっ殺す！！
+st[165] = { path=1, file="Hiw00_2505", type=0, category=1}; // 死ね！！
+st[166] = { path=1, file="Hiw00_2506", type=0, category=1}; // っぶっとばす！！
+
+// 特殊攻撃	
+// st[170] = { path=1, file="Hiw00_2600", type=0, category=1}; // 殺す…殺す！！
+st[171] = { path=1, file="Hiw00_2601", type=0, category=1}; // うるせぇ！！！
+// st[172] = { path=1, file="Hiw00_2602", type=0, category=1}; // ぶっ潰してやる！
+st[173] = { path=1, file="Hiw00_2603", type=0, category=1}; // ウゼェ！！！
+st[174] = { path=1, file="Hiw00_2604", type=0, category=1}; // うるせぇなぁああ！！
+// st[175] = { path=1, file="Hiw00_2605", type=0, category=1}; // あぁ！？　死ぬか！？
+// st[176] = { path=1, file="Hiw00_2606", type=0, category=1}; // 逃げてんじゃねぇええ！
+// st[177] = { path=1, file="Hiw00_2607", type=0, category=1}; // なんだ！？てめぇ！！
+
+// 投げ技成功	
+st[180] = { path=1, file="Hiw00_2700_s0", type=0, category=1}; // ちっ！！おらぁ！！（「おらぁ」の部分では「頭突き」をします）
+st[181] = { path=1, file="Hiw00_2700_s1", type=0, category=1}; // ちっ！！おらぁ！！（「おらぁ」の部分では「頭突き」をします）
+// st[182] = { path=1, file="Hiw00_2701_s0", type=0, category=1}; // よそ見してんなよ！　おら！！（「おらぁ」の部分では「頭突き」をします）
+// st[183] = { path=1, file="Hiw00_2701_s1", type=0, category=1}; // よそ見してんなよ！　おら！！（「おらぁ」の部分では「頭突き」をします）
+// st[184] = { path=1, file="Hiw00_2702_s0", type=0, category=1}; // 離さねぇよ……　ふん！！（「ふん！」の部分では「頭突き」をします）
+// st[185] = { path=1, file="Hiw00_2702_s1", type=0, category=1}; // 離さねぇよ……　ふん！！（「ふん！」の部分では「頭突き」をします）
+
+// 投げ技失敗	
+st[190] = { path=1, file="Hiw00_2800", type=0, category=1}; // んだと！？
+// st[191] = { path=1, file="Hiw00_2801a", type=0, category=1}; // あぁ！？　てめぇ！
+
+// 敵の投げ技を回避	
+st[200] = { path=1, file="Hiw00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // うるせぇ！
+st[201] = { path=1, file="Hiw00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 気に入った！
+
+// 挑発アクション	
+st[210] = { path=1, file="Hiw00_3100", type=0, category=1}; // おい！　やらねぇのか？
+st[211] = { path=1, file="Hiw00_3101", type=0, category=1}; // ちっ…ウゼェ
+
+// ジャンプ	
+st[220] = { path=1, file="Hiw00_3200", type=0, category=1}; // ふっ
+st[221] = { path=1, file="Hiw00_3201", type=0, category=1}; // はっ
+st[222] = { path=1, file="Hiw00_3202", type=0, category=1}; // おりゃ！
+
+// ダッシュ	
+st[230] = { path=1, file="Hiw00_3300", type=0, category=1}; // いくぞ！
+st[231] = { path=1, file="Hiw00_3301", type=0, category=1}; // 殺す！
+// st[232] = { path=1, file="Hiw00_3302", type=0, category=1}; // 逃げんなよ！？
+
+// バックステップ	
+// st[240] = { path=1, file="Hiw00_3400", type=0, category=1}; // こっちだ！
+st[241] = { path=1, file="Hiw00_3401", type=0, category=1}; // ちっ
+st[242] = { path=1, file="Hiw00_3402", type=0, category=1}; // めんどくせぇ！
+
+// 小攻撃ガード	
+st[250] = { path=1, file="Hiw00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // あ？
+st[251] = { path=1, file="Hiw00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // お？
+st[252] = { path=1, file="Hiw00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // なんだよ。
+
+// 中攻撃ガード	
+st[260] = { path=1, file="Hiw00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // ん？
+st[261] = { path=1, file="Hiw00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // あぁ？
+st[262] = { path=1, file="Hiw00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // おい！
+
+// 大攻撃ガード	
+st[270] = { path=1, file="Hiw00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // っぐ！
+st[271] = { path=1, file="Hiw00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // ウゼェ…
+st[272] = { path=1, file="Hiw00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // テメェ…
+
+// 攻撃を見切り余裕でガード	
+st[280] = { path=1, file="Hiw00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 何かしたか？
+st[281] = { path=1, file="Hiw00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // おいおい…
+st[282] = { path=1, file="Hiw00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // なめてんのか？
+
+// ガード失敗	
+st[290] = { path=1, file="Hiw00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // くっ！
+st[291] = { path=1, file="Hiw00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // ～～～～～っっ！！！(イライラしている感じ)
+st[292] = { path=1, file="Hiw00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // ぶっ潰す！
+
+// 受け身	
+st[300] = { path=1, file="Hiw00_4000", type=0, category=1}; // ちっ！クソ！
+st[301] = { path=1, file="Hiw00_4001", type=0, category=1}; // ただじゃぁおかねぇ！！
+st[302] = { path=1, file="Hiw00_4002", type=0, category=1}; // 殺す殺す殺す！！
+
+// バリア発動	
+// st[310] = { path=1, file="Hiw00_4100", type=0, category=1}; // ふん！
+// st[311] = { path=1, file="Hiw00_4101", type=0, category=1}; // はっ！
+// st[312] = { path=1, file="Hiw00_4102", type=0, category=1}; // ぉおおお！！！
+
+// バリアガード成功	
+// st[320] = { path=1, file="Hiw00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // 見え見えなんだよ
+// st[321] = { path=1, file="Hiw00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // きかねぇよ！
+// st[322] = { path=1, file="Hiw00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // なめてんのか？
+
+// 小ダメージ	
+st[330] = { path=1, file="Hiw00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // ぐ！
+st[331] = { path=1, file="Hiw00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // う！
+st[332] = { path=1, file="Hiw00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // おぉ！
+
+// 中ダメージ	
+st[340] = { path=1, file="Hiw00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // がっ
+st[341] = { path=1, file="Hiw00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // くそっ！
+st[342] = { path=1, file="Hiw00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // っ！！！
+
+// 大ダメージ	
+st[350] = { path=1, file="Hiw00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // うおおっ！
+st[351] = { path=1, file="Hiw00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // どぅあっ！
+st[352] = { path=1, file="Hiw00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // ぐぅふっ！
+
+// 電撃ダメージ	
+// st[360] = { path=1, file="Hiw00_4600", type=0, category=1}; // おぉ！　動かねぇ！！
+// 麻痺ダメージ	
+// st[361] = { path=1, file="Hiw00_4601", type=0, category=1}; // なっ…どうなってんだ！？
+// 特殊ダメージ	
+// st[362] = { path=1, file="Hiw00_4602", type=0, category=1}; // あぁ！？…なんだこりゃ！？
+
+// ダウン	
+st[370] = { path=1, file="Hiw00_4700", type=0, category=1, category=1, prio=Def_SEP_KO }; // ぬああっ！！
+st[371] = { path=1, file="Hiw00_4701", type=0, category=1, category=1, prio=Def_SEP_KO }; // ぉぉ…っくそ！！
+st[372] = { path=1, file="Hiw00_4702", type=0, category=1, category=1, prio=Def_SEP_KO }; // ぐうああっ！！
+
+// ダウン・ノックアウト	
+st[380] = { path=1, file="Hiw00_4800", type=0, category=1, category=1, prio=Def_SEP_KO }; // くっそあああああああ！！
+st[381] = { path=1, file="Hiw00_4801", type=0, category=1, category=1, prio=Def_SEP_KO }; // いざやぁああああああ！
+st[382] = { path=1, file="Hiw00_4802", type=0, category=1, category=1, prio=Def_SEP_KO }; // ……て、てめぇ…。
+
+// 起きあがり	
+st[390] = { path=1, file="Hiw00_4900", type=0, category=1}; // ハハ、おもしれぇ
+st[391] = { path=1, file="Hiw00_4901", type=0, category=1}; // 殺す殺す殺す殺す殺す…(つぶやく様な感じでお願いします。)
+st[392] = { path=1, file="Hiw00_4902", type=0, category=1}; // 覚悟できてんだろうなぁ！
+
+// 起きあがり・瀕死	
+st[400] = { path=1, file="Hiw00_5000", type=0, category=1}; // ぅう……はぁあ…
+st[401] = { path=1, file="Hiw00_5001", type=0, category=1}; // ……っくっそ！
+st[402] = { path=1, file="Hiw00_5002", type=0, category=1}; // ……野郎！
+
+// ブラスト	
+st[410] = { path=1, file="Hiw00_5100", type=0, category=1}; // んあああっ！！！
+st[411] = { path=1, file="Hiw00_5101", type=0, category=1}; // 殺す殺すぶっ殺すーーー！！
+st[412] = { path=1, file="Hiw00_5102", type=0, category=1}; // てぇぇええめえええええ！！
+
+// コンボブラスト	
+st[420] = { path=1, file="Hiw00_5200", type=0, category=1}; // まだいくぞこら！！
+st[421] = { path=1, file="Hiw00_5201", type=0, category=1}; // おうらぁああああ！！
+
+// バウンドブラスト	
+st[430] = { path=1, file="Hiw00_5300", type=0, category=1}; // うぜぇ……うぜえーっ！！！
+st[431] = { path=1, file="Hiw00_5301", type=0, category=1}; // う……っるせぇえええ！！
+st[432] = { path=1, file="Hiw00_5302", type=0, category=1}; // んだおらぁああああ！！
+
+// 攻撃サポートキャラ呼び出し	
+st[440] = { path=1, file="Hiw00_5400", type=0, category=1}; // 行けよ…
+st[441] = { path=1, file="Hiw00_5401", type=0, category=1}; // スゥ…ふーっ（煙草に火をつけた時の感じでお願いします。）
+st[442] = { path=1, file="Hiw00_5402", type=0, category=1}; // 今だ！
+
+// 補助サポートキャラ呼び出し	
+// st[450] = { path=1, file="Hiw00_5500", type=0, category=1}; // 頼むわ。
+// st[451] = { path=1, file="Hiw00_5501", type=0, category=1}; // ちょっと手伝え。
+// st[452] = { path=1, file="Hiw00_5502", type=0, category=1}; // おい、お前行けるか？
+
+// 防御サポートキャラ呼び出し	
+// st[460] = { path=1, file="Hiw00_5600", type=0, category=1}; // あーうぜー
+// st[461] = { path=1, file="Hiw00_5601", type=0, category=1}; // どうしろってんだ、ぁあ！？　　
+// st[462] = { path=1, file="Hiw00_5602", type=0, category=1}; // 止めんじゃねぇ！
+
+// 固有サポートキャラ呼び出し	
+st[465] = { path=1, file="Hiw00_5700", type=0, category=1}; // セルティ
+st[466] = { path=1, file="Hiw00_5701", type=0, category=1}; // セルティ
+st[467] = { path=1, file="Hiw00_5710", type=0, category=1}; // イザヤ
+st[468] = { path=1, file="Hiw00_5711", type=0, category=1}; // イザヤ
+
+// 好調時にポテンシャル発動	
+st[470] = { path=1, file="Hiw00_6100", type=0, category=3}; // 全力出して…いんだよな？
+st[471] = { path=1, file="Hiw00_6101", type=0, category=3}; // 死ななくても殺すっ！！
+st[472] = { path=1, file="Hiw00_6102", type=0, category=3}; // わかった……殺す。
+
+// ピンチ時にポテンシャル発動	
+st[480] = { path=1, file="Hiw00_6200", type=0, category=3}; // あ！？ああ！！？　
+st[481] = { path=1, file="Hiw00_6201", type=0, category=3}; // お前、うぜえ！！！
+st[482] = { path=1, file="Hiw00_6202", type=0, category=3}; // あーお前潰す。
+
+// レアな隠しポテンシャル発動	
+// st[490] = { path=1, file="Hiw00_6300", type=0, category=3}; // 何をされても、文句は言えねぇよなぁ！！！
+// st[491] = { path=1, file="Hiw00_6301", type=0, category=3}; // めらっと殺す！！
+
+// 激突演出	
+// st[500] = { path=1, file="Hiw00_6400", type=0, category=3}; // おもしれェ！！　ぶっ殺す！！！
+// st[501] = { path=1, file="Hiw00_6401", type=0, category=3}; // イザヤの次くらいに大嫌いだな！！
+// st[502] = { path=1, file="Hiw00_6402", type=0, category=3}; // 潰す、潰す…ぶっ潰す！！
+
+// 必殺技１	
+st[510] = { path=1, file="Hiw00_7000", type=0, category=1}; // おっらぁ！
+st[511] = { path=1, file="Hiw00_7001", type=0, category=1}; // 逃げんな！！
+// st[512] = { path=1, file="Hiw00_7002", type=0, category=1}; // うおおっら！
+// st[513] = { path=1, file="Hiw00_7003", type=0, category=1}; // 避けれるか？
+// st[515] = { path=1, file="Hiw00_7000a", type=0, category=1}; // おっらぁ！
+// st[516] = { path=1, file="Hiw00_7001a", type=0, category=1}; // 逃げんな！！
+st[517] = { path=1, file="Hiw00_7002a", type=0, category=1}; // うおおっら！
+// st[518] = { path=1, file="Hiw00_7003a", type=0, category=1}; // 避けれるか？
+
+// 必殺技2	
+st[520] = { path=1, file="Hiw00_7100", type=0, category=1}; // ふんっおおおおおおらぁああっ！
+st[521] = { path=1, file="Hiw00_7101", type=0, category=1}; // なぁんだぁぁぁそりゃあああーーーッ！（原作で実際にハンマー投げした時のセリフ）
+// st[522] = { path=1, file="Hiw00_7102", type=0, category=1}; // どぉおおおおおおりゃーーーッ！！！
+// st[523] = { path=1, file="Hiw00_7103", type=0, category=1}; // とんでぇええええけぇえええええ！！
+
+// 必殺技3	
+st[530] = { path=1, file="Hiw00_7200_s0", type=0, category=1}; // こいよ……（手まねきする）
+st[531] = { path=1, file="Hiw00_7200_s1", type=0, category=1}; // おらぁあああ！（引っかかった敵をぶっ飛ばす）
+st[532] = { path=1, file="Hiw00_7201_s0", type=0, category=1}; // かかって来な……おっせぇえええ！！！！
+st[533] = { path=1, file="Hiw00_7201_s1", type=0, category=1}; // かかって来な……おっせぇえええ！！！！
+st[534] = { path=1, file="Hiw00_7202_s0", type=0, category=1}; // どうした……？ぶっ潰す！！！
+st[535] = { path=1, file="Hiw00_7202_s1", type=0, category=1}; // どうした……？ぶっ潰す！！！
+st[536] = { path=1, file="Hiw00_7203_s0", type=0, category=1}; // もう終わりかー……？でぇええりゃあ！！
+st[537] = { path=1, file="Hiw00_7203_s1", type=0, category=1}; // もう終わりかー……？でぇええりゃあ！！
+
+// 必殺技4	
+st[540] = { path=1, file="Hiw00_7300", type=0, category=1}; // ぶっ潰れろぉぉおお！
+st[541] = { path=1, file="Hiw00_7301", type=0, category=1}; // ぉぉぉおおおらぁっ！！！
+st[542] = { path=1, file="Hiw00_7302", type=0, category=1}; // うぅあああああら！！
+st[543] = { path=1, file="Hiw00_7303", type=0, category=1}; // ぶっ潰す！
+st[544] = { path=1, file="Hiw00_7304", type=0, category=1}; // どぉおおおりゃ！！
+
+// 必殺技5	
+//st[550] = { path=1, file="Hiw00_7400", type=0, category=1}; // 必殺技5無し
+//st[551] = { path=1, file="Hiw00_7401", type=0, category=1}; // 必殺技5無し
+//st[552] = { path=1, file="Hiw00_7402", type=0, category=1}; // 必殺技5無し
+//st[553] = { path=1, file="Hiw00_7403", type=0, category=1}; // 必殺技5無し
+
+// 必殺技6	
+st[560] = { path=1, file="Hiw00_7500", type=0, category=1}; // 飛べぇ！！！
+st[561] = { path=1, file="Hiw00_7501", type=0, category=1}; // 吹き飛べっ！
+st[562] = { path=1, file="Hiw00_7502", type=0, category=1}; // うるせぇえええ！！
+st[563] = { path=1, file="Hiw00_7503", type=0, category=1}; // ぐおおぉぉぁぁあああっ！！！
+
+// 超必殺技1	
+st[570] = { path=1, file="Hiw00_8000_s0", type=0, category=1}; // ちっ！！　おおおらぁああ！！　うおおおおおおりゃあああ！！
+st[571] = { path=1, file="Hiw00_8000_s1", type=0, category=1}; // ちっ！！　おおおらぁああ！！　うおおおおおおりゃあああ！！
+st[572] = { path=1, file="Hiw00_8000_s2", type=0, category=1}; // ちっ！！　おおおらぁああ！！　うおおおおおおりゃあああ！！
+st[573] = { path=1, file="Hiw00_8001_s0", type=0, category=1}; // ぶち殺す！！でぃああっ！！どぉおおりゃぁああ！！
+st[574] = { path=1, file="Hiw00_8001_s1", type=0, category=1}; // ぶち殺す！！でぃああっ！！どぉおおりゃぁああ！！
+st[575] = { path=1, file="Hiw00_8001_s2", type=0, category=1}; // ぶち殺す！！でぃああっ！！どぉおおりゃぁああ！！
+st[576] = { path=1, file="Hiw00_8002_s0", type=0, category=1}; // うるせぇ……うるせぇえええ！うるせぇえええええええ！！！
+st[577] = { path=1, file="Hiw00_8002_s1", type=0, category=1}; // うるせぇ……うるせぇえええ！うるせぇえええええええ！！！
+st[578] = { path=1, file="Hiw00_8002_s2", type=0, category=1}; // うるせぇ……うるせぇえええ！うるせぇえええええええ！！！
+
+// 超必殺技2	
+st[580] = { path=1, file="Hiw00_8100_s0", type=0, category=1}; // 殺す殺す殺す殺す！！！おらぁああああああああああ！！
+st[581] = { path=1, file="Hiw00_8100_s1", type=0, category=1}; // 殺す殺す殺す殺す！！！おらぁああああああああああ！！
+st[582] = { path=1, file="Hiw00_8101_s0", type=0, category=1}; // 本気でいくぜ！？おらおらおらおらおらおら　おらぁああ！！
+st[583] = { path=1, file="Hiw00_8101_s1", type=0, category=1}; // 本気でいくぜ！？おらおらおらおらおらおら　おらぁああ！！
+st[584] = { path=1, file="Hiw00_8101_s2", type=0, category=1}; // 本気でいくぜ！？おらおらおらおらおらおら　おらぁああ！！
+st[585] = { path=1, file="Hiw00_8102_s0", type=0, category=1}; // 殺されても文句は言えねぇよなぁ！！！どぉおおおおおらああああああ！！！
+st[586] = { path=1, file="Hiw00_8102_s1", type=0, category=1}; // 殺されても文句は言えねぇよなぁ！！！どぉおおおおおらああああああ！！！
+
+
+// // 対人戦３連続勝利
+// 1000	お前、俺のこと怖くねぇのか？
+
+// // 対人戦１０連続勝利
+// 1001	お前もなかなかやるじゃねぇかよ。
+
+// // 汎用勝利
+// 1010	臨也よりは、ずっと気に入った。だから、これで勘弁してやる。
+
+// // 汎用勝利
+// 1011	俺は暴力が嫌いだ。そいつは嘘じゃねぇ。
+
+// // 汎用勝利
+// 1012	俺はもっと強くなりてぇ。自分の怒りを抑えられるほど強くな。
+
+// // 汎用勝利
+// 1013	俺だって初めからこんなだったわけじゃねんだ。
+
+// // 汎用勝利
+// 1014	殺す殺す殺す殺す殺す殺す～
+
+// // 汎用勝利
+// 1015	おれはこの力が嫌いで嫌いで仕方なかった。俺を受け入れてくれる奴なんて誰もいないんだって思ってな
+
+// // 汎用勝利
+// 1016	よし！殺す。絶対殺す。確実に殺す。めらっと殺す。
+
+// // 勝利画面レアボイス
+// 1017	もういいんだよな。俺は自分の存在を認めてもいいんだよな。自分を好きになってもいいんだよな。
+
+// // 勝利画面レアボイス
+// 1018	ちょっと、新宿行って、臨也の奴をぶっ殺してくる。
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	よう、元気か？
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	用がないなら、いくぞ？
+
+// // キャラセレクト画面キャラクター決定
+// 1130	おし、俺に任せとけ。
+
+// // コンティニュー画面コンテニュー待機
+// 1200	これで終わる訳ねぇだろ？
+
+// // コンティニュー画面再戦決定
+// 1210	ありがとよ。ま、頑張ってみるわ。
+
+// // コンティニュー画面ゲームオーバー
+// 1220	ち、つまんねぇ……
+
+// // 乱入出迎えボイス
+// 1300	あ？あぁ？　誰だテメェは。
+
+// // 乱入出迎えボイス
+// 1301	さてと……
+
+// // タイトルコール
+// 1700	ファイティング・クライマックス！
+
+// // タイトルコール
+// 1701	電撃文庫、ファイティング・クライマックス！
+
+// // エンディング１（5～6秒程度）
+// 8200	なーんか、お前とゲームしてたらスーとして来た。ありがとよ。
+
+// // エンディング１（5～6秒程度）
+// 8201	お前と一緒に「夢」を見れて楽しかったぜ！　またな。

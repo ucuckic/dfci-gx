@@ -1,0 +1,89 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Rus_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="Monster_Footstep", type=1, category=4, }; // ドドドド
+st[51] = { path=2, file="Monster_Footstep_Large", type=1, category=4, }; // ドドドド(大)
+
+// イグニッション選択
+st[80] = { path=1, file="Rus00_7000_s0", type=0, category=1}; // 守る！
+// クライマックスブースト発動
+st[81] = { path=1, file="Rus00_7003_s1", type=0, category=1}; // 喰らえ！
+// ブラストＯＫ
+st[82] = { path=1, file="Rus00_4901", type=0, category=1}; // 仕切りなおしだ！
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Rus00_2100", type=0, category=1}; // よし、クエストクリアだ
+st[101] = { path=1, file="Rus00_2101", type=0, category=1}; // た、耐えたー！勝ったぞー！
+
+// ラウンド敗北	
+st[110] = { path=1, file="Rus00_2200", type=0, category=1}; // 今のハメでしょ？俺のシマじゃノーカンだから
+st[111] = { path=1, file="Rus00_2201", type=0, category=1}; // あああ俺の経験値が！
+
+// 通常攻撃	
+// st[120] = { path=1, file="Rus00_2500", type=0, category=1}; // せいっ
+// st[121] = { path=1, file="Rus00_2501", type=0, category=1}; // はあっ
+// st[122] = { path=1, file="Rus00_2502", type=0, category=1}; // たあっ
+
+// 撤退	
+st[130] = { path=1, file="Rus00_4000", type=0, category=1}; // 下がる
+st[131] = { path=1, file="Rus00_4001", type=0, category=1}; // 出直す
+
+// ダメージ	
+// st[140] = { path=1, file="Rus00_4500", type=0, category=1}; // うわっ！
+st[141] = { path=1, file="Rus00_4501", type=0, category=1}; // いてっ！
+st[142] = { path=1, file="Rus00_4502", type=0, category=1}; // げげっ！
+
+// ダウン（1～2秒程度）	
+st[150] = { path=1, file="Rus00_4600", type=0, category=1}; // 床ペロ状態……
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Rus00_4900", type=0, category=1}; // よし、リトライだ！
+st[161] = { path=1, file="Rus00_4901", type=0, category=1}; // 仕切りなおしだ！
+
+// 必殺技１	
+st[170] = { path=1, file="Rus00_7000_s0", type=0, category=1}; // 守る！　おりゃあっ！
+st[171] = { path=1, file="Rus00_7000_s1", type=0, category=1}; // 守る！　おりゃあっ！
+st[172] = { path=1, file="Rus00_7001_s0", type=0, category=1}; // ガード！　カウンター！
+st[173] = { path=1, file="Rus00_7001_b_s1", type=0, category=1}; // ガード！　カウンター！
+// st[174] = { path=1, file="Rus00_7002_s0", type=0, category=1}; // 防ぎきる！　喰らえ！
+st[175] = { path=1, file="Rus00_7002_s1", type=0, category=1}; // 防ぎきる！　喰らえ！
+st[176] = { path=1, file="Rus00_7003_s0", type=0, category=1}; // シールド！　吹き飛べ！
+st[177] = { path=1, file="Rus00_7003_b_s1", type=0, category=1}; // シールド！　吹き飛べ！
+
+// 必殺技２
+st[190] = { path=1, file="Rus00_7100_s0", type=0, category=1}; // 餌持って来たぞ！　うおおおおおお！！
+st[191] = { path=1, file="Rus00_7100_s1", type=0, category=1}; // 餌持って来たぞ！　うおおおおおお！！
+st[192] = { path=1, file="Rus00_7101_s0", type=0, category=1}; // 急げええええ！　うわああああああ！！
+st[193] = { path=1, file="Rus00_7101_s1", type=0, category=1}; // 急げええええ！　うわああああああ！！
+st[194] = { path=1, file="Rus00_7102_s0", type=0, category=1}; // 連れてきたぞ！　ちょっとは受け持ってくれ！！
+st[195] = { path=1, file="Rus00_7102_s1", type=0, category=1}; // 連れてきたぞ！　ちょっとは受け持ってくれ！！
+st[196] = { path=1, file="Rus00_7103_s0", type=0, category=1}; // モンスタートレインだ！　逃げろおおおお！！
+st[197] = { path=1, file="Rus00_7103_s1", type=0, category=1}; // モンスタートレインだ！　逃げろおおおお！！
+
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	俺はルシアンだ。LAではアーマーナイトをやっている。
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	名前は西村英騎。趣味はまあ……ネトゲ。よろしく。
+
+// キャラセレクト画面キャラクター決定
+// 1130	よし！一緒に頑張ろうぜ！

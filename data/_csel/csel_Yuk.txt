@@ -1,0 +1,10 @@
+[System]
+ProjectName=csel_Yuk
+[DataFile]
+FileNum= 1
+File00=csel_Yuk.HA6
+[BmpcutFile]
+FileNum= 1
+File00=csel_Yuk.cg
+[PAniFile]
+FileNum= 0

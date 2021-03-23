@@ -1,0 +1,36 @@
+const Def_Dbg_LocalDebugMode	=	0;	// ローカル環境でのデバッグ時用機能オンオフ
+
+// デバッグメッセージ出力関係
+const Def_Dbg_DebugMessage		=	0;	// デバッグ用コンソール出力オンオフ
+const Def_Dbg_LocalAnnounce	=	0;	// ローカルデバッグ用アナウンス表示
+const Def_DbgMes_PlaySE		=	0;	// ＳＥの再生関係
+
+const Def_Dbg_KeyLog1P		=	0;	// 1Pのキーディスプレイの表示
+const Def_Dbg_KeyLog2P		=	0;	// 2Pのキーディスプレイの表示
+
+const Def_Dbg_DebugButtonMode	=	0;	// Ｅボタンをデバッグボタンにするかどうか 0:未使用 1:ゲージ増加 2:相手を一時停止 3:トレモ向け 4:画面端消失 5:強制勝利 7:ステージ確認
+
+const Def_Dbg_DebugGauge		=	0;	// 仮ゲージを表示するか
+
+const Def_Dbg_WriteCommandList	=	0;	// キャラ読み込み時にコマンドリストファイルを生成するか
+const Def_Dbg_NoPlayUpsetSE		=	0;	// イライラするＳＥを再生しない（VORPALと挑発）
+
+const Def_Dbg_SmartSteerLog		=	0;	// スマートステア関係のログ
+const Def_Dbg_KoukaFrameLog		=	0;	// 硬直差フレーム表示
+const Def_Dbg_ComboChanceLog	=	0;	// 追撃可能情報表示
+const Def_Dbg_InterruptedLog	=	0;	// 隙間フレーム表示(1P＆2P)
+const Def_Dbg_TotalFrameLog		=	0;	// フレーム情報表示(1P＆2P)
+const Def_Dbg_ComboSPKouritu	=	0;	// ゲージ効率
+const Def_Dbg_TmplMoveLog		=	0;	// Tmpl自動生成行動ログ
+const Def_Dbg_PotentialLog		=	0;	// ポテンシャルログ
+const Def_Dbg_SkillThrowLog		=	0;	// 必殺技の投げログ
+const Def_Dbg_TechHitLog		=	0;	// 投げ抜けログ
+const Def_Dbg_DoujiDelayLog		=	0;	// 同時押し猶予ログ
+const Def_Dbg_BoundBlastLog		=	0;	// バウンドブラストログ
+const Def_Dbg_AirAtkFlag		=	0;	// ジャンプ攻撃フラグログ
+const Def_Dbg_RoundStatus		=	0;	// ラウンド情報ログ
+const Def_Dbg_AirCountLog		=	0;	// 空中必殺技(0～7)・空中ダッシュ・2段ジャンプ(8～9)のフラグ変化ログ
+const Def_Dbg_BattleDamageLog	=	0;	// 戦闘中のダメージ効率ログ
+const Def_Dbg_HitMutekiLog		=	0;	// 属性無敵フレームログ
+const Def_Dbg_MoveCodeStatus	=	0;	// 戦闘中のMvのフラグをゲーム画面に表示
+const Def_Dbg_MoveListStatus	=	0;	// 戦闘中のMvのリストをゲーム画面に表示

@@ -1,0 +1,72 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Fro_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="Val_Bomb", type=0, category=2, }; // 
+st[70] = { path=2, file="Val_WarpMove", type=0, category=2, }; // 
+
+// イグニッション選択
+st[80] = { path=1, file="Fro00_4900", type=0, category=1}; // こちらは復帰した
+// クライマックスブースト発動
+st[81] = { path=1, file="Fro00_7002", type=0, category=1}; // ぶち込んでやれ
+// ブラストＯＫ
+st[82] = { path=1, file="Fro00_4901", type=0, category=1}; // 出撃準備完了
+
+// プレイヤー勝利
+st[100] = { path=1, file="Fro00_2100", type=0, category=1}; // この勝負、私たちの勝利よ
+st[101] = { path=1, file="Fro00_2101", type=0, category=1}; // たいした相手じゃなかったな
+
+// ラウンド敗北
+st[110] = { path=1, file="Fro00_2200", type=0, category=1}; // まだ状況は悪くない
+st[111] = { path=1, file="Fro00_2201", type=0, category=1}; // 一筋縄ではいかないか
+
+// 通常攻撃
+// st[100] = { path=1, file="Fro00_2500", type=0, category=1}; // はっ
+// st[100] = { path=1, file="Fro00_2501", type=0, category=1}; // ふっ
+// st[100] = { path=1, file="Fro00_2502", type=0, category=1}; // せいっ
+
+// 撤退
+st[130] = { path=1, file="Fro00_4000", type=0, category=1}; // 一時撤退する
+st[131] = { path=1, file="Fro00_4001", type=0, category=1}; // くっ引くぞ
+
+// ダメージ
+st[140] = { path=1, file="Fro00_4500", type=0, category=1}; // きゃあ！
+st[141] = { path=1, file="Fro00_4501", type=0, category=1}; // くうっ！
+st[142] = { path=1, file="Fro00_4502", type=0, category=1}; // いやあ！
+
+// ダウン（1～2秒程度）
+// st[150] = { path=1, file="Fro00_4503", type=0, category=1}; // ち、まどろっこしい
+
+// 戦闘準備完了
+st[160] = { path=1, file="Fro00_4900", type=0, category=1}; // こちらは復帰した
+st[161] = { path=1, file="Fro00_4901", type=0, category=1}; // 出撃準備完了
+
+// 必殺技１
+st[170] = { path=1, file="Fro00_7000", type=0, category=1}; // 一斉射撃っ！
+st[171] = { path=1, file="Fro00_7001", type=0, category=1}; // 支援砲撃っ
+st[172] = { path=1, file="Fro00_7002", type=0, category=1}; // ぶち込んでやれ
+st[173] = { path=1, file="Fro00_7003", type=0, category=1}; // ケリをつけてやる！
+
+// 必殺技２
+st[180] = { path=1, file="Fro00_7100_c", type=0, category=1}; // 狙い打てっ！
+st[181] = { path=1, file="Fro00_7101_c", type=0, category=1}; // 思い知らせてやれ
+st[182] = { path=1, file="Fro00_7102_c", type=0, category=1}; // なぎ払え！
+st[183] = { path=1, file="Fro00_7103_c", type=0, category=1}; // 打ち落とせ！
+

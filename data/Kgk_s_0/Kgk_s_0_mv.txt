@@ -1,0 +1,505 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// サポートキャラ 演出用 local関数
+//-----------------------------------------------------------------------------
+
+local sendflag_HanabiraEnd = function()
+{
+	local kgk = BMvCore.GetParentCharaData();
+
+	if( kgk.push() )
+	{
+		BMvTbl.SetLP(0,2); // サポート本体に表示終了を知らせる
+
+		kgk.pop();
+	}
+}
+
+local pat_num_Eff_hanabira = BMvEff.GetPatternNum( { datatype=0, pat="Eff_hanabira" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Obj_Eff_hanabira <-
+{
+	function Init() : (pat_num_Eff_hanabira)
+	{
+		BMvTbl.SetPattern( pat_num_Eff_hanabira );
+		BMvEff.SetObjectFlags( { flags =  _ObjFlags_NoGround } );
+		BMvEff.ObjProcFlags_Set( { flags =_ObjProcFlags_EraseParentNull } );
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai|def_MC_Sousai_NoSubHitCount ); // 一方的に相殺する
+	}
+	function Update()
+	{
+		// 引き寄せるのは変、性能も強いので無くす
+		// Battle_Std.PullEnemy_Etc0xKurai( 50 ); // 特殊１に触れた相手を引き寄せる
+	}
+	function FrameUpdate() : (sendflag_HanabiraEnd)
+	{
+		// 特殊判定に触れている相手にフラグをつける
+
+		Battle_Std.CheckSousai(); // def_MC_Sousai と触れたら相殺する
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{		
+		case 900: // 花びら攻撃判定が無くなったあたり
+			sendflag_HanabiraEnd(); // 花びらが終わりなのを親に伝える
+			break;
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate() : (sendflag_HanabiraEnd)
+	{
+		// 念のための処理
+		sendflag_HanabiraEnd(); // 花びらが終わりなのを親に伝える
+	}
+}
+
+t.Mv_Obj_Eff_heart <-
+{
+	function Init()
+	{
+		BMvEff.SetObjectFlags( { flags =  _ObjFlags_NoGround } );
+		BMvEff.ObjProcFlags_Set( { flags =_ObjProcFlags_EraseParentNull } );
+		// 相手の方へ少しサーチする
+	}
+	function Update()
+	{
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.isdone() )
+		{
+			local posst = BMvEff.GetPointStatus( { target=enemy } );
+			local kyori = posst.pos_x*BMvTbl.GetMuki();
+			
+			if( kyori > 0 ) // 自分の前方の時だけ処理
+			{
+				local addxvec = kyori / 40;
+				// _dp("\n 距離:"+kyori+" addxvec:"+addxvec );
+				if( addxvec > 2000 ) addxvec = 2000;
+				if( addxvec < 700 ) addxvec = 700;
+				
+				// _dp(" -> 実値:"+addxvec );
+
+				BMvTbl.SetVector( { x=addxvec, flags=_Vector_Normal } );
+			}
+		}
+	}
+	function FrameUpdate()
+	{
+		// 特殊判定が触れたら効果発揮
+		local enemy = BMvEff.CheckHantei( { src=[ _Hantei_Etc, 0, 1 ], dst=[ _Hantei_Kurai, 0, -1 ], flags=_HC_EnemyPc|_HC_WithoutNoHanteiFlagObj } );
+		if( enemy.isdone() )
+		{
+			// 触れた
+			// 既にチャームオブジェクトが出ていたら一旦消す　→　動かないのでやめ
+			// 生成
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_charm" } );
+
+			// 触れたので消える
+			BMvTbl.SetFinalize( 0 );
+		}
+	}
+	function HitInterrupt()
+	{
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Eff_charm = BMvEff.GetPatternNum( { datatype=0, pat="Eff_charm" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_Obj_Eff_charm <-
+{
+	// 効果時間はパターンとMvCount両方でチェックする
+	function Init() : (pat_num_Eff_charm)
+	{
+		_dp("\n 敵はチャーム状態となります");
+		
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			// 魅了でピンクに光らせる
+			// BMvEff.SetCharaFlash( { color = 0xD00030, type = 0, time = 30 } );
+			BMvEff.SetCharaFlash( { color = 0xD00030, type = 3, time = 120, intime=60 } );
+			enemy.pop();
+		}
+
+		BMvTbl.SetPattern( pat_num_Eff_charm );
+		BMvEff.SetObjectFlags( { flags = _ObjFlags_NoGround } );
+		BMvEff.ObjProcFlags_Set( { flags =_ObjProcFlags_EraseParentNull } );
+		
+		local count = BMvTbl.AddPP(0,1); // 生成された回数を加算
+		BMvTbl.SetLP(0, count); // 自分が何回目に生成されたチャームか記憶
+	}
+	function FrameUpdate()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		
+		if( Battle_Std.RoundisEnd() )
+		{
+			BMvTbl.SetFinalize( 0 );
+			return;
+		}
+		
+		if( mvs.CallCount == 0 ) // 1Fに1回の処理とする
+		{
+			if( BMvTbl.GetPP(0) != BMvTbl.GetLP(0) )
+			{
+				// チャーム生成回数と、自分が生成された時の回数が一致しなかったら消える
+				BMvTbl.SetFinalize( 0 );
+				return;
+			}
+			
+			// 最大時間250F
+			// 250*10 = 相手のゲージ25%減少、自分のゲージ25%増加
+			if( mvs.MvCount > 250 )
+			{
+				BMvTbl.SetFinalize( 0 );
+				return;
+			}
+			
+			local enemy = BMvCore.GetEnemyCharaData();
+			
+			if( enemy.push() )
+			{
+				// ゲージ減少
+				BMvEff.SetSpGauge( { value = -10 } );
+
+				local e_muki = BMvTbl.GetMuki();
+
+				if( mvs.MvCount%120 == 0 )
+				{
+					BMvEff.SetCharaFlash( { color = 0xD00030, type = 3, time = 120, intime=60 } );
+				}
+
+				enemy.pop();
+
+				Battle_Std.SetPos_MarkingTarget( enemy, 9, -250 ); // 相手の重なりに座標セット
+
+				// 相手の向きに合わせる
+				BMvTbl.SetMuki( (e_muki==1)? _Direction_Right : _Direction_Left );
+			}
+				
+			// プレイヤーの状態取得、魅了状態のステータス変更を実行、仰け反り時は魅了を解除
+			local p_main = BMvCore.GetMainCharaData();
+			
+			if( p_main.push() )
+			{
+				// ゲージ増加
+				BMvEff.SetSpGauge( { value = 10 } );
+
+				local p_BS = BtlMvStd.GetBoundStatus(); // プレイヤーののけぞり状態を取得
+
+				p_main.pop();
+
+				if( p_BS.isBound == 1 || p_BS.isCapture != 0 ) // プレイヤーがのけぞり投げられの場合はチャーム終了
+				{
+					// 自分がのけぞり状態の場合は終了
+					BMvTbl.SetFinalize(0);
+					_dp("\n 攻撃を受けたのでチャーム終了");
+				}
+			}	
+		}
+	}
+	function Finalize()
+	{
+		_dp("\n チャーム状態は終了しました");
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			BMvEff.SetCharaFlash( { color = 0x000000, type = 0, time = 0 } );
+			enemy.pop();
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Eff_heart = BMvEff.GetPatternNum( { datatype=0, pat="Eff_heart" } ); // パターン文字列のパターン番号を事前取得
+
+// こうこアッパー
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetLP(0,0); // Eff_hanabiraチェック 0:ない 1:投げた 2:消えそう～消える
+	
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+
+		Battle_Std.AddXPos_CheckFrontStage( 200, 100 ); // X移動距離, ステージ端とこれ以上近づかない距離
+	}
+	function FrameUpdate_After() : (pat_num_Eff_heart)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // 敵の近くまで歩行で向かっているところ
+		case -100:
+			// 相手の近くまで歩く意味がなくなりつつあったので
+			// 歩き距離を固定に変更
+			break;
+		case 200: // 攻撃開始
+			if( BMvEff.Random_Limit( 2 ) )
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[172], delay=30 } );
+			}
+			else
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[173] } );
+			}
+			break;
+		case 500: // 攻撃（花束投げる）
+			BMvTbl.SetLP(0,1); // Eff_hanabira 表示のフラグを1にして、表示中とする
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_hanabira" } );
+			break;
+		case 600: // 攻撃（投げキッス）
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_heart", start_pat=pat_num_Eff_heart, x=79<<7, y=-306<<7 } );
+			break;
+		case 900: // 画面端まで歩行で戻っています
+		case -900:
+			// 画面外まで進んだらファイナライズ（ラウンド終了時のみ見た目の端でチェック）
+			if( Battle_Std.CheckFromtCornerDistance_with_RoundEnd( -100 ) )
+			{
+				BMvTbl.SetFinalize( 0 );
+			}
+			break;			
+		}
+	}
+}
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetPattern("Sup00_Esc");
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetPattern("Sup00_Esc");
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+
+t.Mv_SupportCharaEx <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetPattern( "SupEx00" );
+		
+		local main = BMvCore.GetMainCharaData();
+		if( main.push() )
+		{
+			local pos = BMvTbl.GetPosition();
+			main.pop();
+			
+			BMvTbl.SetPosition( { x=pos.x, y=0 } );
+		}
+		
+		Battle_Std.AddXPos_CheckFrontStage( 200, 100 );
+		
+		Battle_Std.CreateObject.CommonEffect.SupecialMoveRing( { x=100, y=-200 } );
+	}
+	function FrameUpdate_After() : (pat_num_Eff_heart)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 10:
+			Battle_Std.SetXPos_FrontCorner( 100 ); // 背後の端から出現
+			BMvTbl.SetMuki( _Direction_Auto );
+			break;
+		case 100: // 敵の近くまで歩行で向かっているところ
+		case -100:
+			if( Battle_Std.CheckEnemyDistance( 150 ) )
+			{
+				BMvTbl.JumpFrameID( 200 ); // 相手の近くで攻撃を開始する
+			}
+			break;
+		case 200: // 攻撃前
+			BSound.SE_Play( { type=_SeType_Player, num=[172], delay=20 } );
+			break;
+		case 450: // 花束投げ始める
+			break;
+		case 600: // 投げキッス
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_heart", start_pat=pat_num_Eff_heart, x=79<<7, y=-306<<7 } );
+			break;
+		case 900: // 画面端まで歩行で戻っています
+		case -900:
+			// 画面外まで進んだらファイナライズ（ラウンド終了時のみ見た目の端でチェック）
+			if( Battle_Std.CheckFromtCornerDistance_with_RoundEnd( -100 ) )
+			{
+				BMvTbl.SetFinalize( 0 );
+			}
+			break;			
+		}
+	}
+}
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamageEx <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetPattern("Sup00_EscEx");
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscapeEx <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetPattern("Sup00_EscEx");
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+local pat_num_Eff_heart_sp10 = BMvEff.GetPatternNum( { datatype=0, pat="Eff_heart_sp10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <-
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 );
+		
+		Battle_Std.SetXPos_BackCorner( -50 ); // 背後の端から出現
+	}
+	function FrameUpdate_After() : (pat_num_Eff_heart_sp10)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100: // 敵の近くまで歩行で向かっているところ
+		case -100:
+			if( Battle_Std.CheckEnemyDistance( 150 ) )
+			{
+				BMvTbl.JumpFrameID( 200 ); // 相手の近くで攻撃を開始する
+			}
+			break;
+		case 200: // 攻撃前
+			BSound.SE_Play( { type=_SeType_Player, num=[171], delay=20 } );
+			break;
+		case 450: // 花束投げ始める
+			break;
+		case 600: // 投げキッス
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_heart", start_pat=pat_num_Eff_heart_sp10, x=79<<7, y=-306<<7 } );
+			break;
+		case 900: // 画面端まで歩行で戻っています
+		case -900:
+			// 画面外まで進んだらファイナライズ（ラウンド終了時のみ見た目の端でチェック）
+			if( Battle_Std.CheckFromtCornerDistance_with_RoundEnd( -100 ) )
+			{
+				BMvTbl.SetFinalize( 0 );
+			}
+			break;			
+		}
+	}
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } ); // やられ音声		
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } ); // 撤退音声		
+	}
+}
+
+
+KGK_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Kgk_s );
+
+_dp(" -> Load OK");

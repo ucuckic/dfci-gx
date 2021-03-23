@@ -1,0 +1,368 @@
+print("\n[btl_debug_Func]");
+//debuglog.write_r("debug_log\n"); //起動のたびに一応
+
+/*
+function btl_debPrint( s );
+function btl_debCheckTable( tbl );
+*/
+
+// デバッグ用
+function btl_debPrint( s )
+{
+	//print(s);
+}
+
+// デバッグ用親（鴨音用）
+function btl_debPrint2( s )
+{
+	if( Def_Dbg_DebugMessage ) print(s);
+}
+
+
+
+function Output_Battle_Std_Child( tbl, cnt )
+{
+	cnt++;
+	
+	local slash = "";
+	for( local n=1; n<cnt; n++ ) slash+="\t"; // 階層の深さ
+	slash+="";
+
+	foreach( i, v in tbl )
+	{
+		switch( type(v) )
+		{
+		case "function":
+			break;
+		case "table":
+		case "array":
+			debuglog.write( "\n"+slash + "" + i + " -> " + v );		
+			Output_Battle_Std_Child( v, cnt ); // さらに中身表示（再帰関数
+			break;
+		}
+	}
+
+	cnt--;
+}
+
+// F2が押されると実行
+function Output_Debug_Function()
+{
+	/*
+	local cnt = 0;
+	debuglog.write("\n>>>>Start\n");
+	
+	
+	local root = clone getroottable();
+	Output_Battle_Std_Child( root, cnt )
+	
+	debuglog.write("\n\n>>>>End\n");
+	*/
+	
+	//その２
+	local chrnum = 0;
+	local usevoice = array(1500, 0); 
+	foreach( i,v in Battle_Std.SeTable[chrnum] )
+	{
+		if( typeof v=="array" )
+		{
+			foreach(num, nakami in v )
+			{
+				local v2 = v[num];
+				if( "selist" in v2 )
+				{
+					local list = v2.selist;
+					
+					foreach( i,v in list )
+					{
+						if( typeof v=="array" )
+						{
+							foreach( num in v)
+							{
+								//print("\n使ってる:"+num );
+								usevoice[num] += 1;
+							}
+						}
+						else if( typeof v=="integer" )
+						{
+							//print("\n使ってる:"+v );
+							usevoice[v] += 1;
+						}
+					}
+				}
+				
+			}
+		}
+		else
+		{
+			if( "selist" in v )
+			{
+				local list = v.selist;
+				
+				foreach( i,v in list )
+				{
+					if( typeof v=="array" )
+					{
+						foreach( num in v)
+						{
+							//print("\n使ってる:"+num );
+							usevoice[num] += 1;
+						}
+					}
+					else if( typeof v=="integer" )
+					{
+						//print("\n使ってる:"+v );
+						usevoice[v] += 1;
+					}
+				}
+			}
+		}
+	}
+	
+	//出力
+	local str = "\n\n[UseVoiceList] ChrNum:"+chrnum;
+	print( str );
+	debuglog.write( str );
+
+	local last_find = 0;
+	for( local i=0;i<1500;i++ )
+	{
+		local vo = usevoice[i];
+		if( vo!=0 )
+		{
+			local str = format("\n%3d usecount:%d",i,vo);
+			if( last_find+1 != i )
+			{
+				str = "\n" + str;
+			}
+			last_find = i;
+			print( str );
+			debuglog.write( str );
+		}
+	}
+}
+
+
+//デバッグメッセージ表示
+local debug_mess = function(str)
+{
+	local s = BMvTbl.GetMvStatus(); // ステータス取得
+	local mvname = BMvTbl.GetMvName();
+
+	//操作親の番号を取得
+	local player_chrno = -1;
+	local enemy_chrno = -1;
+	
+	local player = BMvCore.GetPlayerCharaData(); // 親の情報を得る
+	BMvCore.PushCharaData( player ); //
+		local player_mvs = BMvTbl.GetMvStatus(); // ステータス取得
+		local player_name = BMvTbl.GetMvName();
+		player_chrno = player_mvs.CharaNo;
+	BMvCore.PopCharaData(); //
+	
+	local enemy = BMvCore.GetNearEnemyCharaData(); // 敵情報を得る
+	if(enemy.IsDone)
+	{
+		BMvCore.PushCharaData( enemy ); // 
+			local enemy_mvs = BMvTbl.GetMvStatus(); // ステータス取得
+			//local enemy_name = BMvTbl.GetMvName();
+			enemy_chrno = enemy_mvs.CharaNo;
+		BMvCore.PopCharaData(); // 
+	}
+
+	if( s.FrameID == 0)
+	{
+		btl_debPrint2(format("\n%dP [%2dvs%2d] %d [%3d-%2d] F:%3d %s %s (%s)",BMvTbl.GetPlayerSide()+1,player_chrno,enemy_chrno,s.CharaNo,s.DataPattern,s.DataFrame,s.MvCount,str.tostring(),mvname, player_name ));
+	}
+	else
+	{
+		btl_debPrint2(format("\n%dP [%2dvs%2d] %d [%3d-%2d] ID:%d %s %s (%s)",BMvTbl.GetPlayerSide()+1,player_chrno,enemy_chrno, s.CharaNo,s.DataPattern,s.DataFrame,s.FrameID,str.tostring(),mvname, player_name ));
+	}
+}
+
+//デバッグメッセージ表示
+local debug_write = function(str)
+{
+	local s = BMvTbl.GetMvStatus(); // ステータス取得
+	
+	//操作親の番号を取得
+	local player_chrno = -1;
+	local enemy_chrno = -1;
+	
+	local player = BMvCore.GetPlayerCharaData(); // 親の情報を得る
+	BMvCore.PushCharaData( player ); //
+		local player_mvs = BMvTbl.GetMvStatus(); // ステータス取得
+		local player_name = BMvTbl.GetMvName();
+		player_chrno = player_mvs.CharaNo;
+	BMvCore.PopCharaData(); //
+	
+	local enemy = BMvCore.GetNearEnemyCharaData(); // 敵情報を得る
+	if(enemy.IsDone)
+	{
+		BMvCore.PushCharaData( enemy ); // 
+			local enemy_mvs = BMvTbl.GetMvStatus(); // ステータス取得
+			enemy_chrno = enemy_mvs.CharaNo;
+		BMvCore.PopCharaData(); // 
+	}
+	
+	if( s.FrameID == 0)
+	{
+		debuglog.write(format("\n%dP [%2dvs%2d] %d [%3d-%2d] F:%3d %s %s",BMvTbl.GetPlayerSide()+1,player_chrno,enemy_chrno,s.CharaNo,s.DataPattern,s.DataFrame,s.MvCount,str.tostring(),player_name ));
+	}
+	else
+	{
+		debuglog.write(format("\n%dP [%2dvs%2d] %d [%3d-%2d] ID:%d %s %s",BMvTbl.GetPlayerSide()+1,player_chrno,enemy_chrno,s.CharaNo,s.DataPattern,s.DataFrame,s.FrameID,str.tostring(),player_name ));
+	}
+}
+
+//キャラクターテーブル作成中のメッセージ関係
+function btl_debPrint_CharacterMake(str) : (debug_mess)
+{
+	if( BMvTbl.GetPlayerSide()!=0 ) return; //1Pのみ
+	//debuglog.write(format("\n %s",str.tostring()));
+	//btl_debPrint2(format("\n %s",str.tostring()));
+}
+
+//キャラクターテーブル作成中のエラーメッセージ関係
+function btl_debError_CharacterMake(str) : (debug_mess)
+{
+	//debuglog.write(format("\n %s",str.tostring()));
+	btl_debPrint2(format("\n %s",str.tostring()));
+}
+
+//警告とかのエラーメッセージ用
+function _dem(str) : (debug_mess,debug_write)
+{
+	debug_write(str);
+	debug_mess(str);
+}
+
+//雑用デバッグメッセージ
+function _dm(str) : (debug_mess,debug_write)
+{
+	//debug_write(str);
+	debug_mess(str);
+}
+
+//ローカル環境のみprint // btl_debPrint2と同じ
+function _dp(str)
+{
+	btl_debPrint2( str );
+}
+
+//ローカル環境のみprint
+function _dp1p(str)
+{
+	if( BMvTbl.GetPlayerSide()!=0 ) return;
+	btl_debPrint2( str );
+}
+
+function _dp2p(str)
+{
+	if( BMvTbl.GetPlayerSide()!=1 ) return;
+	btl_debPrint2( str );
+}
+
+//雑用デバッグメッセージ
+//1Pのみ
+function _print1P(str)
+{
+	if( BMvTbl.GetPlayerSide()!=0 ) return;
+	btl_debPrint2( str );
+}
+
+//ボイスチェックデバッグメッセージ
+function _vdm(str) : (debug_mess,debug_write)
+{
+	//debug_write(str);
+	local s = BMvTbl.GetMvStatus(); // ステータス取得
+
+	if( s.Param0 == 0)
+	{
+		btl_debPrint2(format("\n%dP %d [%3d-%2d] F:%3d %s",BMvTbl.GetPlayerSide()+1,s.CharaNo,s.DataPattern,s.DataFrame,s.MvCount,str.tostring() ));
+	}
+	else
+	{
+		btl_debPrint2(format("\n%dP %d [%3d-%2d] Param0:%d %s",BMvTbl.GetPlayerSide()+1,s.CharaNo,s.DataPattern,s.DataFrame,s.Param0,str.tostring() ));
+	}
+}
+
+//雑用デバッグメッセージ
+//1Pのみ
+function _dm1P(str) : (debug_mess,debug_write)
+{
+	if( BMvTbl.GetPlayerSide()!=0 ) return;
+
+	//debug_write(str);
+	debug_mess(str);
+}
+
+function _dm2P(str) : (debug_mess,debug_write)
+{
+	if( BMvTbl.GetPlayerSide()!=1 ) return;
+
+	//debug_write(str);
+	debug_mess(str);
+}
+
+
+
+
+// テーブルチェック
+function btl_debCheckTable( tbl )
+{
+	foreach(i, v in tbl )
+	{
+		btl_debPrint( "\n --> " + i );
+	}
+}
+
+// constテーブルチェック
+function btl_debCheckConstTable( tbl )
+{
+	btl_debCheckTable( getconsttable() );
+}
+
+// ステータス表示＆パラメータサンプル
+function btl_debPrintMvStatus()
+{
+	local status = BMvTbl.GetMvStatus(); // ステータス取得
+	local sTxt = "\n";
+
+	sTxt += " Update:" + status.isUpdate; // これが1だと停止中でない（Update()用）
+	// FrameUpdate()呼び出しでは必ず１になるはず
+	// Update()呼び出しでは時間停止中やヒットストップ時は０になる
+
+	sTxt += " FrmUpdate:" + status.isFrameUpdate; // これが１だとフレーム更新が行われた、旧Effect実行タイミング（FrameUpdate()用）
+	// FrameUpdate()内でしか参照しないほうがいい？
+
+	sTxt += " Cnt:" + status.MvCount; // 行動テーブルに突入してからのフレーム数（停止の影響を受ける）
+	sTxt += " Pat:" + status.DataPattern; // データパターン番号
+	sTxt += " Frm:" + status.DataFrame; // データフレーム番号
+	sTxt += " FrameID:" + status.FrameID; // フレームID
+
+	btl_debPrint( sTxt );
+}
+
+// ヒットステータス表示＆パラメータサンプル
+function btl_debPrintMvHitStatus()
+{
+	local status = BMvTbl.GetMvHitStatus(); // ステータス取得
+	local sTxt = "\n";
+
+	// 相手にヒットしたか HitInterrupt()で取得すれば 0 はないはず？
+	sTxt += " Type:";
+	if( status.Type & _HitType_Damage ) sTxt += "Damage"; // 
+	if( status.Type & _HitType_Guard ) sTxt += "Guard"; // 
+
+	// 相手がどういう状況でヒットしたか
+	sTxt += " PosSt:"; // 
+	if( status.PosState & _PosState_Ground ) sTxt += "Ground"; // 
+	if( status.PosState & _PosState_Air ) sTxt += "Air"; // 
+
+	// 寝ている相手に当てたかどうか、一応別に
+	sTxt += " isDown:" + status.isDown; // 
+	//sTxt += "btl_debPrintMvHitStatus()";
+
+	btl_debPrint( sTxt );
+}

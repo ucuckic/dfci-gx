@@ -1,0 +1,79 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Har_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Har00_4901", type=0, category=1}; // 僕を信じて……！
+// クライマックスブースト発動
+st[81] = { path=1, file="Har00_7001_s0", type=0, category=1}; // これでっ終わりだ――っ！…レーザ―ソ――ドッ！
+// ブラストＯＫ
+st[82] = { path=1, file="Har00_4900", type=0, category=1}; // いつでも飛べます！
+
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Har00_2100", type=0, category=1}; // お、おつかれさまでした！
+st[101] = { path=1, file="Har00_2101", type=0, category=1}; // やったな！
+
+// ラウンド敗北	
+st[110] = { path=1, file="Har00_2200", type=0, category=1}; // ちっくしょぉ―！
+st[111] = { path=1, file="Har00_2201", type=0, category=1}; // 次は負けないからな！
+
+// 通常攻撃	
+st[120] = { path=1, file="Har00_2500", type=0, category=1}; // はっ
+// st[121] = { path=1, file="Har00_2501", type=0, category=1}; // しっ
+st[122] = { path=1, file="Har00_2502a", type=0, category=1}; // そこだっ
+
+// 撤退	
+st[130] = { path=1, file="Har00_4000", type=0, category=1}; // 一旦引こう！
+st[131] = { path=1, file="Har00_4001", type=0, category=1}; // おっとっと、まだ早かったか
+
+// ダメージ	
+st[140] = { path=1, file="Har00_4500", type=0, category=1}; // ぐぇっ
+st[141] = { path=1, file="Har00_4501", type=0, category=1}; // うわっ
+st[142] = { path=1, file="Har00_4502", type=0, category=1}; // いたっ
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Har00_4600", type=0, category=1}; // くっ！撤退する！
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Har00_4900", type=0, category=1}; // いつでも飛べます！
+st[161] = { path=1, file="Har00_4901", type=0, category=1}; // 僕を信じて……！
+
+// 必殺技１	
+st[170] = { path=1, file="Har00_7000_s0", type=0, category=1}; // うぉぉぉ――ッ！…たぁぁ――ッ！
+st[171] = { path=1, file="Har00_7000_s1", type=0, category=1}; // うぉぉぉ――ッ！…たぁぁ――ッ！
+
+st[172] = { path=1, file="Har00_7001_s0", type=0, category=1}; // これでっ終わりだ――っ！…レーザ―ソ――ドッ！
+st[173] = { path=1, file="Har00_7001_s1", type=0, category=1}; // これでっ終わりだ――っ！…レーザ―ソ――ドッ！
+
+st[174] = { path=1, file="Har00_7002_s0", type=0, category=1}; // 先輩…っ見ていてください！…てやぁぁ――っ！
+st[175] = { path=1, file="Har00_7002_s1", type=0, category=1}; // 先輩…っ見ていてください！…てやぁぁ――っ！
+
+// st[176] = { path=1, file="Har00_7003_s0", type=0, category=1}; // ヒャーハハハハハァ――ッ！俺様メガクゥゥ――ルッ！……なんちゃって
+// st[177] = { path=1, file="Har00_7003_s1", type=0, category=1}; // ヒャーハハハハハァ――ッ！俺様メガクゥゥ――ルッ！……なんちゃって
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	よぉし、やってやる！
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	えっと……僕、とタッグを組む……んですよね？
+
+// キャラセレクト画面キャラクター決定
+// 1130	いこう！バースト・リンク！

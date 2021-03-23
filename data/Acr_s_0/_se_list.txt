@@ -1,0 +1,88 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Acr_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Acr00_4901_c", type=0, category=1}; // そろそろ終わりにするとすっかァ！
+// クライマックスブースト発動
+st[81] = { path=1, file="Acr00_7001_b", type=0, category=1}; // 調子乗ってんじゃねーぞ！三下ァッ！！
+// ブラストＯＫ
+st[82] = { path=1, file="Acr00_7103", type=0, category=1}; // いい加減飽きてきたぜ！
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Acr00_2100", type=0, category=1}; // けっくだらねぇ。
+st[101] = { path=1, file="Acr00_2101", type=0, category=1}; // 哀れだなァ、オマエ。
+
+// ラウンド敗北	
+st[110] = { path=1, file="Acr00_2200", type=0, category=1}; // 誰ェ敵に回したか分かってンのか、オマエ…
+st[111] = { path=1, file="Acr00_2201", type=0, category=1}; // サービスだよ、くそったれが。
+
+// 通常攻撃	
+// st[120] = { path=1, file="Acr00_2500", type=0, category=1}; // はっ！
+// st[121] = { path=1, file="Acr00_2501", type=0, category=1}; // ふン！
+// st[122] = { path=1, file="Acr00_2502", type=0, category=1}; // うォら！
+
+// 撤退	
+st[130] = { path=1, file="Acr00_4000", type=0, category=1}; // チィィッ！
+st[131] = { path=1, file="Acr00_4001", type=0, category=1}; // クソがっ！
+
+st[133] = { path=1, file="Lst00_4000", type=0, category=2}; // ここにはいないかも
+
+// ダメージ	
+st[140] = { path=1, file="Acr00_4500", type=0, category=1}; // うあっ！
+st[141] = { path=1, file="Acr00_4501", type=0, category=1}; // ぐむうっ！
+st[142] = { path=1, file="Acr00_4502", type=0, category=1}; // 何ィ！
+
+st[144] = { path=1, file="Lst00_4500", type=0, category=2}; // きゃあっ！
+st[145] = { path=1, file="Lst00_4501", type=0, category=2}; // うぅ！
+st[146] = { path=1, file="Lst00_4502", type=0, category=2}; // ああっ！
+
+// ダウン（1～2秒程度）	
+st[150] = { path=1, file="Acr00_4600", type=0, category=1}; // クソォォォ！
+// st[151] = { path=1, file="Lst00_4600", type=0, category=1}; // うわぁぁん！
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Acr00_4900_c", type=0, category=1}; // イイネ！最高だァ！
+st[161] = { path=1, file="Acr00_4901_c", type=0, category=1}; // そろそろ終わりにするとすっかァ！
+
+// 必殺技１	
+st[170] = { path=1, file="Acr00_7000_b", type=0, category=1}; // ヒャァハハハハ！！！
+st[171] = { path=1, file="Acr00_7001_b", type=0, category=1}; // 調子乗ってんじゃねーぞ！三下ァッ！！
+st[172] = { path=1, file="Acr00_7002_b", type=0, category=1}; // ゲームオーバーだぜェ！
+st[173] = { path=1, file="Acr00_7003_b", type=0, category=1}; // わりィが！こっから先は一方通行だ！
+
+st[175] = { path=1, file="Lst00_7000_a", type=0, category=2}; // あの人はどこ？ってミサカはミサカは辺りを見回してみたり。
+// st[176] = { path=1, file="Lst00_7001_a", type=0, category=2}; // ここはどこ？ってミサカはミサカは自分の状況を冷静に分析してみる。
+st[177] = { path=1, file="Lst00_7002_a", type=0, category=2}; // ふぇぇ、迷子になったかも！
+
+// 必殺技2	
+st[180] = { path=1, file="Acr00_7100", type=0, category=1}; // それ、お片付けだ！
+st[181] = { path=1, file="Acr00_7101", type=0, category=1}; // 目障りだ！
+st[182] = { path=1, file="Acr00_7102", type=0, category=1}; // ぶっ飛べ！
+st[183] = { path=1, file="Acr00_7103", type=0, category=1}; // いい加減飽きてきたぜ！
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	あ？テメェ何見てやがる。
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	ったく、なんでこの俺が、こんな事しなきゃならねェんだ？
+
+// キャラセレクト画面キャラクター決定
+// 1130	さァてスクラップの時間だぜ、クソ野郎！

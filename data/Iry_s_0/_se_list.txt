@@ -1,0 +1,125 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Iry_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(400); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Iry00_4900", type=0, category=1}; // …いく
+// クライマックスブースト発動
+st[81] = { path=1, file="Iry00_7502_b", type=0, category=1 }; //動かないで！
+// ブラストＯＫ
+st[82] = { path=1, file="Iry00_4901", type=0, category=1}; // もう大丈夫
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Iry00_2100", type=0, category=1}; // もう、大丈夫だから
+st[101] = { path=1, file="Iry00_2101", type=0, category=1}; // ケガ、してない？
+
+// ラウンド敗北	
+st[110] = { path=1, file="Iry00_2200", type=0, category=1}; // ウソ…、ウソウソウソ！
+st[111] = { path=1, file="Iry00_2201", type=0, category=1}; // そんな…ダメ…！
+
+// 通常攻撃	
+// st[120] = { path=1, file="Iry00_2500", type=0, category=1 }; //
+// st[121] = { path=1, file="Iry00_2500_b", type=0, category=1 }; //
+// st[122] = { path=1, file="Iry00_2501", type=0, category=1 }; //
+// st[123] = { path=1, file="Iry00_2501_b", type=0, category=1 }; //
+// st[124] = { path=1, file="Iry00_2502", type=0, category=1 }; //
+// st[125] = { path=1, file="Iry00_2502_b", type=0, category=1 }; //
+
+// 撤退	
+// st[130] = { path=1, file="Iry00_4000", type=0, category=1}; // ううう…
+// st[131] = { path=1, file="Iry00_4001", type=0, category=1}; // 後退
+
+
+// ダメージ	
+st[140] = { path=1, file="Iry00_4500", type=0, category=1}; // ウソ…
+st[141] = { path=1, file="Iry00_4501", type=0, category=1}; // いやっ
+st[142] = { path=1, file="Iry00_4501", type=0, category=1}; // きゃあっ
+
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Iry00_4600", type=0, category=1}; // 少し休む
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Iry00_4900", type=0, category=1}; // …いく
+st[161] = { path=1, file="Iry00_4901", type=0, category=1}; // もう大丈夫
+
+// 必殺技１	
+st[170] = { path=1, file="Iry00_7000", type=0, category=1 }; // 注文
+// st[170] = { path=1, file="Iry00_7000_b", type=0, category=1 }; // 注文
+st[171] = { path=1, file="Iry00_7001", type=0, category=1 }; // 注文
+// st[170] = { path=1, file="Iry00_7001_b", type=0, category=1 }; // 注文
+
+// st[172] = { path=1, file="Iry00_7100", type=0, category=1 }; // ラーメン
+// st[170] = { path=1, file="Iry00_7100_b", type=0, category=1 }; // ラーメン
+
+// st[173] = { path=1, file="Iry00_7101", type=0, category=1 }; // ズルズル リアル過ぎるｗ
+// st[170] = { path=1, file="Iry00_7101_b", type=0, category=1 }; // ズルズル
+st[174] = { path=1, file="Iry00_7102", type=0, category=1 }; // 飲む
+// st[170] = { path=1, file="Iry00_7102_b", type=0, category=1 }; // 飲む
+
+// st[180] = { path=1, file="Iry00_7200", type=0, category=1 }; //餃子…
+// st[180] = { path=1, file="Iry00_7200_b", type=0, category=1 }; //
+// st[180] = { path=1, file="Iry00_7201", type=0, category=1 }; //中華丼…
+// st[180] = { path=1, file="Iry00_7201_b", type=0, category=1 }; //
+st[182] = { path=1, file="Iry00_7202", type=0, category=1 }; //むぐ…むぐ…むぐ…
+// st[180] = { path=1, file="Iry00_7202_b", type=0, category=1 }; //
+// st[180] = { path=1, file="Iry00_7202_c", type=0, category=1 }; //
+st[183] = { path=1, file="Iry00_7203", type=0, category=1 }; //もぐ…もぐ…もぐ…
+// st[180] = { path=1, file="Iry00_7203_b", type=0, category=1 }; //
+// st[180] = { path=1, file="Iry00_7203_c", type=0, category=1 }; //
+st[190] = { path=1, file="Iry00_7300", type=0, category=1 }; //うっ…！
+// st[190] = { path=1, file="Iry00_7300_b", type=0, category=1 }; //
+// st[190] = { path=1, file="Iry00_7300_c", type=0, category=1 }; //
+// st[190] = { path=1, file="Iry00_7300_d", type=0, category=1 }; //
+st[191] = { path=1, file="Iry00_7301", type=0, category=1 }; //あっ…！
+// st[190] = { path=1, file="Iry00_7301_b", type=0, category=1 }; //
+// st[190] = { path=1, file="Iry00_7301_c", type=0, category=1 }; //
+// st[190] = { path=1, file="Iry00_7301_d", type=0, category=1 }; //
+// st[200] = { path=1, file="Iry00_7400", type=0, category=1 }; //晶穂には負けない…！
+
+// st[200] = { path=1, file="Iry00_7400_b", type=0, category=1 }; //
+// st[200] = { path=1, file="Iry00_7400_c", type=0, category=1 }; //
+// st[200] = { path=1, file="Iry00_7400_d", type=0, category=1 }; //
+// st[200] = { path=1, file="Iry00_7401", type=0, category=1 }; //ぜったいに、負けない…！
+
+// st[200] = { path=1, file="Iry00_7401_b", type=0, category=1 }; //
+// st[200] = { path=1, file="Iry00_7401_c", type=0, category=1 }; //
+// st[200] = { path=1, file="Iry00_7401_d", type=0, category=1 }; //
+st[200] = { path=1, file="Iry00_7402_b", type=0, category=1 }; //わたし、勝った…
+
+// st[200] = { path=1, file="Iry00_7402_b", type=0, category=1 }; //
+// st[200] = { path=1, file="Iry00_7402_c", type=0, category=1 }; //
+// st[200] = { path=1, file="Iry00_7402_d", type=0, category=1 }; //
+
+// st[210] = { path=1, file="Iry00_7500", type=0, category=1 }; //退いて！
+st[210] = { path=1, file="Iry00_7500_b", type=0, category=1 }; //
+// st[210] = { path=1, file="Iry00_7500_c", type=0, category=1 }; //
+
+// st[211] = { path=1, file="Iry00_7501", type=0, category=1 }; //邪魔しないで！
+st[211] = { path=1, file="Iry00_7501_b", type=0, category=1 }; //
+// st[211] = { path=1, file="Iry00_7501_c", type=0, category=1 }; //
+
+// st[212] = { path=1, file="Iry00_7502", type=0, category=1 }; //動かないで！
+st[212] = { path=1, file="Iry00_7502_b", type=0, category=1 }; //
+// st[212] = { path=1, file="Iry00_7502_c", type=0, category=1 }; //
+
+// st[213] = { path=1, file="Iry00_7503", type=0, category=1 }; //逃げて！
+st[213] = { path=1, file="Iry00_7503_b", type=0, category=1 }; //
+// st[213] = { path=1, file="Iry00_7503_c", type=0, category=1 }; //

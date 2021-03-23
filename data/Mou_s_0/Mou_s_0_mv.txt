@@ -1,0 +1,490 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+// 次の攻撃がレアな魔王攻撃かどうか
+local check_NextAtkModeRare = function()
+{
+	local oya = BMvCore.GetParentCharaData();
+	if( oya.push() )
+	{
+		local hitcount = BMvTbl.GetLP(0); // 攻撃をヒットさせた回数が入っている
+		oya.pop();
+		if( hitcount >= 2 )
+		{
+			return 1;
+		}
+	}
+	return 0;
+}
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After() : (check_NextAtkModeRare)
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			if( check_NextAtkModeRare() )
+			{
+				tDDC.Support_SetMessage( "@C120", 400, 162 ); // 
+				Battle_Std.SupSt_AddFlag( def_PP_ImmuneCrashMv ); // クラッシュ無効状態にする
+				_dp("\n ※クラッシュ無効");
+			}
+			else
+			{
+				tDDC.Support_SetMessage( "@C121", 200, 160 ); // 
+				Battle_Std.SupSt_DelFlag( def_PP_ImmuneCrashMv ); // クラッシュ無効状態を解除
+				_dp("\n ※クラッシュ無効解除");
+			}
+			break;
+		case 1:
+			if( check_NextAtkModeRare() )
+			{
+				tDDC.Support_SetMessage( "@C122", 400, 163 ); // 
+				Battle_Std.SupSt_AddFlag( def_PP_ImmuneCrashMv ); // クラッシュ無効状態にする
+				_dp("\n ※クラッシュ無効");
+			}
+			else
+			{
+				tDDC.Support_SetMessage( "@C123", 200, 161 ); // 
+				Battle_Std.SupSt_DelFlag( def_PP_ImmuneCrashMv ); // クラッシュ無効状態を解除
+				_dp("\n ※クラッシュ無効解除");
+			}
+			break;
+		}
+	}
+}
+
+
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+// パンチで殴った回数加算
+local add_PunchCount = function( _addCount=1 )
+{
+	// ダメージ時のみヒットした回数を増やして魔王が出るようにする
+	local oya = BMvCore.GetParentCharaData();
+	if( oya.push() )
+	{
+		local count = BMvTbl.AddLP(0,_addCount); // 攻撃ヒット回数増加
+		_dp("\n 攻撃ヒット回数増加");
+		oya.pop();
+		
+		if( count >= 2 )
+		{
+			tDDC.Jem_SetMessageEx( 1, -1, "", -1 ); // ポテンシャルカットイン
+		}
+	}
+}
+
+local set_AtkPat = function( usepat, usepat_max, settype )
+{
+	local ret_param = { atkcount=0, israre=0 };
+	
+	// // 0まお　1まお　2まお　3魔王　4まお　5まお　6まお　7魔王
+	// local usepat = ["Sup00","Sup00a","Sup00b","Sup00x"]; // 表示パターン
+	// local usepat_max = usepat.len()-1; // 最大となる添字
+	// local settype = [0,0,0,1]; // 出現タイプ 0:まお　1:魔王
+
+	// 親（透明なPlayer3）のLPで操作
+	// 親のLP0がパンチした回数なので取得する
+	local hitcount = 0; // まお君パンチがヒットした回数
+	local oya = BMvCore.GetParentCharaData();
+	if( oya.push() )
+	{
+		hitcount = BMvTbl.GetLP(0); // 攻撃をヒットさせた回数
+		// 配列オーバー処理
+		if( hitcount > usepat_max )
+		{
+			hitcount = usepat_max; // 配列オーバーしてたら最大に変える
+			BMvTbl.SetLP(0,hitcount);
+		}
+		oya.pop();
+	}
+	// if( Def_Dbg_LocalDebugMode ) hitcount = usepat_max; // 魔王固定
+	
+	ret_param.atkcount = hitcount;
+	ret_param.israre = settype[hitcount];
+	
+	_dp("\n "+ (ret_param.atkcount+1) +"段階目の攻撃");
+	BMvTbl.SetLP( 0, ret_param.israre ); // レアかどうか記憶
+	BMvTbl.SetPattern( usepat[ret_param.atkcount] ); // 表示するパターンを設定
+	
+	if( oya.push() )
+	{
+		if( ret_param.israre )
+		{
+			_dp("\n 魔王の時は攻撃ヒット回数を即リセット");
+			BMvTbl.SetLP(0,0); // 攻撃ヒット回数初期化
+		}
+		oya.pop();
+	}	
+	
+	return ret_param;
+}
+
+local set_AntenEffect = function()
+{
+	BMvEff.SetStopTime( { time=90 } );
+	local pos = BMvTbl.GetPosition( 0 );
+	BMvEff.SetCamera_Focus( { x=pos.x, y=pos.y-(120*128), zoom=1.5, time=[20,60,10], type_in=1 } );
+	BMvEff.CutInProc_Set({ time=[3,77,10], cutin_mv="",erasetype=2, bgtype=1 }); 
+	BMvEff.SetCamera_Quake( { time=90, type=2, } );
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00x = BMvEff.GetPatternNum( { datatype=0, pat="Sup00x" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_SPAtkBeam = BMvEff.GetPatternNum( { datatype=0, pat="SPAtkBeam" } ); // パターン文字列のパターン番号を事前取得
+
+// 0まお　1まお　2まお　3魔王　4まお　5まお　6まお　7魔王
+local useparam = {};
+useparam.pat <- [pat_num_Sup00,pat_num_Sup00,pat_num_Sup00x]; // 表示パターン
+useparam.patmax <- useparam.pat.len()-1;
+useparam.rare <- [0,0,1]; // 出現タイプ 0:まお　1:魔王
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (set_AtkPat, useparam)
+	{
+		// パンチの回数を見てパターンを変更など
+		// パターン配列, 配列最大数, レア配列
+		local atkst = set_AtkPat( useparam.pat, useparam.patmax, useparam.rare );
+
+		switch( atkst.israre )
+		{
+		case 0: // まお君
+			Battle_Std.AddXPos_CheckFrontStage(0, 500);
+			break;
+		case 1: // 魔王
+			Battle_Std.SupSt_AddFlag( def_PP_SetExtendRecast ); // 魔王の時はリキャストを重くする
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); // ■160905バグ修正:魔王の時は相手位置基準で出るので、埋まることもある
+			break;
+		}
+	}
+	function FrameUpdate_After() : (set_AntenEffect, pat_num_SPAtkBeam)
+	{
+		if( BMvTbl.GetLP(0)==0 )
+		{
+			// まお君
+			switch( Battle_Std.GetUpdateFrameID() )
+			{
+			case 100: // 登場
+				BSound.SE_Play( { type=_SeType_Player, num=[170,171] } );
+				break;
+			}			
+		}
+		else
+		{
+			// レアな魔王
+			switch( Battle_Std.GetUpdateFrameID() )
+			{
+			case 1000: // 登場
+				// 暗転を入れてみる
+				//相手の場所にでてくる
+				local enemy = BMvCore.GetEnemyCharaData();
+				if( enemy.push() )
+				{
+					local epos = BMvTbl.GetPosition(0);
+					enemy.pop();
+
+					BMvTbl.SetPosition( { x = epos.x, y = epos.y } );
+					BMvTbl.SetPosition( { x = -330<<7, y = -130<<7, flags=_Position_Add|_Position_ChangeMuki } );
+				}
+				else
+				{
+					BMvTbl.SetPosition( { y = 0 } );
+					BMvTbl.SetPosition( { x = s_setpos_x-(40<<7), y = -175<<7, flags=_Position_Add|_Position_ChangeMuki } );
+				}
+				set_AntenEffect(); // 90Fの暗転とかの演出処理
+				
+				BSound.SE_Play( { type=_SeType_Player, num=[181,182] } );
+				break;
+			case 5000: // パンチ
+				local eff = BMvEff.CreateObject( { start_pat=pat_num_SPAtkBeam, x=215<<7, y=-233<<7 } );
+				if( eff.push() )
+				{
+					// 各種補正は最初の１ヒットのみ		
+					BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+				
+					BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange|_ObjFlags_FromParentStop|_ObjFlags_ToParentStop|_ObjFlags_NoGround } )
+					eff.pop();
+				}
+				break;
+			case 6000: // きめポーズ
+				BSound.SE_Play( { type=_SeType_Player, num=[183] } );
+				break;
+			}
+		}
+	}
+	function HitInterrupt_After() : (add_PunchCount)
+	{
+		if( BMvTbl.GetLP(0) == 0 && Battle_Std.CheckHitTiming() ) // 通常まお君パンチヒット時
+		{
+			local addCount = 1;
+			if( Battle_Std.CheckDamageTiming() )
+			{
+				addCount = 2;
+			}
+			add_PunchCount( addCount ); // パンチで殴った回数加算
+		}
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00x_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00x_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc,pat_num_Sup00x_Esc)
+	{
+		if( BMvTbl.GetLP(0) == 1 ) // レアな時
+		{
+			BMvTbl.SetPattern( pat_num_Sup00x_Esc );
+			BSound.SE_Play( { type=_SeType_Player, num=[183] } );
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup00_Esc );
+			BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+		}
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc,pat_num_Sup00x_Esc)
+	{
+		if( BMvTbl.GetLP(0) == 1 ) // レアな時
+		{
+			BMvTbl.SetPattern( pat_num_Sup00x_Esc );
+			BSound.SE_Play( { type=_SeType_Player, num=[183] } );
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup00_Esc );
+			BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup10x = BMvEff.GetPatternNum( { datatype=0, pat="Sup10x" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_SPAtkBeam2 = BMvEff.GetPatternNum( { datatype=0, pat="SPAtkBeam2" } ); // パターン文字列のパターン番号を事前取得
+
+local useparam = {};
+useparam.pat <- [pat_num_Sup10,pat_num_Sup10,pat_num_Sup10x]; // 表示パターン
+useparam.patmax <- useparam.pat.len()-1;
+useparam.rare <- [0,0,1]; // 出現タイプ 0:まお　1:魔王
+
+t.Mv_SupportChara2 <- // サポートキャラの行動
+{
+	function Init_After() : (set_AtkPat, useparam)
+	{
+		// パンチの回数を見てパターンを変更など
+		// パターン配列, 配列最大数, レア配列
+		local atkst = set_AtkPat( useparam.pat, useparam.patmax, useparam.rare );
+
+		switch( atkst.israre )
+		{
+		case 0: // まお君
+			// Battle_Std.AddXPos_CheckFrontStage(300, 500);
+			Battle_Std.AddXPos_NearEnemy( 200, 500 );
+			break;
+		case 1: // 魔王
+			Battle_Std.AddXPos_CheckFrontStage(150, 300);
+			Battle_Std.SupSt_AddFlag( def_PP_SetExtendRecast ); // 魔王の時はリキャストを重くする
+			break;
+		}
+	}
+	function FrameUpdate_After() : (set_AntenEffect, pat_num_SPAtkBeam2)
+	{
+		if( BMvTbl.GetLP(0)==0 )
+		{
+			// まお君
+			switch( Battle_Std.GetUpdateFrameID() )
+			{
+			case 100: // 登場
+				BSound.SE_Play( { type=_SeType_Player, num=[171,172] } );
+				break;
+			}			
+		}
+		else
+		{
+			// レアな魔王
+			switch( Battle_Std.GetUpdateFrameID() )
+			{
+			case 1000: // 登場
+				set_AntenEffect(); // 90Fの暗転とかの演出処理
+
+				BSound.SE_Play( { type=_SeType_Player, num=[180,181,182] } );
+				break;
+			case 5000: // 剣をふる
+				local eff = BMvEff.CreateObject( { mvname="Mv_SPAtkBeam2", start_pat=pat_num_SPAtkBeam2, x=100<<7, y=0 } );
+				break;
+			case 6000: // きめポーズ
+				BSound.SE_Play( { type=_SeType_Player, num=[183] } );
+				break;
+			}
+		}
+	}
+	function HitInterrupt_After() : (add_PunchCount)
+	{
+		if( BMvTbl.GetLP(0) == 0 && Battle_Std.CheckHitTiming() ) // 通常まお君パンチヒット時
+		{
+			local addCount = 1;
+			if( Battle_Std.CheckDamageTiming() )
+			{
+				addCount = 2;
+			}
+			add_PunchCount( addCount ); // パンチで殴った回数加算
+		}
+	}
+}
+
+t.Mv_SPAtkBeam2 <-
+{
+	function Init()
+	{
+		// 各種補正は最初の１ヒットのみ		
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+	
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange|_ObjFlags_FromParentStop|_ObjFlags_ToParentStop|_ObjFlags_NoGround } );
+	}
+	function FrameUpdate()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )	
+		{
+		case 100:
+			BMvTbl.SetPosition( { x = 140<<7, flags=_Position_Add|_Position_ChangeMuki } );
+			break;
+		}
+		
+		// if( Battle_Std.CheckFrontStageDistance( 0 ) )
+		if( Battle_Std.CheckFromtCornerDistance( 0 ) )
+		{
+			BMvTbl.SetMuki( _Direction_Reverse );
+		}
+	}
+	function HitInterrupt()
+	{
+		if( Battle_Std.CheckGuardTiming() )
+		{
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				// 確定で凄く削る
+				// ２割ぐらい
+				BMvEff.SetHpGauge( { value=-25, valuetype=3 } ); // 実削り
+				BMvEff.SetHpGauge( { value=-80, valuetype=1 } ); // 白削り
+
+				// ３割ぐらい
+				// BMvEff.SetHpGauge( { value=-35, valuetype=3 } ); // 実削り
+				// BMvEff.SetHpGauge( { value=-90, valuetype=1 } ); // 白削り
+
+				// ４割ぐらい
+				// BMvEff.SetHpGauge( { value=-50, valuetype=3 } ); // 実削り
+				// BMvEff.SetHpGauge( { value=-140, valuetype=1 } ); // 白削り
+				
+				enemy.pop();
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_Sup10x_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10x_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc, pat_num_Sup10x_Esc)
+	{
+		if( BMvTbl.GetLP(0) == 1 ) // レアな時
+		{
+			BMvTbl.SetPattern( pat_num_Sup10x_Esc );
+			BSound.SE_Play( { type=_SeType_Player, num=[183] } );
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup00_Esc );
+			BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+		}
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc, pat_num_Sup10x_Esc)
+	{
+		if( BMvTbl.GetLP(0) == 1 ) // レアな時
+		{
+			BMvTbl.SetPattern( pat_num_Sup10x_Esc );
+			BSound.SE_Play( { type=_SeType_Player, num=[183] } );
+		}
+		else
+		{
+			BMvTbl.SetPattern( pat_num_Sup00_Esc );
+			BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+		}
+	}
+}
+
+
+
+MOU_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Mou_s );
+
+_dp(" -> Load OK");

@@ -1,0 +1,84 @@
+
+stage_bgm <- {};
+
+bgm_array_array <- array(250);
+
+local file = "./bg/BgList.txt";
+if( BtlMvStd.IsFileAlive( file ) )
+{
+	__dofile__( file ) //grab BgList
+}
+
+for(local i=0;i<250;i++)
+{
+	local bg_str = "Bg_";
+	local var_str = i.tostring();
+	
+	if( var_str.len() == 1 ) bg_str += ( "00"+var_str );
+	if( var_str.len() == 2 ) bg_str += ( "0"+var_str );
+	
+	if( bg_str in BgList )
+	{
+		local bg_tbl = BgList.rawget(bg_str);
+		
+		local bgmfile = "./bg/"+bg_tbl.DataFile+"/BgmList.txt";
+		if( BtlMvStd.IsFileAlive( bgmfile ) )
+		{
+			__dofile__( bgmfile ) //grab BgmList
+			
+			bgm_array_array[i] = bgm_array;
+		}				
+		
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Desc: stage_bgm.initround()
+// 戦闘BGMの変更がある場合はここで設定、戦闘テーブルでのBGM設定よりも優先度が高い
+// 呼ばれた時点で戦闘が始まっていないと情報が無効
+//-----------------------------------------------------------------------------
+stage_bgm.initround <- function()
+{
+	local btlobj = BMvTbl.CBtlInfo();//戦闘情報
+}
+
+stage_bgm.loadstage <- function() : (bgm_array_array)
+{
+	local bg_num = BMvEff.BG_GetNum();
+	
+	local bgm_weight = 0;
+		
+	local use_bgm = bg_num;
+	
+	local bgm_array = bgm_array_array[bg_num];
+	
+	if( bgm_array )
+	{
+		foreach( bgm_tbl in bgm_array )
+		{
+			local use_weight = ("chance") in bgm_tbl? bgm_tbl.chance : 100;
+			bgm_weight += use_weight;
+		}
+		
+		local song_rng = BMvEff.Random_Limit(bgm_weight);
+		
+		foreach( bgm_tbl in bgm_array )
+		{
+			local use_weight = ("chance") in bgm_tbl? bgm_tbl.chance : 100;
+			
+			if( use_weight > song_rng ) 
+			{
+				use_bgm = bgm_tbl.num;
+				break;
+			}
+			
+			song_rng -= use_weight
+		}
+	}
+	
+	//use_bgm = BgList.Bg_040.StageSelTex;
+	
+	BSound.BGM_SetNum( use_bgm );
+}
+
+btl_debPrint( "\n>>> sq_stagebgm." );

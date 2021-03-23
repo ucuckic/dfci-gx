@@ -1,0 +1,13 @@
+[System]
+ProjectName=Krn
+[DataFile]
+FileNum= 3
+File03=_temp.HA6
+File01=Krn.HA6
+File02=../BaseData.HA6
+[BmpcutFile]
+FileNum= 1
+File00=Krn.cg
+[PAniFile]
+FileNum= 1
+File00=Krn_ef00.pat

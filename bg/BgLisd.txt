@@ -1,0 +1,566 @@
+// 0はランダム用 数字部分がそのままBGナンバーに
+// DataFile = // BGデータフォルダ名、BGファイル名は bg.fbx 固定
+// IsSelectAble = 1 // ステージセレクトで選択できるかどうか
+// Scale = [X,Y,Z] // モデル拡大率
+// Pos = [X,Y,Z] // モデル移動量
+// ViewGrid = // 1ならばグリッド表示
+// MSAA = // MSAAレベル 0-16 設定値が対応していない場合、カードの最大値となる。通常は2で
+// TargetW =  // レンダリングターゲット幅 基本値1280
+// TargetH =  // レンダリングターゲット高さ 基本値720
+// VanishingPoint = // 消失点位置 基本値0.0
+// ShadowScale = // 影の大きさ(マイナスだと奥側に伸びる)
+// ShadowAlpha = // 影の濃さ
+// ※ 浮動小数点定数に「f」を使ってはいけない。 ×「0.0f」 ○「0.0」
+// Name = // ステージ選択時に表示されるBG名 *:作りかけのもの
+// //BGM_Final = // 決着ラウンド用BGM番号、書かなければ-1
+// SelectDisable =  // 選択禁止か
+// RandomDisable =  // ランダム禁止か
+// VsDisable =  // 対戦禁止か
+
+BgList <-
+{	
+	/////////////////////////////////////////////////////////
+	Bg_001 =
+	{
+		Name = "戦場のヴァルキュリアステージ",
+		DataFile = "bg01", //ヴァルキュリアステージ
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 1.7, 1.7, 1.7 ],
+		Position = [ -1.5, 0.0, 17.5 ],
+		ViewGrid = 0,
+		FOV = 35.6,
+		VanishingPoint = 0.55
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 700.0, // フォグ開始位置、終了位置
+		FogColor = [ 2.0, 0.0, 0.0, 1.0 ], //  0.5, 0.6, 0.8, 0.0オレンジ空→  1.0, 0.35, 0.0, 1.0 
+		
+		ShadowScale = 0.8, // マイナスだと向こう側
+		ShadowAlpha = 0.35, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+		
+		StageSelTex = 1,
+
+	}
+	/////////////////////////////////////////////////////////
+	Bg_002 =
+	{
+		Name = "バーチャファイター５ステージ",
+		DataFile = "bg02", //バーチャ５ステージ
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 10.0, 10.0, 10.0 ],
+		Position = [ -1.7, 0.0, 0 ],
+		ViewGrid = 0,
+		FOV = 39.6,
+		VanishingPoint = 0.4
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 250.0, // フォグ開始位置、終了位置
+		FogColor = [ 0.17, 0.38, 0.59, 1.0 ], // RGBA  0.39, 0.58, 0.92, 1.0 
+		
+		ShadowScale = 0.8, // マイナスだと向こう側
+		ShadowAlpha = 0.35, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+
+		StageSelTex = 2,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_004 =
+	{
+		Name = "ＮｉＧＨＴＳステージ",
+		DataFile = "bg04", //ナイツステージ
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 1.0, 1.0, 1.0 ],
+		Position = [ 0.0, 0.0, 0.0 ],
+		ViewGrid = 0,
+		FOV = 35.6,
+		VanishingPoint = 0.55
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 700.0, // フォグ開始位置、終了位置
+		FogColor = [ 2.0, 0.0, 0.0, 1.0 ], //  0.5, 0.6, 0.8, 0.0オレンジ空→  1.0, 0.35, 0.0, 1.0 
+		
+		ShadowScale = 1.0, // マイナスだと向こう側
+		ShadowAlpha = 0.4, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+
+		StageSelTex = 3,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_005 =
+	{
+		Name = "ファンタシースターオンライン２ステージ",
+		DataFile = "bg05", //ＰＳＯ２ロビーステージ
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 0.0087, 0.0087, 0.0087 ],
+		Position = [ 0.0, -0.1, -1.0 ],
+		ViewGrid = 0,
+		FOV = 35.6,
+		VanishingPoint = 0.58
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 700.0, // フォグ開始位置、終了位置
+		FogColor = [ 2.0, 0.0, 0.0, 1.0 ], //  0.5, 0.6, 0.8, 0.0オレンジ空→  1.0, 0.35, 0.0, 1.0 
+		
+		ShadowScale = 1.0, // マイナスだと向こう側
+		ShadowAlpha = 0.4, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+		
+		StageSelTex = 4,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_007 =
+	{
+		Name = "ソニック・ザ・ヘッジホッグステージ",
+		DataFile = "bg07", 
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 1.1, 1.1, 1.1 ],
+		Position = [ 0.0, 0.0, 0.0 ],
+		ViewGrid = 0,
+		FOV = 39.6,
+		VanishingPoint = 0.55
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 700.0, // フォグ開始位置、終了位置
+		FogColor = [ 2.0, 0.0, 0.0, 1.0 ], //  0.5, 0.6, 0.8, 0.0オレンジ空→  1.0, 0.35, 0.0, 1.0 
+		
+		ShadowScale = 0.8, // マイナスだと向こう側
+		ShadowAlpha = 0.35, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+
+		StageSelTex = 5,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_008 =
+	{
+		Name = "セブンスドラゴン２０２０ステージ",
+		DataFile = "bg08", //セブンスドラゴンステージ
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 0.65, 0.65, 0.65 ],
+		Position = [ 0.0, 0.0, -5.0 ],
+		ViewGrid = 0,
+		FOV = 39.6,
+		VanishingPoint = 0.55
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 700.0, // フォグ開始位置、終了位置
+		FogColor = [ 2.0, 0.0, 0.0, 1.0 ], //  0.5, 0.6, 0.8, 0.0オレンジ空→  1.0, 0.35, 0.0, 1.0 
+		
+		ShadowScale = 1.0, // マイナスだと向こう側
+		ShadowAlpha = 0.4, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+
+		StageSelTex = 6,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_009 =
+	{
+		Name = "Ｓｈｉｎｏｂｉステージ",
+		DataFile = "bg09", //ＳＩＮＯＢＩステージ
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 0.5, 0.5, 0.5 ],
+		Position = [ 0.5, 0.0, 0.0 ],
+		ViewGrid = 0,
+		FOV = 35.6,
+		VanishingPoint = 0.55
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 700.0, // フォグ開始位置、終了位置
+		FogColor = [ 2.0, 0.0, 0.0, 1.0 ], //  0.5, 0.6, 0.8, 0.0オレンジ空→  1.0, 0.35, 0.0, 1.0 
+		
+		ShadowScale = 0.8, // マイナスだと向こう側
+		ShadowAlpha = 0.35, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+		
+		StageSelTex = 7,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_013 =
+	{
+		Name = "電脳戦機バーチャロンステージ",
+		DataFile = "bg13", //バーチャロンステージ
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 1, // ランダム禁止か ※仕様チェック
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 1.0, 1.0, 1.0 ],
+		Position = [ 0.0, 0.0, 0.0 ],
+		ViewGrid = 0,
+		FOV = 35.6,
+		VanishingPoint = 0.55
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 700.0, // フォグ開始位置、終了位置
+		FogColor = [ 2.0, 0.0, 0.0, 1.0 ], //  0.5, 0.6, 0.8, 0.0オレンジ空→  1.0, 0.35, 0.0, 1.0 
+		
+		ShadowScale = 1.0, // マイナスだと向こう側
+		ShadowAlpha = 0.2, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+		
+		StageSelTex = 8,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_014 =
+	{
+		Name = "ボーダーブレイクステージ"
+		DataFile = "bg14", //ボーダーブレイクステージ
+		
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+		
+		IsSelectAble = 1,
+		Scale = [ 0.53, 0.53, 0.53 ],
+		Position = [ 0.0, -0.40, 26.2 ],
+		ViewGrid = 0,
+		FOV = 39.6,
+		VanishingPoint = 0.55
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 700.0, // フォグ開始位置、終了位置
+		FogColor = [ 0.5, 0.6, 2.0, 1.0 ], //  0.5, 0.6, 0.8, 0.0オレンジ空→  1.0, 0.35, 0.0, 1.0 
+		
+		ShadowScale = 0.4, // マイナスだと向こう側
+		ShadowAlpha = 0.8, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+
+		StageSelTex = 9,
+
+	}
+	/////////////////////////////////////////////////////////
+	Bg_015 =
+	{
+		Name = "戦場のヴァルキュリアステージ（夜）"
+		DataFile = "bg15", //セルベリア用ステージ
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 1.7, 1.7, 1.7 ],
+		Position = [ -1.5, 0.0, 17.5 ],
+		ViewGrid = 0,
+		FOV = 35.6,
+		VanishingPoint = 0.55
+
+		IsFog = 1,
+		FogStart = 2.0, FogEnd = 700.0, // フォグ開始位置、終了位置
+		FogColor = [ 2.0, 0.0, 0.0, 1.0 ], //  0.5, 0.6, 0.8, 0.0オレンジ空→  1.0, 0.35, 0.0, 1.0 
+		
+		ShadowScale = 0.8, // マイナスだと向こう側
+		ShadowAlpha = 0.35, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+		
+		StageSelTex = 9,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_016 =
+	{
+		Name = "ワンダーランドウォーズステージ",
+		DataFile = "bg16", 
+
+		SelectDisable = 0, // 選択禁止か
+		RandomDisable = 0, // ランダム禁止か
+		VsDisable = 0, // 対戦禁止か
+
+		Scale = [ 0.15, 0.15, 0.15],
+		Position = [ 0.0, 0.0,-4.2 ],
+		ViewGrid = 0,
+		FOV = 35.0,
+
+		IsFog = 1,
+		FogStart = 0.0, FogEnd = 2200.0,
+		FogColor = [ 0.5, 0.50, 0.5, 1.0 ], // RGBA
+		VanishingPoint = 0.6
+		
+		ShadowScale = 0.8, // マイナスだと向こう側
+		ShadowAlpha = 0.35, // 濃さ
+
+		MSAA = 2,
+		StageW = 4096, // 2560
+
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+
+		StageSelTex = 10,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_017 =
+	{
+		Name = "Hi☆sCoool！ セハガールステージ", // 全角32文字未満
+		DataFile = "bg17",
+
+		Scale = [ 0.14, 0.14, 0.14],
+		Position = [ 0.0, 0.0,0.0 ],
+		ViewGrid = 0,
+		FOV = 45.0,
+
+		IsFog = 1,
+		FogStart = 0.0, FogEnd = 2200.0,
+		FogColor = [ 0.5, 0.50, 0.5, 1.0 ], // RGBA
+		VanishingPoint = 0.3
+
+		MSAA = 2,
+		StageW = 4096, // 2560,4096
+		
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,
+
+		IsBloom = 0,
+		
+		StageSelTex = 14,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_018 =
+	{
+		Name = "ワールド エンド エクリプスステージ", // 全角32文字未満
+		DataFile = "bg18",
+
+		Scale = [ 0.3, 0.3, 0.3],
+		Position = [ 0.0, 0.2, -4.0 ],
+		ViewGrid = 0,
+		FOV = 37.0,
+
+		IsFog = 1,
+		FogStart = 0.0, FogEnd = 1000000.0,
+		FogColor = [ 0.17, 0.41, 0.80, 1.0 ], // RGBA テスト用からー0.33, 0.80, 0.77, 1.0 
+		VanishingPoint = 0.3
+
+		MSAA = 2,
+		StageW = 4096, // 2560,4096
+		
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,		
+
+		IsBloom = 0,
+		
+		StageSelTex = 14,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_029 =
+	{
+		Name = "トレーニングステージ", // 全角32文字未満
+		DataFile = "bg29",
+
+		RandomDisable = 1, // ランダム禁止か
+		VsDisable = 1, // 対戦禁止か
+		Scale = [ 0.0001, 0.0001, 0.00001 ],
+		Position = [ 0.0, 0.0, 0.0 ],
+		ViewGrid = 1,
+		FOV = 50.0,
+
+		IsFog = 1,
+		FogStart = 0.0, FogEnd = 1000.0,
+		FogColor = [ 0.17, 0.41, 0.80, 1.0 ], // RGBA テスト用からー0.33, 0.80, 0.77, 1.0 
+		VanishingPoint = 0.4
+
+		MSAA = 2,
+		StageW = 4096, // 2560,4096
+		
+		//BGM_Final_cs_vocal = 72,
+		//BGM_Final_cs = 92,
+		//BGM_Final_vocal = 71,
+		//BGM_Final = 91,
+		//BGM_Final_cs2_vocal = 73,
+		//BGM_Final_cs2 = 90,	
+
+		IsBloom = 0,
+		
+		StageSelTex = 15,
+	}
+	/////////////////////////////////////////////////////////
+	Bg_099 =
+	{
+		Name = "デバッグ",
+		DataFile = "",
+
+		SelectDisable = 1, // 選択禁止か
+		RandomDisable = 1, // ランダム禁止か
+		VsDisable = 1, // 対戦禁止か
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		StageW = 4096, // 2560
+		MSAA = 16,
+	}
+	
+	Bg_040 =
+	{
+		Name = "bgtest",
+		DataFile = "bgtest",
+		
+		Scale = [ 10.0, 13.0, 18.0 ],
+		Position = [ 0.0, 0.0, 0.0 ],
+
+		ViewGrid = 1,
+		FOV = 45.0,
+
+		VanishingPoint = 0.4,
+		ShadowScale = -1, // マイナスだと向こう側
+		ShadowAlpha = 0.7, // 濃さ
+
+		StageW = 4096, // 2560
+		MSAA = 16,
+	}
+}
+
+
+

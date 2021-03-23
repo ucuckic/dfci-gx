@@ -1,0 +1,13 @@
+[System]
+ProjectName=Tgr
+[DataFile]
+FileNum= 3
+File00=_temp.HA6
+File01=Tgr.HA6
+File02=../BaseData.HA6
+[BmpcutFile]
+FileNum= 1
+File00=Tgr.cg
+[PAniFile]
+FileNum= 1
+File00=Tgr_ef00.pat

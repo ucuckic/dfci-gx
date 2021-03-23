@@ -1,0 +1,11 @@
+[System]
+ProjectName=csel_Kur
+[DataFile]
+FileNum= 1
+File00=csel_Kur.HA6
+[BmpcutFile]
+FileNum= 1
+File00=csel_Kur.cg
+[PAniFile]
+FileNum= 1
+File00=csel_Kur_ef00.pat

@@ -1,0 +1,387 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Kur/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="ModeChange", type=0, category=2, }; // モードチェンジ
+
+// イグニッション選択
+st[80] = { path=1, file="Kur00_6102", type=0, category=1}; // 力が溢れてくる
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+
+// 登場シーン	
+st[100] = { path=1, file="Kur00_2000", type=0, category=1}; // さて、そろそろ始めようか
+st[101] = { path=1, file="Kur00_2001", type=0, category=1}; // 本気で相手をしよう
+st[102] = { path=1, file="Kur00_2002", type=0, category=1}; // さあ、見せてくれ、今の君のありったけを！
+
+st[104] = { path=1, file="Kur00_2050", type=0, category=1}; // 電撃アビリティの使い手か…
+st[105] = { path=1, file="Kur00_2051", type=0, category=1}; // なんの話だ？
+st[106] = { path=1, file="Kur00_2052", type=0, category=1}; // ミニスカートで
+st[107] = { path=1, file="Kur00_2060", type=0, category=1}; // ミニスカートで
+st[108] = { path=1, file="Kur00_2070", type=0, category=1}; //  私はし……って、何を言わせる！
+
+// 戦闘勝利・汎用	
+st[110] = { path=1, file="Kur00_2100", type=0, category=1}; // 私を倒したければ、王の一人や二人連れてくる事だな
+st[111] = { path=1, file="Kur00_2101", type=0, category=1}; // いい試合だった、また頼むぞ
+// 戦闘勝利・辛勝	
+st[112] = { path=1, file="Kur00_2102", type=0, category=1}; // まさか君がここまでやるとは思わなかったよ……
+// 戦闘勝利・楽勝	
+st[113] = { path=1, file="Kur00_2103", type=0, category=1}; // すまない…、手加減したつもりだったのだが
+
+// ラウンド勝利	
+st[120] = { path=1, file="Kur00_2150", type=0, category=1}; // なかなか楽しめたぞ
+st[121] = { path=1, file="Kur00_2151", type=0, category=1}; // それで終わりじゃあないだろう？
+
+// タイムアップ判定負け	
+st[130] = { path=1, file="Kur00_2200", type=0, category=1}; // こんな所で負ける訳には……！
+st[131] = { path=1, file="Kur00_2201", type=0, category=1}; // や、やるじゃないか
+
+// 弱攻撃	
+st[140] = { path=1, file="Kur00_2300b", type=0, category=1}; // ふ
+st[141] = { path=1, file="Kur00_2301", type=0, category=1}; // し
+// st[142] = { path=1, file="Kur00_2302a", type=0, category=1}; // は
+st[143] = { path=1, file="Kur00_2303a", type=0, category=1}; // や
+st[144] = { path=1, file="Kur00_2304b", type=0, category=1}; // ほ
+
+// 中攻撃	
+st[150] = { path=1, file="Kur00_2400b", type=0, category=1}; // そこっ
+st[151] = { path=1, file="Kur00_2401b", type=0, category=1}; // とう
+st[152] = { path=1, file="Kur00_2402a", type=0, category=1}; // はっ
+st[153] = { path=1, file="Kur00_2403", type=0, category=1}; // やっ
+st[154] = { path=1, file="Kur00_2404", type=0, category=1}; // ていっ
+st[156] = { path=1, file="Kur00_2405b", type=0, category=1}; // ふっ
+st[157] = { path=1, file="Kur00_2406", type=0, category=1}; // たあっ
+
+// 強攻撃	
+st[160] = { path=1, file="Kur00_2500a", type=0, category=1}; // はぁっ！
+st[161] = { path=1, file="Kur00_2501c", type=0, category=1}; // はぁぁあっ！
+st[162] = { path=1, file="Kur00_2502b", type=0, category=1}; // 喰らえ！
+st[163] = { path=1, file="Kur00_2503a", type=0, category=1}; // ふんっ！
+st[164] = { path=1, file="Kur00_2504a", type=0, category=1}; // せやぁっ！
+st[165] = { path=1, file="Kur00_2505d", type=0, category=1}; // ここだっ！
+st[166] = { path=1, file="Kur00_2506b", type=0, category=1}; // そこだっ！
+
+// 特殊攻撃	
+st[170] = { path=1, file="Kur00_2600", type=0, category=1}; // 容赦はしないぞっ！
+st[171] = { path=1, file="Kur00_2601", type=0, category=1}; // オオォォォ……！
+st[172] = { path=1, file="Kur00_2602", type=0, category=1}; // 心意！（しんい）
+st[173] = { path=1, file="Kur00_2603", type=0, category=1}; // ロータス！
+st[174] = { path=1, file="Kur00_2604a", type=0, category=1}; // ブラック・ロータス！
+st[175] = { path=1, file="Kur00_2605", type=0, category=1}; // これならどうだ！
+st[176] = { path=1, file="Kur00_2606", type=0, category=1}; // 落ちろ！
+st[177] = { path=1, file="Kur00_2607", type=0, category=1}; // ターミネート・ソード！
+
+// 投げ技成功	
+st[180] = { path=1, file="Kur00_2700", type=0, category=1}; // 寝てろ！
+st[181] = { path=1, file="Kur00_2701", type=0, category=1}; // 出直して来い！
+st[182] = { path=1, file="Kur00_2702", type=0, category=1}; // セヤァアアッ！
+
+// 投げ技失敗	
+st[190] = { path=1, file="Kur00_2800", type=0, category=1}; // なっ……！？
+st[191] = { path=1, file="Kur00_2801", type=0, category=1}; // かわされた……っ！？
+
+// 敵の投げ技を回避	
+st[200] = { path=1, file="Kur00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 私に投げは効かん！
+st[201] = { path=1, file="Kur00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 無駄だッ！
+
+// 挑発アクション	
+st[210] = { path=1, file="Kur00_3100", type=0, category=1}; // 来ないのならこっちからゆくぞ！
+st[211] = { path=1, file="Kur00_3101", type=0, category=1}; // 君の心意を見せてみろ
+
+// ジャンプ	
+st[220] = { path=1, file="Kur00_3200", type=0, category=1}; // はっ
+st[221] = { path=1, file="Kur00_3201", type=0, category=1}; // ふっ
+//st[222] = { path=1, file="Kur00_3202", type=0, category=1}; // とうっ
+
+// ダッシュ	
+st[230] = { path=1, file="Kur00_3300", type=0, category=1}; // いくぞ
+st[231] = { path=1, file="Kur00_3301", type=0, category=1}; // しゅっ
+st[232] = { path=1, file="Kur00_3302", type=0, category=1}; // 今だっ
+
+// バックステップ	
+st[240] = { path=1, file="Kur00_3400", type=0, category=1}; // ほっ
+st[241] = { path=1, file="Kur00_3401", type=0, category=1}; // よっと
+st[242] = { path=1, file="Kur00_3402", type=0, category=1}; // 引く（いったん引くか、というニュアンスです）
+
+// 小攻撃ガード	
+st[250] = { path=1, file="Kur00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // フン
+st[251] = { path=1, file="Kur00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // この程度か？
+st[252] = { path=1, file="Kur00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // まったく…（呆れた様子で）
+
+// 中攻撃ガード	
+st[260] = { path=1, file="Kur00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // ふ…っ！
+st[261] = { path=1, file="Kur00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // まだまだだな
+st[262] = { path=1, file="Kur00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // ほう？
+
+// 大攻撃ガード	
+st[270] = { path=1, file="Kur00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // これは…っ！
+st[271] = { path=1, file="Kur00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // 強い…！
+st[272] = { path=1, file="Kur00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // やるじゃないか…！
+
+// 攻撃を見切り余裕でガード	
+st[280] = { path=1, file="Kur00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 遅いな
+st[281] = { path=1, file="Kur00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 単純だな
+st[282] = { path=1, file="Kur00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // どうした？
+
+// ガード失敗	
+st[290] = { path=1, file="Kur00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // 馬鹿な！
+st[291] = { path=1, file="Kur00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // 何っ！？
+st[292] = { path=1, file="Kur00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // にょわあああ！
+
+// 受け身	
+st[300] = { path=1, file="Kur00_4000", type=0, category=1}; // よっ
+st[301] = { path=1, file="Kur00_4001", type=0, category=1}; // これからだ
+st[302] = { path=1, file="Kur00_4002a", type=0, category=1}; // もういいのか？
+
+// バリア発動	
+// st[310] = { path=1, file="Kur00_4100", type=0, category=1}; // 来い！
+// st[311] = { path=1, file="Kur00_4101", type=0, category=1}; // やってみるといい
+// st[312] = { path=1, file="Kur00_4102", type=0, category=1}; // こうか？
+
+// バリアガード成功	
+// st[320] = { path=1, file="Kur00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // ほらな？（言った通りだろう？という感じ）
+st[321] = { path=1, file="Kur00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // 無駄だよ
+st[322] = { path=1, file="Kur00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // 君も学習しないな
+
+// 小ダメージ	
+st[330] = { path=1, file="Kur00_4300b", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // くっ
+st[331] = { path=1, file="Kur00_4301b", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // きゃっ
+st[332] = { path=1, file="Kur00_4302b", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // いっ
+
+// 中ダメージ	
+st[340] = { path=1, file="Kur00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // ぐうっ
+st[341] = { path=1, file="Kur00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // ぐぁっ
+st[342] = { path=1, file="Kur00_4402c", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // いたっ
+
+// 大ダメージ	
+st[350] = { path=1, file="Kur00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // ああぁっ！
+st[351] = { path=1, file="Kur00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // きゃあっ！
+st[352] = { path=1, file="Kur00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // 何をする！
+
+// 電撃ダメージ	
+// st[360] = { path=1, file="Kur00_4600", type=0, category=1}; // あわわわ
+// 麻痺ダメージ	
+// st[361] = { path=1, file="Kur00_4601", type=0, category=1}; // 幻覚…か……
+// 特殊ダメージ	
+// st[362] = { path=1, file="Kur00_4602", type=0, category=1}; // 何だこれは…！
+
+// ダウン	
+st[370] = { path=1, file="Kur00_4700", type=0, category=1, prio=Def_SEP_KO }; // きゃああ―――っ！
+st[371] = { path=1, file="Kur00_4701", type=0, category=1, prio=Def_SEP_KO }; // うわああ―――っ！
+st[372] = { path=1, file="Kur00_4702", type=0, category=1, prio=Def_SEP_KO }; // そんな馬鹿な……っ！
+
+// ダウン・ノックアウト	
+st[380] = { path=1, file="Kur00_4800", type=0, category=1, prio=Def_SEP_KO }; // きゃあぁぁぁああ―――っ！
+//st[381] = { path=1, file="Kur00_4801", type=0, category=1, prio=Def_SEP_KO }; // うわぁぁああ―――っ！
+st[382] = { path=1, file="Kur00_4802", type=0, category=1, prio=Def_SEP_KO }; // ハル…ユキ……くん
+
+// 起きあがり	
+st[390] = { path=1, file="Kur00_4900", type=0, category=1}; // 問題ない
+st[391] = { path=1, file="Kur00_4901a", type=0, category=1}; // ちょ、ちょっと転んだだけだ！
+st[392] = { path=1, file="Kur00_4902a", type=0, category=1}; // やってくれるじゃないか
+
+// 起きあがり・瀕死	
+st[400] = { path=1, file="Kur00_5000", type=0, category=1}; // まずいな……
+st[401] = { path=1, file="Kur00_5001", type=0, category=1}; // まだやれる……
+st[402] = { path=1, file="Kur00_5002", type=0, category=1}; // 負ける訳には…
+
+// ブラスト	
+st[410] = { path=1, file="Kur00_5100", type=0, category=1}; // 私を怒らせたな！
+st[411] = { path=1, file="Kur00_5101", type=0, category=1}; // はぁぁああ―――っ！
+st[412] = { path=1, file="Kur00_5102", type=0, category=1}; // 本気で行くぞ！
+
+// コンボブラスト	
+st[420] = { path=1, file="Kur00_5200", type=0, category=1}; // 続けていくぞ！
+st[421] = { path=1, file="Kur00_5201", type=0, category=1}; // 飛べっ！
+
+// バウンドブラスト	
+st[430] = { path=1, file="Kur00_5300", type=0, category=1}; // 私に触るなっ！
+st[431] = { path=1, file="Kur00_5301", type=0, category=1}; // そこまでだ！
+//st[432] = { path=1, file="Kur00_5302", type=0, category=1}; // ちょっと黙っていろ！
+
+// 攻撃サポートキャラ呼び出し	
+st[440] = { path=1, file="Kur00_5400a", type=0, category=1}; // 行けっ！
+st[441] = { path=1, file="Kur00_5401a", type=0, category=1}; // 頼んだ
+st[442] = { path=1, file="Kur00_5402a", type=0, category=1}; // 任せる！
+
+// 補助サポートキャラ呼び出し	
+// st[450] = { path=1, file="Kur00_5500a", type=0, category=1}; // 頼むぞ
+// st[451] = { path=1, file="Kur00_5501", type=0, category=1}; // 今のうちに
+// st[452] = { path=1, file="Kur00_5502", type=0, category=1}; // ヒールを頼む
+
+// 防御サポートキャラ呼び出し	
+// st[460] = { path=1, file="Kur00_5600", type=0, category=1}; // 起死回生を…
+// st[461] = { path=1, file="Kur00_5601", type=0, category=1}; // 押し負ける…！
+//st[462] = { path=1, file="Kur00_5602", type=0, category=1}; // やってくれ！
+
+// 専用サポートキャラ呼び出し
+st[465] = { path=1, file="Kur00_5700_b", type=0, category=1}; // 
+st[466] = { path=1, file="Kur00_5701", type=0, category=1}; // 
+
+// 好調時にポテンシャル発動	
+st[470] = { path=1, file="Kur00_6100", type=0, category=3}; // ふふふ……
+st[471] = { path=1, file="Kur00_6101", type=0, category=3}; // よしッ！
+st[472] = { path=1, file="Kur00_6102", type=0, category=3}; // 力が溢れてくる
+
+// ピンチ時にポテンシャル発動	
+st[480] = { path=1, file="Kur00_6200", type=0, category=3}; // 正直、あなどっていたよ
+st[481] = { path=1, file="Kur00_6201", type=0, category=3}; // これ程とは、な
+// st[482] = { path=1, file="Kur00_6202", type=0, category=3}; // もっさきって言うな！
+
+// レアな隠しポテンシャル発動	
+// st[490] = { path=1, file="Kur00_6300", type=0, category=3}; // ……ハルユキくん……
+//st[491] = { path=1, file="Kur00_6301", type=0, category=3}; // 私は、負けない！
+
+// 激突演出	
+// st[500] = { path=1, file="Kur00_6400", type=0, category=3}; // うおぉぉぉおお――っ！
+// st[501] = { path=1, file="Kur00_6401", type=0, category=3}; // 黒の王、ブラック・ロータスが相手になろう
+// st[502] = { path=1, file="Kur00_6402", type=0, category=3}; // 速さ比べか
+
+// 必殺技１	
+st[510] = { path=1, file="Kur00_7000a", type=0, category=1}; // 貫け！
+st[511] = { path=1, file="Kur00_7001a", type=0, category=1}; // デス・バイ・ピアーシング！
+st[512] = { path=1, file="Kur00_7002", type=0, category=1}; // 受けてみろ！
+st[513] = { path=1, file="Kur00_7003a", type=0, category=1}; // セアアアアアッ！
+
+// 必殺技2	
+st[520] = { path=1, file="Kur00_7100", type=0, category=1}; // 防げるか！？
+st[521] = { path=1, file="Kur00_7101a", type=0, category=1}; // デス・バイ・バラージング！
+st[522] = { path=1, file="Kur00_7102a", type=0, category=1}; // 耐えてみろ！
+//st[523] = { path=1, file="Kur00_7103", type=0, category=1}; // オォォォォ――ッ！
+
+// 必殺技3	
+st[530] = { path=1, file="Kur00_7200", type=0, category=1}; // 見切れるか！？
+// st[531] = { path=1, file="Kur00_7201a", type=0, category=1}; // 行けっ！
+st[532] = { path=1, file="Kur00_7202a", type=0, category=1}; // 付いてこれるか！？
+st[533] = { path=1, file="Kur00_7203", type=0, category=1}; // そこだ！
+
+// 必殺技4	
+st[540] = { path=1, file="Kur00_7300a", type=0, category=1}; // どうした？来ないのか？
+st[541] = { path=1, file="Kur00_7301", type=0, category=1}; // もっと近くに来い
+// st[542] = { path=1, file="Kur00_7302a", type=0, category=1}; // 残念だったな
+// st[543] = { path=1, file="Kur00_7303", type=0, category=1}; // さぁ、見せてみろ
+
+// 必殺技5	
+// st[550] = { path=1, file="Kur00_7400a", type=0, category=1}; // ヴォーパル・ストライクッ！
+// st[551] = { path=1, file="Kur00_7401a", type=0, category=1}; // ストライクッ！
+// st[552] = { path=1, file="Kur00_7402", type=0, category=1}; // 流星のように！
+// st[553] = { path=1, file="Kur00_7403", type=0, category=1}; // もっと速く！
+
+// 必殺技6	
+st[560] = { path=1, file="Kur00_7500a", type=0, category=1}; // オーバードライブ！
+st[561] = { path=1, file="Kur00_7501a", type=0, category=1}; // モード・グリーン！
+st[562] = { path=1, file="Kur00_7502a", type=0, category=1}; // モード・レッド！
+st[563] = { path=1, file="Kur00_7503a", type=0, category=1}; // モード・ブルー！
+
+// 超必殺技1	
+st[570] = { path=1, file="Kur00_8000_s0", type=0, category=1}; // 耐えられるかな？……
+st[571] = { path=1, file="Kur00_8000_s1", type=0, category=1}; // ロータス！……
+st[572] = { path=1, file="Kur00_8000_s2", type=0, category=1}; // デス・バイ・エンブレイシング！
+st[573] = { path=1, file="Kur00_8001_s0", type=0, category=1}; // この技を使うのは久しぶりだな……
+st[574] = { path=1, file="Kur00_8001_s1", type=0, category=1}; // ありがとう
+st[575] = { path=1, file="Kur00_8001_s2", type=0, category=1}; // ナイスファイト
+st[576] = { path=1, file="Kur00_8002_s0", type=0, category=1}; // 受けてみるがいい！……
+st[577] = { path=1, file="Kur00_8002_s1", type=0, category=1}; // かつて純色の王すら屠ったこの一撃！……
+st[578] = { path=1, file="Kur00_8002_s2", type=0, category=1}; // デス・バイ・エンブレイシング！
+
+// 超必殺技2	
+st[580] = { path=1, file="Kur00_8100_s0", type=0, category=1}; // ハァァアアアッ……！（気合溜め）
+st[581] = { path=1, file="Kur00_8100_s1", type=0, category=1}; // スターバースト……
+st[582] = { path=1, file="Kur00_8100_s2", type=0, category=1}; // ストリ――ム！！
+st[583] = { path=1, file="Kur00_8101_s0", type=0, category=1}; // スターバースト・ストリーム……！（始動）
+st[584] = { path=1, file="Kur00_8101_s1", type=0, category=1}; // うぉぉぉおおお―――っ！（中間）
+st[585] = { path=1, file="Kur00_8101b_s2", type=0, category=1}; // セィァアア―ッ！（とどめ）
+//st[586] = { path=1, file="Kur00_8102_s0", type=0, category=1}; // これで終わらせてやろう……
+//st[587] = { path=1, file="Kur00_8102_s1", type=0, category=1}; // はぁぁああ―――っ！
+//st[588] = { path=1, file="Kur00_8102_s2", type=0, category=1}; // てやぁああ―――っ！
+
+
+
+// // 対人戦３連続勝利
+// 1000	すごいじゃないか！……ありがとう、君を選んで良かった
+
+// // 対人戦１０連続勝利
+// 1001	私の目に狂いはなかったな、君はもう純色の七王にすら引けを取らんよ
+
+// // 汎用勝利
+// 1010	そんな覚悟で生き残れるほど、ブレイン・バーストは甘くないぞ。なぜ負けたのか、一晩ゆっくり考えるんだな。
+
+// // 汎用勝利
+// 1011	ン、なかなかの手ごたえだったぞ。グッドゲーム。
+
+// // 汎用勝利
+// 1012	強さとは、勝利だけを意味するものではないよ。私がそれを学んだ時には、もう遅すぎたがな……。
+
+// // 汎用勝利
+// 1013	この程度の戦いで負けていては、とても黒の王は名乗れないな。
+
+// // 汎用勝利
+// 1014	仲間と共に競い合い、支え合うことで、あらゆる可能性が広がる。一人で戦ってきた君は、その喜びを、その素晴らしさをまだ知らない。かけてみろ、その無限の可能性に。
+
+// // 汎用勝利
+// 1015	君はもっとやれるはずだ。立て！限界を超えるんだ！
+
+// // 汎用勝利
+// 1016	もっと先へ……《加速》したくはないか？
+
+// // 勝利画面レアボイス
+// 1017	ハルユキ君は今頃何をしているだろうか……。
+
+// // 勝利画面レアボイス
+// 1018	我々バースト・リンカーは意識を1000倍のスピードに加速する。 それはつまり、現実の1秒を1000秒、16分40秒として体感するということだ。君たちでは私に触れる事すら叶わんよ。
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	ン？私か？
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	ふふ…なにをそんなに迷っているんだ？
+
+// // キャラセレクト画面キャラクター決定
+// 1130	では、行くぞ。バーストリンク！
+
+// // コンティニュー画面コンテニュー待機
+// 1200	まだ、戦える……。私は、こんな所で止まっている訳にはいかない……っ！
+
+// // コンティニュー画面再戦決定
+// 1210	ネガ・ネビュラス、出撃する！
+
+// // コンティニュー画面ゲームオーバー
+// 1220	そんな……ハルユキ君……
+
+// // 乱入出迎えボイス
+// 1300	私に乱入してくるとはな……おもしろい、返り討ちにしてくれる！
+
+// // 乱入出迎えボイス
+// 1301	おや？挑戦者か、ふふ……相手になろう！
+
+// // タイトルコール
+// 1700	ファイティング・クライマックス！
+
+// // タイトルコール
+// 1701	電撃文庫、ファイティング・クライマックス！
+
+// // エンディング１（5～6秒程度）
+// 8200	その……なんだ、あー……、ありがとう
+
+// // エンディング１（5～6秒程度）
+// 8201	また一緒に「夢」を見よう……

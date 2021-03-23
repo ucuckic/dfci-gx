@@ -1,0 +1,74 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Kin_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Kin00_4900", type=0, category=1}; // ボクにやらせてください
+// クライマックスブースト発動
+st[81] = { path=1, file="Kin00_7001", type=0, category=1}; // 悪いですね
+// ブラストＯＫ
+st[82] = { path=1, file="Kin00_4901", type=0, category=1}; // 準備できました！
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Kin00_2100", type=0, category=1}; // 勝ちましたよ
+st[101] = { path=1, file="Kin00_2101", type=0, category=1}; // 驚きました、いい腕ですね
+
+// ラウンド敗北	
+st[110] = { path=1, file="Kin00_2200", type=0, category=1}; // 参った…こりゃ楽にはいかないな……
+st[111] = { path=1, file="Kin00_2201", type=0, category=1}; // 続けましょう、まだ終わっていません
+
+// 通常攻撃	
+// st[120] = { path=1, file="Kin00_2500", type=0, category=1}; // えい
+st[121] = { path=1, file="Kin00_2501", type=0, category=1}; // ふっ
+st[122] = { path=1, file="Kin00_2502", type=0, category=1}; // たぁっ
+
+// 撤退	
+st[130] = { path=1, file="Kin00_4000", type=0, category=1}; // 嫌な感じがする……
+st[131] = { path=1, file="Kin00_4001", type=0, category=1}; // やりますね
+
+// ダメージ	
+st[140] = { path=1, file="Kin00_4500", type=0, category=1}; // つっ
+st[141] = { path=1, file="Kin00_4501", type=0, category=1}; // いてっ
+st[142] = { path=1, file="Kin00_4502", type=0, category=1}; // うわっ
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Kin00_4600", type=0, category=1}; // やっぱり痛いな……
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Kin00_4900", type=0, category=1}; // ボクにやらせてください
+st[161] = { path=1, file="Kin00_4901", type=0, category=1}; // 準備できました！
+
+// 必殺技１	
+st[170] = { path=1, file="Kin00_7000", type=0, category=1}; // かがめ！
+st[171] = { path=1, file="Kin00_7001", type=0, category=1}; // 悪いですね
+// st[172] = { path=1, file="Kin00_7002_s0", type=0, category=1}; // なんて言われても
+// st[173] = { path=1, file="Kin00_7002_s1", type=0, category=1}; // 構わないっ！
+st[174] = { path=1, file="Kin00_7003_b", type=0, category=1}; // ひっかかった！ ※ツール直指定
+
+
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	お断りします
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	勝負に参加しろって言うんですか？
+
+// キャラセレクト画面キャラクター決定
+// 1130	行こう、エルメス

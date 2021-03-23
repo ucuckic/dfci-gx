@@ -1,0 +1,11 @@
+[System]
+ProjectName=csel_Sha
+[DataFile]
+FileNum= 1
+File00=csel_Sha.HA6
+[BmpcutFile]
+FileNum= 1
+File00=csel_Sha.cg
+[PAniFile]
+FileNum= 1
+File00=csel_Sha_ef00.pat

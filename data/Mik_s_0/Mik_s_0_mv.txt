@@ -1,0 +1,425 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+local pat_num = -1;
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// General functions
+//-----------------------------------------------------------------------------
+local checkign = function()
+{
+	local main = BMvCore.GetMainCharaData();
+	local isdouble = 0
+	local playerDoubleIgnition = Battle_Std.CheckDoubleIgnition( Def_IGNT_SupportCharacter );
+	if ( main.push() )
+	{
+		local playerDoubleIgnition = Battle_Std.CheckDoubleIgnition( Def_IGNT_SupportCharacter );
+		if( playerDoubleIgnition )
+		{ 
+			isdouble = 1
+		}
+		main.pop();
+	}
+	if( isdouble == 1 )
+	{
+		BMvTbl.SetLP(3,1);
+	}
+	else
+	{
+		BMvTbl.SetLP(3,0);
+	}
+}
+//-----------------------------------------------------------------------------
+// 5S
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_meme = BMvEff.GetPatternNum( { datatype=0, pat="meme" } );
+local pat_num_note1 = BMvEff.GetPatternNum( { datatype=0, pat="note1" } );
+local pat_num_note2 = BMvEff.GetPatternNum( { datatype=0, pat="note2" } );
+local pat_num_note3 = BMvEff.GetPatternNum( { datatype=0, pat="note3" } );
+local pat_num_note4 = BMvEff.GetPatternNum( { datatype=0, pat="note4" } );
+local pat_num_heart = BMvEff.GetPatternNum( { datatype=0, pat="heart" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		Battle_Std.AddXPos_CheckFrontStage( 400, 0 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		BMvTbl.SetPosition( { y=0 } );
+		
+	}
+	function FrameUpdate_After() : (pat_num_note1, pat_num_note2, pat_num_note3, pat_num_note4, pat_num_meme, pat_num_heart)
+	{
+		local main = BMvCore.GetMainCharaData();
+		if( main.push() )
+		{
+			local kirifuda = tDDC.Kirifuda_CheckTime();
+			
+			if( kirifuda )
+			{
+				tDDC.Kirifuda_TimeAdd( -10000, 2 );
+			}
+			if( tDDC.Blast_GetUseMode() == -1 ) 
+			{
+				tDDC.Blast_AddPoint( 100 ); 
+			}
+			
+			main.pop();
+		}
+		
+		
+		
+		if( Battle_Std.RoundisEnd() )
+		{
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_meme } );
+			BSound.SE_Play( { type=_SeType_Player, num=[180,181] } );
+			BMvTbl.SetFinalize( 0 ); //Delete main miku animation
+		}
+		
+		
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50:
+			local muki = BMvTbl.GetMuki();
+			if(muki == 1)
+			{
+				BMvTbl.SetMuki( _Direction_Left );
+			}
+			else{BMvTbl.SetMuki( _Direction_Right );}
+			break;
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[1,2] } );
+			BSound.SE_Play( { type=_SeType_Player, num=[130,131,132,133] } );
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_note1 } );
+			if( eff.push() )
+			{
+				local value = BMvEff.Random_Limit(3);
+				local anglev = 0;
+				if( value == 2){anglev = -0.5}
+				else if(value == 1){anglev = -0.3}
+				else{anglev = -0.1}
+				local vec = BMvEff.GetVector_FromAngle( { angle = anglev, speed = 200 } );
+				BMvTbl.SetVector( { x=vec.x, y=vec.y, addx=-15, addy=-30, flags=_Vector_Div|_VecFlag_NoMuki } );
+				BMvTbl.SetMuki( _Direction_Right );
+				eff.pop();
+			}
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_note4 } );
+			if( eff.push() )
+			{
+				local value = BMvEff.Random_Limit(3);
+				local anglev = 0;
+				if( value == 2){anglev = -0.5}
+				else if(value == 1){anglev = -0.3}
+				else{anglev = -0.1}
+				local vec = BMvEff.GetVector_FromAngle( { angle = anglev, speed = 200 } );
+				BMvTbl.SetVector( { x=vec.x, y=vec.y, addx=-5, addy=-5, flags=_Vector_Div|_VecFlag_NoMuki } );
+				BMvTbl.SetMuki( _Direction_Right );
+				eff.pop();
+			}
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_note3 } );
+			if( eff.push() )
+			{
+				local value = BMvEff.Random_Limit(3);
+				local anglev = 0;
+				if( value == 2){anglev = 0.5}
+				else if(value == 1){anglev = 0.3}
+				else{anglev = 0.1}
+				local vec = BMvEff.GetVector_FromAngle( { angle = anglev, speed = 200 } );
+				BMvTbl.SetVector( { x=vec.x, y=vec.y, addx=15, addy=-30, flags=_Vector_Div|_VecFlag_NoMuki } );
+				BMvTbl.SetMuki( _Direction_Right );
+				eff.pop();
+			}
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_note2 } );
+			if( eff.push() )
+			{
+				local value = BMvEff.Random_Limit(3);
+				local anglev = 0;
+				if( value == 2){anglev = 0.5}
+				else if(value == 1){anglev = 0.3}
+				else{anglev = 0.1}
+				local vec = BMvEff.GetVector_FromAngle( { angle = anglev, speed = 200 } );
+				BMvTbl.SetVector( { x=vec.x, y=vec.y, addx=5, addy=-5, flags=_Vector_Div|_VecFlag_NoMuki } );
+				BMvTbl.SetMuki( _Direction_Right );
+				eff.pop();
+			}
+			break;
+		case 150:
+			BSound.SE_Play( { type=_SeType_Player, num=[134,135,136] } );
+			tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_StatusUpPlus );
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_heart } );
+			BSound.SE_Play( { type=_SeType_Player, num=[4] } );
+			if( eff.push() )
+			{
+				local main = BMvCore.GetMainCharaData();
+				local ppos = 0;
+				if( main.push() )
+				{
+					ppos = BMvTbl.GetPosition();
+					BMvEff.SetCharaFlash( { color = 0x00FFFF, type = 0, time = 120, intime=60 } );
+					main.pop();
+					
+				}
+				BMvTbl.SetMuki( _Direction_Right );
+				BMvTbl.SetPosition( { x=ppos.x+(370<<7)} );
+				BMvTbl.SetPrio( _CharaPrio_Near_Layer_6  );
+			}
+			break;
+		case 151:
+			BMvEff.SetCharaFlash( { color = 0xFFFF00, type = 2, time = 60, intime=60 } );
+			BSound.SE_Play( { type=_SeType_Player, num=[8] } );
+			BSound.SE_Play( { type=_SeType_Player, num=[137,138,139] } );
+			break;
+		}
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00Hit" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[5] } );
+		BSound.SE_Play( { type=_SeType_Player, num=[170,171,174] } );
+	}
+	function Finalize_After() : (checkign)
+	{
+		local main = BMvCore.GetMainCharaData();
+		checkign();
+		local LP = BMvTbl.GetLP(3);
+		if( main.push() )
+		{
+			if( LP == 1)
+			{
+				tDDC.Support_StartRecast( 40 );
+			}
+			main.pop();
+		}
+		
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[5] } );
+		BSound.SE_Play( { type=_SeType_Player, num=[170,171,174] } );
+	}
+	function Finalize_After() : (checkign)
+	{
+		local main = BMvCore.GetMainCharaData();
+		checkign();
+		local LP = BMvTbl.GetLP(3);
+		if( main.push() )
+		{
+			if( LP == 1)
+			{
+				tDDC.Support_StartRecast( 40 );
+			}
+			main.pop();
+		}
+		
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 6S
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_micro = BMvEff.GetPatternNum( { datatype=0, pat="micro" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_speaker = BMvEff.GetPatternNum( { datatype=0, pat="speaker" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_ring = BMvEff.GetPatternNum( { datatype=0, pat="ring" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_bars = BMvEff.GetPatternNum( { datatype=0, pat="bars" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_wave = BMvEff.GetPatternNum( { datatype=0, pat="wave" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 ); // 表示するパターンを設定
+		Battle_Std.AddXPos_CheckFrontStage( 200, 0 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		BMvTbl.SetPosition( { y=0 } );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141] } );
+	}
+	function FrameUpdate_After() : (pat_num_micro, pat_num_speaker, pat_num_ring, pat_num_wave)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 50:
+			BSound.SE_Play( { type=_SeType_Player, num=[6] } );
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_micro } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 影を表示する
+				eff.pop();
+			}
+			break;
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[3] } );
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_speaker } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 影を表示する
+				BMvTbl.SetPrio( _CharaPrio_Far_Layer_5  );
+				eff.pop();
+			}
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_ring, x=245<<7 } );
+			if( eff.push() )
+			{
+				BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } );
+				BMvTbl.SetScale( { x=15000, y=15000 } );
+				eff.pop();
+			}
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_ring, x=600<<7 } );
+			if( eff.push() )
+			{
+				BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } );
+				BMvTbl.SetScale( { x=15000, y=15000 } );
+				eff.pop();
+			}
+			BMvEff.CreateObject( { mvname="Mv_bars" } );
+			break;
+		case 150:
+			BSound.SE_Play( { type=_SeType_Player, num=[7] } );
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_wave } );
+			if( eff.push() )
+			{
+				eff.pop();
+			}
+			break;
+		case 151:
+			BSound.SE_Play( { type=_SeType_Player, num=[142,143,144] } );
+			break;
+		}
+	}
+	function HitInterrupt_After()
+	{
+	}
+}
+
+t.Mv_bars <-
+{
+	function Init_After() : (pat_num_bars)
+	{
+		BMvTbl.SetPattern( pat_num_bars ); // 表示するパターンを設定
+		BMvTbl.SetMuki( _Direction_Right );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera } );
+		BMvTbl.SetPosition( { x= -290<<7, y=-150<<7 } );
+		BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } );
+		BMvTbl.SetPrio( _CharaPrio_Far_Layer_6  );
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 1:
+			local rotate = BMvEff.Random_Limit(100);
+			if( rotate > 50)
+			{
+				BMvTbl.SetAngle( { angle_float=1 } ); //rotate 180 down
+				BMvTbl.SetPosition( { x= 285<<7, y=-740<<7 } );
+			}
+			else
+			{
+				BMvTbl.SetAngle( { angle_float=0 } ); //rotate 180 up
+				BMvTbl.SetPosition( { x= -290<<7, y=-185<<7 } );
+			}
+			break;
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10Hit" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[170,172,173] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[170,172,173] } );
+	}
+}
+
+MIK_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Mik_s );
+
+_dp(" -> Load OK");

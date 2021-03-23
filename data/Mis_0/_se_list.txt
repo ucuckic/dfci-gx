@@ -1,0 +1,402 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Mis/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="ObjectBoundC", type=0, category=2, }; // ガコン　（自販機）
+st[51] = { path=2, file="ObjectBoundB", type=0, category=2, }; // ドスン　（214派生）
+st[52] = { path=2, file="ObjectBoundA", type=0, category=2, }; // ゴイン　（乱舞とどめ）
+
+// イグニッション選択
+st[80] = { path=1, file="Mis00_6100", type=0, category=1}; // さぁて、行きますか！
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+// 登場シーン	
+st[100] = { path=1, file="Mis00_2000", type=0, category=1}; // アンタが相手？
+st[101] = { path=1, file="Mis00_2001", type=0, category=1}; // この私に挑もうっての？
+st[102] = { path=1, file="Mis00_2002", type=0, category=1}; // 楽しませてくれるんでしょうねえ？
+
+// 掛け合い
+st[104] = { path=1, file="Mis00_2050", type=0, category=1}; // LV5の力
+st[105] = { path=1, file="Mis00_2051", type=0, category=1}; // 自販機は
+st[106] = { path=1, file="Mis00_2052", type=0, category=1}; // ゲコたは！
+st[107] = { path=1, file="Mis00_2053", type=0, category=1}; // そんなガラクタ（対深雪）
+st[108] = { path=1, file="Mis00_2060", type=0, category=1}; // 劣等生とか言って（対達也）
+st[109] = { path=1, file="Mis00_2070", type=0, category=1}; //  あ、ああああああんた何する気よ！！！（対黒子）
+
+// 戦闘勝利・汎用	
+st[110] = { path=1, file="Mis00_2100_s1", type=0, category=1}; // すぅーーー、(息を吸う感じ)ふん
+st[111] = { path=1, file="Mis00_2102", type=0, category=1}; // ふふ、私の勝ちー♪
+// 戦闘勝利・辛勝	
+st[112] = { path=1, file="Mis00_2101", type=0, category=1}; // なんとか……勝てた………。
+// 戦闘勝利・楽勝	
+st[113] = { path=1, file="Mis00_2103", type=0, category=1}; // …ゲコ太！？、まってええええええ！！！（ゲコ太を見つけ画面外へ走ります。）
+
+// 完全勝利
+st[114] = { path=1, file="Mis00_2105", type=0, category=1}; // まったく、いいかげんにしなさいよねっ
+
+// ラウンド勝利	
+st[120] = { path=1, file="Mis00_2150", type=0, category=1}; // ふふん、たいした事ないんじゃない？
+st[121] = { path=1, file="Mis00_2151", type=0, category=1}; // まだ、やれるんでしょ？
+
+// タイムアップ判定負け	
+st[130] = { path=1, file="Mis00_2200", type=0, category=1}; // 私、負けたの！？
+st[131] = { path=1, file="Mis00_2201", type=0, category=1}; // くっそー！
+
+// 弱攻撃	
+st[140] = { path=1, file="Mis00_2300c", type=0, category=1}; // ふ
+st[141] = { path=1, file="Mis00_2301", type=0, category=1}; // し
+st[142] = { path=1, file="Mis00_2302c", type=0, category=1}; // は
+st[143] = { path=1, file="Mis00_2303", type=0, category=1}; // や
+st[144] = { path=1, file="Mis00_2304c", type=0, category=1}; // た
+
+// 中攻撃	
+// st[150] = { path=1, file="Mis00_2400a", type=0, category=1}; // そこ
+st[151] = { path=1, file="Mis00_2401c", type=0, category=1}; // えい
+st[152] = { path=1, file="Mis00_2402", type=0, category=1}; // はっ
+st[153] = { path=1, file="Mis00_2403", type=0, category=1}; // やっ
+st[154] = { path=1, file="Mis00_2404", type=0, category=1}; // てえ！
+st[156] = { path=1, file="Mis00_2405", type=0, category=1}; // ふん！！
+st[157] = { path=1, file="Mis00_2406a", type=0, category=1}; // たぁ！
+
+// 強攻撃	
+st[160] = { path=1, file="Mis00_2500", type=0, category=1}; // だぁあ！
+st[161] = { path=1, file="Mis00_2501", type=0, category=1}; // でぇーい！
+st[162] = { path=1, file="Mis00_2502b", type=0, category=1}; // やあぁ！
+st[163] = { path=1, file="Mis00_2503", type=0, category=1}; // そこ！
+st[164] = { path=1, file="Mis00_2504a", type=0, category=1}; // もらったぁ！
+st[165] = { path=1, file="Mis00_2505b", type=0, category=1}; // はあっ！
+st[166] = { path=1, file="Mis00_2506", type=0, category=1}; // せーのっ！
+
+// 特殊攻撃	
+// st[170] = { path=1, file="Mis00_2600", type=0, category=1}; // 負けないッ！
+st[171] = { path=1, file="Mis00_2601", type=0, category=1}; // ぁああっ！！
+// st[172] = { path=1, file="Mis00_2602", type=0, category=1}; // 無駄ぁ！
+st[173] = { path=1, file="Mis00_2603", type=0, category=1}; // コルァ！
+st[174] = { path=1, file="Mis00_2604", type=0, category=1}; // こんのぉ！（コノヤロー的な意味で）
+st[175] = { path=1, file="Mis00_2605", type=0, category=1}; // 遅すぎんのよ！
+// st[176] = { path=1, file="Mis00_2606", type=0, category=1}; // なんですってぇ！！
+st[177] = { path=1, file="Mis00_2607", type=0, category=1}; // どーよ？
+
+// 投げ技成功	
+st[180] = { path=1, file="Mis00_2700", type=0, category=1}; // 捕まえたー！
+st[181] = { path=1, file="Mis00_2701", type=0, category=1}; // 取ったあ！
+st[182] = { path=1, file="Mis00_2702", type=0, category=1}; // 逃がさないわよ！
+
+// 投げ技失敗	
+// st[190] = { path=1, file="Mis00_2800", type=0, category=1}; // あら！？
+// st[191] = { path=1, file="Mis00_2801", type=0, category=1}; // なんで！？
+
+// 敵の投げ技を回避	
+st[200] = { path=1, file="Mis00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 甘いっての！！
+st[201] = { path=1, file="Mis00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 }; // 離れなさいっ…よっ！！
+
+// 挑発アクション	
+st[210] = { path=1, file="Mis00_3100", type=0, category=1}; // どーしたの？
+st[211] = { path=1, file="Mis00_3101", type=0, category=1}; // 来ないってんなら、こっちからいくわよ？
+
+// ジャンプ	
+st[220] = { path=1, file="Mis00_3200", type=0, category=1}; // たっ
+st[221] = { path=1, file="Mis00_3201", type=0, category=1}; // はっ
+st[222] = { path=1, file="Mis00_3202", type=0, category=1}; // 上ッ！
+
+// ダッシュ	
+// st[230] = { path=1, file="Mis00_3300", type=0, category=1}; // たっ
+st[231] = { path=1, file="Mis00_3301", type=0, category=1}; // いくわよ！
+st[232] = { path=1, file="Mis00_3302", type=0, category=1}; // ふ！
+
+// バックステップ	
+// st[240] = { path=1, file="Mis00_3400", type=0, category=1}; // はっ！
+// st[241] = { path=1, file="Mis00_3401", type=0, category=1}; // っと…
+st[242] = { path=1, file="Mis00_3402", type=0, category=1}; // よっ…と！
+
+// 小攻撃ガード	
+st[250] = { path=1, file="Mis00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // ふん
+st[251] = { path=1, file="Mis00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // 軽い
+st[252] = { path=1, file="Mis00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 }; // ふぅ！
+
+// 中攻撃ガード	
+st[260] = { path=1, file="Mis00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // ぐっ
+st[261] = { path=1, file="Mis00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // ちょっ！
+st[262] = { path=1, file="Mis00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 }; // くうっ…
+
+// 大攻撃ガード	
+st[270] = { path=1, file="Mis00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // この程度…
+st[271] = { path=1, file="Mis00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // なかなかやるじゃない
+st[272] = { path=1, file="Mis00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 }; // イタタっ（手が痺れて痛い）
+
+// 攻撃を見切り余裕でガード	
+st[280] = { path=1, file="Mis00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 余裕余裕！
+st[281] = { path=1, file="Mis00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // へぇ
+st[282] = { path=1, file="Mis00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 }; // 見切った！！
+
+// ガード失敗	
+st[290] = { path=1, file="Mis00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // ったく！
+st[291] = { path=1, file="Mis00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // チッ！
+st[292] = { path=1, file="Mis00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 }; // しまっ…！？（しまった）
+
+// 受け身	
+st[300] = { path=1, file="Mis00_4000", type=0, category=1}; // まっず！
+st[301] = { path=1, file="Mis00_4001", type=0, category=1}; // おっと！
+st[302] = { path=1, file="Mis00_4002", type=0, category=1}; // なんて能力っ！！
+
+// バリア発動	
+st[310] = { path=1, file="Mis00_4100", type=0, category=1}; // 防ぐっ！
+st[311] = { path=1, file="Mis00_4101", type=0, category=1}; // ふんっ！
+st[312] = { path=1, file="Mis00_4102", type=0, category=1}; // ふーーー（息を吐く）
+
+// バリアガード成功	
+st[320] = { path=1, file="Mis00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // 見え見えだっての！
+st[321] = { path=1, file="Mis00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // そんな攻撃っ！
+st[322] = { path=1, file="Mis00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 }; // どうってことっ！
+
+// 小ダメージ	
+st[330] = { path=1, file="Mis00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // うっ
+st[331] = { path=1, file="Mis00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // くっ
+st[332] = { path=1, file="Mis00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 }; // いっ
+
+// 中ダメージ	
+st[340] = { path=1, file="Mis00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // いたっ
+st[341] = { path=1, file="Mis00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // くうっ
+st[342] = { path=1, file="Mis00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 }; // っあ！
+
+// 大ダメージ	
+st[350] = { path=1, file="Mis00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // ぐぅあ！
+st[351] = { path=1, file="Mis00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // っぐう！！
+st[352] = { path=1, file="Mis00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 }; // くそっ
+
+// 電撃ダメージ	
+// st[360] = { path=1, file="Mis00_4600", type=0, category=1}; // 痺れッ！？
+// 麻痺ダメージ	
+// st[361] = { path=1, file="Mis00_4601", type=0, category=1}; // 気持ち悪い…
+// 特殊ダメージ	
+// st[362] = { path=1, file="Mis00_4602", type=0, category=1}; // これ…は…っ
+
+// ダウン	
+// st[370] = { path=1, file="Mis00_4700", type=0, category=1, prio=Def_SEP_KO }; // な…んで………
+// st[371] = { path=1, file="Mis00_4701", type=0, category=1, prio=Def_SEP_KO }; // くっ…そ……
+st[372] = { path=1, file="Mis00_4702", type=0, category=1, prio=Def_SEP_KO }; // あぁぁ―――っ！
+
+// ダウン・ノックアウト	
+st[380] = { path=1, file="Mis00_4800a", type=0, category=1, prio=Def_SEP_KO }; // ぐぅ…あああああああぁ！
+st[381] = { path=1, file="Mis00_4801", type=0, category=1, prio=Def_SEP_KO }; // どうして、こんな事に…………
+// st[382] = { path=1, file="Mis00_4802", type=0, category=1, prio=Def_SEP_KO }; // ーっ…ああああ！！
+
+// 起きあがり	
+st[390] = { path=1, file="Mis00_4900", type=0, category=1}; // まだまだっ
+st[391] = { path=1, file="Mis00_4901", type=0, category=1}; // これからよっ
+st[392] = { path=1, file="Mis00_4902", type=0, category=1}; // よっと！
+
+// 起きあがり・瀕死	
+st[400] = { path=1, file="Mis00_5000", type=0, category=1}; // まだ…負けてないんだからっ
+st[401] = { path=1, file="Mis00_5001", type=0, category=1}; // きっくぅぅ…（攻撃が効いたの意）
+st[402] = { path=1, file="Mis00_5002", type=0, category=1}; // く……コイツ！！
+
+// ブラスト	
+st[410] = { path=1, file="Mis00_5100", type=0, category=1}; // 本気でっ！
+st[411] = { path=1, file="Mis00_5101", type=0, category=1}; // はぁぁああっ
+st[412] = { path=1, file="Mis00_5102", type=0, category=1}; // いくわよ！
+
+// コンボブラスト	
+st[420] = { path=1, file="Mis00_5200", type=0, category=1}; // まだいくわよ！
+st[421] = { path=1, file="Mis00_5201", type=0, category=1}; // こんなもんじゃないわよ
+
+// バウンドブラスト	
+st[430] = { path=1, file="Mis00_5300", type=0, category=1}; // 離れなさいよ！
+st[431] = { path=1, file="Mis00_5301", type=0, category=1}; // ッざけんじゃないわよ！！
+st[432] = { path=1, file="Mis00_5302", type=0, category=1}; // いい加減にしろー！
+
+// 攻撃サポートキャラ呼び出し	
+st[440] = { path=1, file="Mis00_5400", type=0, category=1}; // お願いっ！
+st[441] = { path=1, file="Mis00_5401", type=0, category=1}; // チャンスよ！
+st[442] = { path=1, file="Mis00_5402", type=0, category=1}; // 一緒に行くわよ！
+
+// 補助サポートキャラ呼び出し	
+// st[450] = { path=1, file="Mis00_5500", type=0, category=1}; // 手を貸して！
+// st[451] = { path=1, file="Mis00_5501", type=0, category=1}; // 今なら！
+// st[452] = { path=1, file="Mis00_5502", type=0, category=1}; // サポートよろしく♪
+
+// 防御サポートキャラ呼び出し	
+// st[460] = { path=1, file="Mis00_5600", type=0, category=1}; // 間に合わない！
+// st[461] = { path=1, file="Mis00_5601", type=0, category=1}; // ま、まずい！
+// st[462] = { path=1, file="Mis00_5602", type=0, category=1}; // 危ない！！
+
+st[461] = { path=1, file="Mis00_5750", type=0, category=1}; // ういはるさん
+st[462] = { path=1, file="Mis00_5751", type=0, category=1}; // ジャッジメント
+
+st[463] = { path=1, file="Mis00_5700_b", type=0, category=1}; // アンタの出番
+st[464] = { path=1, file="Mis00_5701_b", type=0, category=1}; // ちょっとは
+st[465] = { path=1, file="Mis00_5710_b", type=0, category=1}; // アクセラ
+st[466] = { path=1, file="Mis00_5711_b", type=0, category=1}; // 気が進まない
+st[467] = { path=1, file="Mis00_5712_b", type=0, category=1}; // 仕方ないわね
+st[468] = { path=1, file="Mis00_5720_b", type=0, category=1}; // ラストオーダー
+st[469] = { path=1, file="Mis00_5721_b", type=0, category=1}; // アンタもやって
+
+// 好調時にポテンシャル発動	
+st[470] = { path=1, file="Mis00_6100", type=0, category=3}; // さぁて、行きますか！
+st[471] = { path=1, file="Mis00_6101", type=0, category=3}; // いっくわよ！
+st[472] = { path=1, file="Mis00_6102", type=0, category=3}; // わったっしっにはー！御坂美琴って名前があんのよ！
+
+// ピンチ時にポテンシャル発動	
+st[480] = { path=1, file="Mis00_6200", type=0, category=3}; // よくもやってくれたわね…！
+st[481] = { path=1, file="Mis00_6201", type=0, category=3}; // …っ　覚悟しなさいよ！！
+st[482] = { path=1, file="Mis00_6202", type=0, category=3}; // 今わたしはとってもムシャクシャしてる！！
+
+// レアな隠しポテンシャル発動	
+// st[490] = { path=1, file="Mis00_6300", type=0, category=3}; // 本気でいくわよ！
+// st[491] = { path=1, file="Mis00_6301", type=0, category=3}; // きっ…たぁあああああ！！
+
+// 激突演出	
+// st[500] = { path=1, file="Mis00_6400", type=0, category=3}; // いい度胸してんじゃない！！！
+// st[501] = { path=1, file="Mis00_6401", type=0, category=3}; // いいわよ！やってやろうじゃない！！
+// st[502] = { path=1, file="Mis00_6402", type=0, category=3}; // アンタ　黙りなさいよね！
+
+// 必殺技１	
+// st[510] = { path=1, file="Mis00_7000", type=0, category=1}; // いっけぇ！
+st[511] = { path=1, file="Mis00_7001", type=0, category=1}; // 当たれっ！
+st[512] = { path=1, file="Mis00_7002", type=0, category=1}; // 逃がさないッ！
+// st[513] = { path=1, file="Mis00_7003", type=0, category=1}; // 避けれる？
+
+st[515] = { path=1, file="Mis00_7000a", type=0, category=1}; // いっけぇ！
+// st[516] = { path=1, file="Mis00_7001a", type=0, category=1}; // 当たれっ！
+// st[517] = { path=1, file="Mis00_7002a", type=0, category=1}; // 逃がさないッ！
+st[518] = { path=1, file="Mis00_7003a", type=0, category=1}; // 避けれる？
+// 必殺技2	
+st[520] = { path=1, file="Mis00_7100", type=0, category=1}; // こっちよ！
+// st[521] = { path=1, file="Mis00_7101", type=0, category=1}; // こういう事もできるのよ！！
+// st[522] = { path=1, file="Mis00_7102", type=0, category=1}; // はっ！
+// st[523] = { path=1, file="Mis00_7103", type=0, category=1}; // とう！
+// st[525] = { path=1, file="Mis00_7100a", type=0, category=1}; // こっちよ！
+st[526] = { path=1, file="Mis00_7101a", type=0, category=1}; // こういう事もできるのよ！！
+// st[527] = { path=1, file="Mis00_7102a", type=0, category=1}; // はっ！
+st[528] = { path=1, file="Mis00_7103a", type=0, category=1}; // とう！
+
+// 必殺技3	
+// st[530] = { path=1, file="Mis00_7200", type=0, category=1}; // こんのおお！（コノヤロー的な意味で）
+// st[531] = { path=1, file="Mis00_7201", type=0, category=1}; // おとなしくしなさい！！
+// st[532] = { path=1, file="Mis00_7202", type=0, category=1}; // 無視すんなー！
+// st[533] = { path=1, file="Mis00_7203", type=0, category=1}; // くたばれー！
+
+// 必殺技4	
+// st[540] = { path=1, file="Mis00_7300a", type=0, category=1}; // ちょーっと、痛いかも…ねッ！
+st[541] = { path=1, file="Mis00_7301a", type=0, category=1}; // くらいなさいよ！
+// st[542] = { path=1, file="Mis00_7302", type=0, category=1}; // 殺ったー！！(とったー)
+st[543] = { path=1, file="Mis00_7303", type=0, category=1}; // 逃げんなー！！
+
+// 必殺技5	
+st[550] = { path=1, file="Mis00_7400", type=0, category=1}; // 上から！
+st[551] = { path=1, file="Mis00_7401", type=0, category=1}; // せーの…っ！
+st[552] = { path=1, file="Mis00_7402", type=0, category=1}; // これで…！
+st[553] = { path=1, file="Mis00_7403", type=0, category=1}; // コレならどうよ！
+
+// 必殺技6	
+st[560] = { path=1, file="Mis00_7500", type=0, category=1}; // チェイサー！！
+st[561] = { path=1, file="Mis00_7501", type=0, category=1}; // なめんなあーーー！
+st[562] = { path=1, file="Mis00_7502", type=0, category=1}; // スカしてんじゃねぇええええ！！
+st[563] = { path=1, file="Mis00_7503", type=0, category=1}; // むかつくー！
+
+// 超必殺技1	
+st[570] = { path=1, file="Mis00_8000_s0", type=0, category=1}; // 全力で行かせてもらうわよ！　　フンっーーーー！！
+st[571] = { path=1, file="Mis00_8000_s1", type=0, category=1}; // 全力で行かせてもらうわよ！　　フンっーーーー！！
+st[572] = { path=1, file="Mis00_8001_s0", type=0, category=1}; // 覚悟しないさいよ……　ねっ！！
+st[573] = { path=1, file="Mis00_8001_s1", type=0, category=1}; // 覚悟しないさいよ……　ねっ！！
+st[574] = { path=1, file="Mis00_8002_s0", type=0, category=1}; // ぶち抜いてあげる！！　フンっーーーー！！
+st[575] = { path=1, file="Mis00_8002_s1", type=0, category=1}; // ぶち抜いてあげる！！　フンっーーーー！！
+
+// 超必殺技2	
+st[580] = { path=1, file="Mis00_8100_s0", type=0, category=1}; // もう許さないから！！　　おらあああああ！！
+st[581] = { path=1, file="Mis00_8100_s1", type=0, category=1}; // もう許さないから！！　　おらあああああ！！
+st[582] = { path=1, file="Mis00_8101_s0", type=0, category=1}; // これが………　　　私の全力だあああ！！！
+st[583] = { path=1, file="Mis00_8101_s1", type=0, category=1}; // これが………　　　私の全力だあああ！！！
+st[584] = { path=1, file="Mis00_8102_s0", type=0, category=1}; // やったろーじゃない！！　　とどめっ！！
+st[585] = { path=1, file="Mis00_8102_s1", type=0, category=1}; // やったろーじゃない！！　　とどめっ！！
+
+
+
+// // 対人戦３連続勝利
+// 1000	今の所全戦全勝ッ！！
+
+// // 対人戦１０連続勝利
+// 1001	べ、別に、アンタに助けてもらわなくても、私の力ならどうとでもなったわよ
+
+// // 汎用勝利
+// 1010	私の勝ちね。ふふ、何でも言うことききなさいよね。
+
+// // 汎用勝利
+// 1011	ほんっと、退屈しないわねぇ、この街は…
+
+// // 汎用勝利
+// 1012	まったく………。なんで私がこんなに疲れなきゃなんないのよー
+
+// // 汎用勝利
+// 1013	目の前にハードルが置かれたら、それを飛び越えないと気がすまない質だから…ごめんね。
+
+// // 汎用勝利
+// 1014	どうっ？ざっとこんなもんよ
+
+// // 汎用勝利
+// 1015	手加減はしたからね
+
+// // 汎用勝利
+// 1016	……。アンタ、私にどんなキャラ期待してんのよ？
+
+// // 勝利画面レアボイス
+// 1017	ったく、あのバカどこにいんのよ。
+
+// // 勝利画面レアボイス
+// 1018	わったしっにはー、御坂美琴って名前があんのよ！いい加減に覚えろド馬鹿！！
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	美琴先生に任せなさーい！
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	ちょっとアンタ！何で私の事だけいっつも検索件数ゼロ状態なのよ！
+
+// // キャラセレクト画面キャラクター決定
+// 1130	私の実力みせてあげるわ
+
+// // コンティニュー画面コンテニュー待機
+// 1200	敗けてない…　勝つまであきらめないっ！
+
+// // コンティニュー画面再戦決定
+// 1210	一緒に、頑張っていきましょ
+
+// // コンティニュー画面ゲームオーバー
+// 1220	うそ！　うそ…そんな……
+
+// // 乱入出迎えボイス
+// 1300	私とやり合って、勝てると思ってんの？
+
+// // 乱入出迎えボイス
+// 1301	待ってたわよ！　やったろーじゃない
+
+// // タイトルコール
+// 1700	ファイティング・クライマックス！
+
+// // タイトルコール
+// 1701	電撃文庫、ファイティング・クライマックス！
+
+// // エンディング１（5～6秒程度）
+// 8200	一緒にいてくれてありがと。助かったわ
+
+// // エンディング１（5～6秒程度）
+// 8201	これからも……一緒に「夢」を見ましょ。

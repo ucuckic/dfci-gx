@@ -1,0 +1,31 @@
+
+print("\n< in Battle_init >");
+
+/*
+Battle_Std.txt の前に処理→実行されます
+
+const 定義ファイルとかをここで読ませるといいかも？
+
+*/
+
+//デバッグ用出力関係
+local file = "./script/btl_Define_LocalDebug.txt";
+if( BtlMvStd.IsFileAlive( file ) )
+{
+	__dofile__( file )
+	print("\n ★ローカルデバッグモードあり★");
+	debuglog.write("\n"); //見やすいように改行のみ
+	debuglog.write_r("[Battle_Init]"); //最後に自動改行と日付つき
+}
+else
+{
+	__dofile__( "./script/btl_Define_NoLocalDebug.txt" )
+	// print("\n ☆ローカルデバッグモードなし☆");
+}
+
+__dofile__("./script/btl_Define.txt"); //定数
+__dofile__("./script/btl_debugFunc.txt"); /**/
+
+print("\n< out Battle_init >");
+
+// __dofile__("./script/Battle_Std.txt"); /* こうしたほうがいい？ */

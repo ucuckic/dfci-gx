@@ -1,0 +1,2100 @@
+__dofile__( "./data/_combase.txt" );
+
+// ※※※ここで定義されたローカル変数をfunction内に使うと落ちる。
+
+// 半定数 なんとなく
+const com_throw_recover_pos = 99; // 投げぬけ動作位置
+local throw_recover_avg = 75; // 投げぬけ失敗確率
+
+// 発動頻度定義
+// const com_frequency0 = 0;
+// const com_frequency1 = 0;
+// const com_frequency2 = 0;
+// const com_frequency3 = 0;
+// const com_frequency4 = 0;
+
+const com_frequency0 = 1;
+const com_frequency1 = 10;
+const com_frequency2 = 30;
+const com_frequency3 = 100;
+const com_frequency4 = 300;
+
+// 間合い定義
+const com_Xlen_SPSkill = 60000; // 超技発動する間合い
+const com_Xlen_Kirifuda = 30000; // 切り札発動する間合い
+
+const com_TaikuAtk = "2B"; // 対空で使う通常技
+const com_TaikuSkill_0 = "2+A+B"; // 対空で使うインパクト A+B or 2+A+B
+const com_TaikuSkill_1 = "2+A+B"; // 対空で使うインパクト A+B or 2+A+B
+const com_ActiveSkill_0 = "A+B"; // 攻撃的インパクト A+B or 2+A+B
+const com_KenseiSkill_0 = "236A"; // 牽制で使う必殺技１ 236Aor236Bor214Aor214B
+const com_KenseiSkill_1 = "214A"; // 牽制で使う必殺技１ 236Aor236Bor214Aor214B
+const com_AirActiveSkill_0 = "J236A"; // 空中で攻撃的な必殺技 J236A or J236B or J214A or J214B
+const com_AirActiveAtk_0 = "JC"; // 空中で飛び込みに使う攻撃 JBorJC
+const com_TuigekiSkill_0 = "A+B"; // 追撃で使う必殺技１ A+B or 236Aor236Bor214Aor214B
+const com_TuigekiSkill_1 = "214B"; // 追撃で使う必殺技２ A+B or 236Aor236Bor214Aor214B
+const com_TuigekiEXSkill_0 = "214EX"; // 追撃で使うＥＸ必殺技１ 236EXor214EX
+const com_TuigekiEXSkill_1 = "214EX"; // 追撃で使うＥＸ必殺技２ 236EXor214EX
+
+// ゲージ消費定義(5ゲージで100)
+const com_EXSC_EXSkill = 20;
+const com_EXSC_SPSkill = 40;
+
+// COM生成用ローカル変数
+local nowskillnum = 50;
+
+//-------------------------------------------------------------
+// com動作生成
+
+local comcount = 200; // 最大数 できるだけギリギリに
+local com = CCom(comcount); // COM用オブジェクト
+
+com.SetGuardAvg( 30 ); // ガード確率
+
+
+local stmp = 0;
+local mtmp = 0;
+
+//--------------------------------------------------------------
+{	// ０は待機
+	stmp = com.GetSkill(0); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		return com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		if( st.CheckPState( _eComState_MoveAble ) )
+		{
+			//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		}
+		
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, 0,  10, 50,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+}
+
+{	// 前進
+	stmp = com.GetSkill(1); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( st.GetELenX() < 25000 ) return 0; // 近すぎたら発動しない
+
+		return com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+
+		if( st.GetELenX() < 25000 ) // 近づいたら終了
+		{
+			BCom.Move_End(-1); // -1以外にすると次の行動指定ができる
+		}
+		// print( "\nX:" + st.GetELenX() + " Y:" + st.GetELenY() );
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, 0,  30, 120,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+}
+
+{	// 後退
+	stmp = com.GetSkill(2); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( st.GetELenX() > 30000 ) return 0; // 遠いときは発動しない
+		return com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+
+		// print( "\nX:" + st.GetELenX() + " Y:" + st.GetELenY() );
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 4, 0,  30, 90,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+}
+
+{	// ダッシュ
+	stmp = com.GetSkill(3); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+
+		if( st.GetELenX() < 25000 || st.GetMoveTime() > 45 ) // 近づいたら終了 || 走りすぎたら終了
+		{
+			BCom.Move_End(-1); // -1以外にすると次の行動指定ができる
+		}
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Dash_F );
+	mtmp.Set( 6, 0,  20, 30,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+}
+
+{	// バックダッシュ
+	stmp = com.GetSkill(4); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( st.GetELenX() > 30000 ) return 0; // 遠いときは発動しない
+
+		return com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Dash_B );
+	mtmp.Set( 4, 0,  5, 5,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+}
+
+{	// 垂直ジャンプ
+	stmp = com.GetSkill(7); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return com_frequency0;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 8, 0,  5, 0,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+}
+
+{	// 前ジャンプ
+	stmp = com.GetSkill(8); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return com_frequency0;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 9, 0,  5, 0,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+}
+
+{	// 様子見セット、内部分岐させてみる
+	stmp = com.GetSkill(9); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+
+		return com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		if( st.GetMove() == 0 ) // 最初の動きでした
+		{
+			local next = BMvEff.Random_Limit(4) + 1; // BMvEffとかも使える
+			BCom.Move_Jump( next );
+		}
+
+		return 1;
+	}
+	// 動き分岐
+	mtmp = stmp.PlusMove(); // 
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	// 1 後退
+	mtmp = stmp.PlusMove(); // 
+	mtmp.Set( 4, 0,  40, 40,  _eComMoveFlag_MoveEnd );
+	// 2 垂直J
+	mtmp = stmp.PlusMove(); // 
+	mtmp.Set( 0, 0,  10, 0,  _eComMoveFlag_MoveEnd );
+	// 3 うしろJ
+	mtmp = stmp.PlusMove(); // 
+	mtmp.Set( 7, 0,  10, 0,  _eComMoveFlag_MoveEnd );
+	// 4 ぼったち
+	mtmp = stmp.PlusMove(); // 
+	mtmp.Set( 0, 0,  20, 30,  _eComMoveFlag_MoveEnd );
+}
+
+{	// サポート呼び出し
+	stmp = com.GetSkill(17); // 作成
+	stmp.SetLotWait(60); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 30 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		// print("\n Support ");
+		local st = BCom.GetStatus();
+		
+		if( st.CheckPState( _eComState_MoveAble ) )
+		{
+			//print(" -> MoveAble");
+			return com_frequency2;
+		}
+		else if( st.CheckPState( _eComState_Guard  ) )
+		{
+			//print(" -> Guard");
+			if( st.GetEXS() < com_EXSC_EXSkill ) return 0; // ゲージが足りない
+			
+			return com_frequency2;
+		}
+		else if( st.CheckEState( _eComState_Bound ) )
+		{
+			//print(" -> Attack");
+			if( st.GetEXS() < com_EXSC_EXSkill ) return 0; // ゲージが足りない
+			
+			return com_frequency2;
+		}
+		return 0; // 失敗
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		local move_tag = BCom.GetMoveTag();
+		if( move_tag == "jp" )
+		{
+			if( BMvEff.Random_Limit(2) )
+			{
+				BCom.Move_Jump( "5D" );
+			}
+			else
+			{
+				BCom.Move_Jump( "6D" );
+			}
+		}
+		return 1;
+	}
+
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "5D" );
+	mtmp.Set( 0, _eComButton_D,  15, 0,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "6D" );
+	mtmp.Set( 6, _eComButton_D,  15, 0,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+	
+}
+
+{	// ブラスト
+	stmp = com.GetSkill(18); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( tDDC.Blast_IsUse()==0 ) return 0; // 使えない
+		//if( st.GetEXS() < 50  ||  st.GetEXS() == 200 ) return 0; // 半分未満、またはVEILOFF中だったら無効
+		if( st.IsPBound() ) return 0; // やられ時は発動しない
+
+		return com_frequency0;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A|_eComButton_B|_eComButton_C,  2, 0,  _eComMoveFlag_MoveEnd );
+}
+
+{	// 超技（２ゲージ）
+	stmp = com.GetSkill(19); // 作成
+	stmp.SetLotWait( 120 );
+	stmp.SetLotFailedAvg( 50 );
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print("\n GetEXS:"+st.GetEXS());
+		if( st.GetELenX() > com_Xlen_SPSkill ) return 0; // 遠いときは発動しない
+		if( st.GetEXS() < com_EXSC_SPSkill  ) return 0; // EXS割合
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return com_frequency1;//com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_41236SP );
+	mtmp.Set( 0, 0,  5, 0,  _eComMoveFlag_MoveEnd );
+}
+
+{	// なげ
+	stmp = com.GetSkill(20); // 作成
+	stmp.SetLotWait( 60 );
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( st.GetELenX() > 30000 ) return 0; // 遠いときは発動しない
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // やられ中はつかまない
+
+		return com_frequency2;//com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, _eComButton_C,  10, 0,  _eComMoveFlag_MoveEnd );
+}
+	
+{	// バウンドブラスト
+	stmp = com.GetSkill(22); // 作成
+	stmp.checkfunc = function() // チェック
+	{
+		return 0; // CPUがやるとウザいのでそもそも無くす
+		local st = BCom.GetStatus();
+		
+		if( st.IsPBound() == 0 ) return 0; // やられ時のみ発動(自分がやられ状態かどうか やられ中は 1 投げられていると 2)
+		if( st.GetELenX() > 50000 ) return 0; // 遠すぎる打ち上げ花火防止
+		if( st.GetELenY() > 50000 ) return 0; // 遠すぎる打ち上げ花火防止
+
+		return com_frequency0; //com_frequency0;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		//print("\n バースト!!");
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A|_eComButton_B|_eComButton_C,  2, 0,  _eComMoveFlag_MoveEnd );
+}
+
+{	// A連打コンボ
+	stmp = com.GetSkill(27); // 作成
+	stmp.SetLotWait( 60 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 50 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( !st.IsPMoveable() ) return 0; // 行動可能じゃないと発動しない
+		if( st.GetELenX() > 35000 ) return 0; // 遠いときは発動しない
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return com_frequency1; // com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  60, 0,  _eComMoveFlag_HitNext | _eComMoveFlag_MoveEnd );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  60, 0,  _eComMoveFlag_HitNext | _eComMoveFlag_MoveEnd );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  60, 0,  _eComMoveFlag_HitNext | _eComMoveFlag_MoveEnd );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  40, 0,  _eComMoveFlag_DamageNext );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  60, 0,  _eComMoveFlag_MoveEnd );
+}
+
+{	// 2A連打コンボ
+	stmp = com.GetSkill(28); // 作成
+	stmp.SetLotWait( 60 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 50 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( !st.IsPMoveable() ) return 0; // 行動可能じゃないと発動しない
+		if( st.GetELenX() > 35000 ) return 0; // 遠いときは発動しない
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return com_frequency1; //com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		//local st = BCom.GetStatus();
+
+		return 1;
+	}
+	// 0-0
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 2, _eComButton_A,  60, 0,  _eComMoveFlag_HitNext | _eComMoveFlag_MoveEnd );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 2, _eComButton_A,  60, 0,  _eComMoveFlag_HitNext | _eComMoveFlag_MoveEnd );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 2, _eComButton_A,  60, 0,  _eComMoveFlag_HitNext | _eComMoveFlag_MoveEnd );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 2, _eComButton_A,  50, 0,  0 );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 2, _eComButton_A,  60, 0,  _eComMoveFlag_MoveEnd );
+}
+
+// スキル番号加算ここから５０
+
+{	// 固めと投げ
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 30 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 30 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 40000 ) return 0; // 遠いとダメ
+		//if( st.GetELenX() < 40000 ) return 0; // 近すぎてもダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() != 0 ) return 0; // 相手も地上を要求
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中はだめ
+		
+		return com_frequency4;//com_frequency2; //com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next_ar = ["Katame1","Katame2","Bunki"];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}
+		else if( BCom.GetMoveTag() == "Bunki" ) // 
+		{
+			//また固めるか投げにいくか分岐する
+			if( BMvEff.Random_Limit(100) <= 80 ) // 攻め継続する確率
+			{
+				//間合いに応じて動きを変える
+				if( st.GetELenX() < 40000 )
+				{
+					BCom.Move_Jump( "Aruki" ); // 歩き投げへ
+				}
+				else if( st.GetELenX() < 60000 )
+				{
+					BCom.Move_Jump( "Dash" ); // ダッシュ投げへ	
+				}
+			}
+			else
+			{
+				BCom.Move_End(-1); // 行動終了
+			}
+		}		
+		else if( BCom.GetMoveTag() == "Aruki" ) // 
+		{
+			//近づいたら分岐
+			if( st.GetELenX() < 24000 )
+			{
+				BCom.Move_Jump( "NageBuki" );
+			}
+		}		
+		else if( BCom.GetMoveTag() == "Dash" ) // 
+		{
+			//近づいたら分岐
+			if( st.GetELenX() < 24000 )
+			{
+				BCom.Move_Jump( "DashStop" ); // 歩き投げへ
+			}
+		}
+		else if( BCom.GetMoveTag() == "DashStop" ) // 
+		{
+			//近づいたら分岐
+			if( st.GetELenX() < 24000 )
+			{
+				BCom.Move_Jump( "NageBuki" );
+			}
+		}
+		else if( BCom.GetMoveTag() == "NageBuki" ) // 
+		{
+			//print("\n 投げの分岐");
+			if( !st.CheckEState( _eComState_Damage ) )
+			{
+				if( BMvEff.Random_Limit(100) <= 40 ) // 投げに行く確率
+				{
+					BCom.Move_End(20); // 投げへ
+				}
+				return 1;
+			}
+			BCom.Move_End(-1); // 行動終了
+		}
+		
+		return 1;
+	}
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Katame1" );
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_DamageEnd|_eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd ); // ヒット確認
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.Set( 1, 0,  30, 0,  _eComMoveFlag_MoveableNext ); // 行動可能になるまでまつ
+
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "Bunki" ); // 歩き投げかダッシュ投げか分岐
+		mtmp.Set( 0, 0,  10, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Katame2" );
+	mtmp.Set( 2, _eComButton_A,  30, 0,  _eComMoveFlag_DamageEnd|_eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd ); // ヒット確認
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.Set( 1, 0,  30, 0,  _eComMoveFlag_MoveableNext ); // 行動可能になるまでまつ
+
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "Bunki" ); // 歩き投げかダッシュ投げか分岐
+		mtmp.Set( 0, 0,  10, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Aruki" );
+	mtmp.Set( 6, 0,  30, 0,  _eComMoveFlag_StickHold|_eComMoveFlag_MoveEnd ); // 行動可能になってからの歩き
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Dash" );
+	mtmp.SetSpSkill( def_CN_Dash_F );
+	mtmp.Set( 6, 0,  20, 30,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "DashStop" );
+	mtmp.Set( 4, 0,  1, 5,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "NageBuki" );
+	mtmp.Set( 6, 0,  1, 0,  _eComMoveFlag_MoveEnd );	
+	
+	
+}
+
+{	// 前ジャンプからの攻め
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 30 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 30 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 100000 ) return 0; // 遠いとダメ
+		if( st.GetELenX() < 40000 ) return 0; // 近すぎてもダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() != 0 ) return 0; // 相手も地上を要求
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中はだめ
+		
+		return com_frequency2;//com_frequency2; //com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		local move_tag = BCom.GetMoveTag();
+		if( move_tag == "jp" ) // 
+		{
+			if( st.GetELenX() > 60000 ) // 遠いなら
+			{
+				BCom.Move_Jump( "FrontJump" ); // 前
+			}
+			else
+			{
+				BCom.Move_Jump( "NuruJump" ); // 垂直から前いれっぱ
+			}
+		}
+		else if( move_tag == "jump_search" )
+		{
+			if( st.GetELenX() > 60000 ) // 遠いなら
+			{
+				BCom.Move_Jump( "SeachCheck1" );
+			}
+			else
+			{
+				BCom.Move_Jump( "SeachCheck2" );
+			}		
+			
+		}
+		else if( move_tag == "SeachCheck1" || move_tag == "SeachCheck2" ) // 
+		{
+			//print("\n チェック中"+st.GetMoveTime() );
+			// ジャンプ中の相手の挙動で変化
+			if( st.GetMoveTime()>20 && st.GetELenX() < 50000 && st.GetELenY() < 0 && st.GetELenY() > -41000 )
+			{
+				local next_ar = [com_AirActiveAtk_0,com_AirActiveAtk_0,com_AirActiveAtk_0,com_AirActiveAtk_0,com_AirActiveAtk_0,com_AirActiveSkill_0,com_AirActiveSkill_0,com_AirActiveSkill_0,"BackJump","NJump","NJump","NJump","FallWait"];
+				local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+				
+				// print("\n next:"+next);
+				BCom.Move_Jump( next );	
+			}
+		}
+		else if( move_tag == "SeachCheck3" ) // 
+		{
+			if( st.GetMoveTime()>20 && st.GetELenX() < 50000 && st.GetELenY() < 0 && st.GetELenY() > -60000 )
+			{
+				local next_ar = [com_AirActiveAtk_0,com_AirActiveAtk_0,com_AirActiveAtk_0,com_AirActiveSkill_0,com_AirActiveSkill_0,com_AirActiveSkill_0,"FallWait"];
+				local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+				
+				// print("\n next:"+next);
+				BCom.Move_Jump( next );	
+			}
+		}
+		else if( BCom.GetMoveTag() == "jump_LandMove" ) // 
+		{
+			// スカしからの行動
+			local next_ar = ["2A","Nage"];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );			
+			
+		}
+		return 1;
+	}
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "FrontJump" );
+	mtmp.Set( 9, 0,  20, 0,  _eComMoveFlag_MoveEnd|_eComMoveFlag_AirNext ); // 前ジャンプ
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "jump_search" );
+		mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "NuruJump" );
+	mtmp.Set( 8, 0,  20, 0,  _eComMoveFlag_StickHold|_eComMoveFlag_MoveEnd|_eComMoveFlag_AirNext ); // ぬるぬるジャンプ
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "jump_search" );
+		mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "SeachCheck1" );
+	mtmp.Set( 0, 0,  60, 0,  _eComMoveFlag_GroundNext|_eComMoveFlag_MoveEnd ); // 着地までチェック
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "jump_LandMove" );
+		mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "SeachCheck2" );
+	mtmp.Set( 6, 0,  60, 0,  _eComMoveFlag_StickHold|_eComMoveFlag_GroundEnd|_eComMoveFlag_MoveEnd ); // 着地までチェック
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "jump_LandMove" );
+		mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "JB" ); // 飛び込みに向いてる攻撃
+	mtmp.Set( 0, _eComButton_B,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "JC" ); // 飛び込みに向いてる攻撃
+	mtmp.Set( 0, _eComButton_C,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "J236A" ); // 適当なぶっこみ
+	mtmp.SetSpSkill( def_CN_Skill_J236A );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "J236B" ); // 適当なぶっこみ
+	mtmp.SetSpSkill( def_CN_Skill_J236B );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "J214A" ); // 適当なぶっこみ
+	mtmp.SetSpSkill( def_CN_Skill_J214A );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "J214B" ); // 適当なぶっこみ
+	mtmp.SetSpSkill( def_CN_Skill_J214B );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "BackJump" ); // 危険を察知して下がる
+	mtmp.Set( 7, 0,  3, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "NJump" ); // 
+	mtmp.Set( 8, 0,  3, 0,  0 );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "SeachCheck3" );
+	mtmp.Set( 0, 0,  80, 0,  _eComMoveFlag_GroundNext|_eComMoveFlag_MoveEnd ); // 着地までチェック
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "jump_LandMove" );
+		mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "FallWait" );
+	mtmp.Set( 0, 0,  80, 0,  _eComMoveFlag_GroundNext|_eComMoveFlag_MoveEnd ); // 着地までチェック	
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "jump_LandMove" );
+		mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+		
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "2A" );
+	mtmp.Set( 2, _eComButton_A,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Nage" );
+	mtmp.Set( 6, _eComButton_C,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+}
+
+{	// 前ダッシュからの攻め
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 30 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 30 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 120000 ) return 0; // 遠いとダメ
+		if( st.GetELenX() < 35000 ) return 0; // 近すぎてもダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() != 0 ) return 0; // 相手も地上を要求
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中はだめ
+		
+		if( st.CheckEState( _eComState_Guard ) )
+		{
+			return com_frequency3; // ガードの上からは高確率
+		}
+		else
+		{
+			return com_frequency2; //com_frequency2;		
+		}
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		local move_tag = BCom.GetMoveTag();
+		//print("\n st.GetELenX():"+st.GetELenX());
+		if( move_tag == "jp" ) // 
+		{
+			if( st.GetELenX() < 40000 ) // 結構近い
+			{
+				local next_ar = ["DashL_Mit"];
+				local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+				
+				// print("\n next:"+next);
+				BCom.Move_Jump( next );									
+			}		
+			else if( st.GetELenX() < 65000 ) // 結構近い
+			{
+				local next_ar = ["DashL_Mit","DashL"];
+				local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+				
+				// print("\n next:"+next);
+				BCom.Move_Jump( next );									
+			}
+			else
+			{
+				local next_ar = ["DashL_Mit","DashL","DashL","DashL_Ken","DashL_Ken"];
+				local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+				
+				// print("\n next:"+next);
+				BCom.Move_Jump( next );						
+			}
+		}
+		else if( move_tag == "DashL_Mit" ) // 
+		{
+			
+			if( st.GetELenX() < 27000 ) // 密着までまつ
+			{
+				// 別の行動へ
+				// 打撃か投げの二択
+				local next_ar = ["A","2A","Nage"];
+				local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+				
+				// print("\n next:"+next);
+				BCom.Move_Jump( next );				
+			}
+		}
+		else if( move_tag == "DashL" ) // 
+		{
+			if( st.CheckEState( _eComState_Guard ) ) // ガード中はダッシュし続ける
+			{
+			}
+			else if( st.GetELenX() < 40000 ) // 牽制がとどく間合いまでまつ
+			{
+				// 別の行動へ
+				// 触れるor飛び防止（押さえ込む）
+				local next_ar = ["A","B","B","end"];
+				local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+				
+				// print("\n next:"+next);
+				BCom.Move_Jump( next );					
+			}
+		}
+		else if( move_tag == "DashL_Ken" ) // 
+		{
+			if( st.CheckEState( _eComState_Guard ) ) // ガード中はダッシュし続ける
+			{
+			}
+			else if( st.GetELenX() < 65000 ) // 牽制がとどく間合いまでまつ
+			{
+				// 別の行動へ
+				// フェイントみたいなもん
+				local next_ar = ["B","C","C","end"];
+				local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+				
+				// print("\n next:"+next);
+				BCom.Move_Jump( next );					
+			}
+		}
+		return 1;
+	}
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Dash" ); // 
+	mtmp.SetSpSkill( def_CN_Dash_F );
+	mtmp.Set( 6, 0,  20, 0,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveableNext | _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" ); // 
+	mtmp.Set( 6, 0,  2, 0,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "DashL_Mit" ); // 近くまで
+	mtmp.Set( 6, 0,  20, 30,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd ); // 近づくまでダッシュ
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "DashL" ); // そこそこ近くまで
+	mtmp.Set( 6, 0,  20, 30,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd ); // 近づくまでダッシュ
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "DashL_Ken" ); // 牽制が届くぐらいまで
+	mtmp.Set( 6, 0,  20, 30,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd ); // 近づくまでダッシュ
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "A" ); // 密着
+	mtmp.Set( 0, _eComButton_A,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "2A" ); // 密着
+	mtmp.Set( 0, _eComButton_A,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Nage" ); // 停止
+	mtmp.Set( 4, 0,  1, 0,  0 );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, _eComButton_C,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "B" ); // 押さえ込む技
+	mtmp.Set( 0, _eComButton_B,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "C" ); // 長い牽制
+	mtmp.Set( 0, _eComButton_C,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "end" ); // 別の行動にいこう
+	mtmp.Set( 0, 0,  1, 0,  _eComMoveFlag_MoveEnd );
+	
+	
+}
+
+
+{	// 遠間てきとう（近寄らない・ネガティブ）
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 30 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 30 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( st.GetELenX() < 40000 ) return 0; // 
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return com_frequency2; //com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next_ar = ["Koutai","Zensin","YousumiJ","Oiharai","Oiharai","Oiharai"];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}
+		return 1;
+	}
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Koutai" ); // 後退
+	mtmp.Set( 4, 0,  30, 40,  _eComMoveFlag_StickHold|_eComMoveFlag_MoveEnd );
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Zensin" ); // 後退
+	mtmp.Set( 6, 0,  30, 40,  _eComMoveFlag_StickHold|_eComMoveFlag_MoveEnd );
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "YousumiJ" ); // 垂直ジャンプ
+	mtmp.Set( 8, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Oiharai" ); // 牽制必殺技
+	mtmp.SetSpSkill( def_CN_Skill_236A );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+
+	
+}
+
+{	// 地上遠間てきとう(近寄るアクティブ)
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 20 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 30 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( st.GetELenX() < 40000 ) return 0; // 
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return com_frequency2; //com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next_ar = ["JumpF","JumpNF","Dash",com_AirActiveSkill_0,"Walk",com_KenseiSkill_0, com_KenseiSkill_0,com_KenseiSkill_1, com_KenseiSkill_1];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}
+		
+		if( st.GetELenX() < 25000 || st.GetMoveTime() > 45 ) // 近づいたら終了 || 走りすぎたら終了
+		{
+			BCom.Move_End(-1); // -1以外にすると次の行動指定ができる
+		}
+		
+		return 1;
+	}
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "JumpF" ); // 前ジャンプ
+	mtmp.Set( 9, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "JumpNF" ); // 垂直ジャンプ
+	mtmp.Set( 8, 0,  30, 10,  0 );
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 9, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Dash" ); // 
+	mtmp.SetSpSkill( def_CN_Dash_F );
+	mtmp.Set( 6, 0,  20, 30,  _eComMoveFlag_StickHold | _eComMoveFlag_MoveEnd );
+
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "J236A" ); // 
+	mtmp.Set( 8, 0,  30, 10,  0 );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_J236A );
+	mtmp.Set( 6, 0,  10, 0,  _eComMoveFlag_MoveEnd );	
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "J236B" ); // 
+	mtmp.Set( 8, 0,  30, 10,  0 );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_J236B );
+	mtmp.Set( 6, 0,  10, 0,  _eComMoveFlag_MoveEnd );	
+
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "J214A" ); // 
+	mtmp.Set( 8, 0,  30, 10,  0 );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_J214A );
+	mtmp.Set( 6, 0,  10, 0,  _eComMoveFlag_MoveEnd );	
+
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "J214B" ); // 
+	mtmp.Set( 8, 0,  30, 10,  0 );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_J214B );
+	mtmp.Set( 6, 0,  10, 0,  _eComMoveFlag_MoveEnd );	
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Walk" ); // 前歩き
+	mtmp.Set( 6, 0,  60, 60,  _eComMoveFlag_StickHold|_eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "214A" ); // 
+	mtmp.SetSpSkill( def_CN_Skill_214A );
+	mtmp.Set( 0, _eComButton_A,  0, 25,  _eComMoveFlag_ButtonHold|_eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "214B" ); // 
+	mtmp.SetSpSkill( def_CN_Skill_214B );
+	mtmp.Set( 0, _eComButton_B,  0, 25,  _eComMoveFlag_ButtonHold|_eComMoveFlag_MoveEnd );	
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "236A" ); // 
+	mtmp.SetSpSkill( def_CN_Skill_236A );
+	mtmp.Set( 0, _eComButton_A,  0, 25,  _eComMoveFlag_ButtonHold|_eComMoveFlag_MoveEnd );	
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "236A" ); // 
+	mtmp.SetSpSkill( def_CN_Skill_236B );
+	mtmp.Set( 0, _eComButton_B,  0, 25,  _eComMoveFlag_ButtonHold|_eComMoveFlag_MoveEnd );	
+	
+}
+
+{	// 対空からのコンボ
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 10 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 10 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 40000 ) return 0; // 
+		if( st.GetELenY() <= 20000 ) return 0; // 
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中は発生しない
+
+		return com_frequency4;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		local tag = BCom.GetMoveTag();
+		if( tag == "jp" ) // 
+		{
+			local next_ar = [com_TaikuAtk,com_TaikuAtk,com_TaikuAtk,com_TaikuSkill_0,com_TaikuSkill_0,com_TaikuSkill_1,com_TaikuSkill_1,"BackStep","JumpB"];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}
+		else if( tag ==com_TaikuAtk )
+		{
+			if( st.CheckPosState_Enemy( _PosState_Air  ) == 0 ) // 空中ひっかけじゃないので終わる
+			{
+				BCom.Move_End(-1); // 行動終了
+			}
+		}		
+		return 1;
+	}
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	//
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "2B" ); // 2B対空エリアル
+	mtmp.Set( 2, _eComButton_B,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 9, 0,  30, 0,  _eComMoveFlag_AirNext );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_B,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_C,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_J214A );
+	mtmp.Set( 0, 0,  30, 0,  _eComMoveFlag_MoveEnd );
+	
+	//
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "5B" ); // 5B対空エリアル
+	mtmp.Set( 0, _eComButton_B,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 9, 0,  30, 0,  _eComMoveFlag_AirNext );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_C,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_J236A );
+	mtmp.Set( 0, 0,  30, 0,  _eComMoveFlag_MoveEnd );	
+	
+	//
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "A+B" ); // 対空必殺技
+	mtmp.SetSpSkill( def_CN_AtkAandB );
+	mtmp.Set( 2, 0,  6, 0,  _eComMoveFlag_MoveEnd );
+	
+	//
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "2+A+B" ); // 対空必殺技
+	mtmp.SetSpSkill( def_CN_AtkCAandB );
+	mtmp.Set( 2, 0,  6, 0,  _eComMoveFlag_MoveEnd );
+
+	//
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "BackStep" ); // 様子見バックステップ
+	mtmp.SetSpSkill( def_CN_Dash_B );
+	mtmp.Set( 2, 0,  6, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "JumpB" ); // 様子見バックジャンプ牽制
+	mtmp.Set( 7, 0,  30, 0,  _eComMoveFlag_AirNext );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_C,  30, 0,  _eComMoveFlag_HitNext );
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_J236A );
+	mtmp.Set( 0, 0,  30, 0,  _eComMoveFlag_MoveEnd );	
+}
+
+{	// ロケッティア対空
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 30 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 30 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 80000 ) return 0; // 
+		if( st.GetELenY() <= 1 ) return 0; // 自分より上に浮いてて
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中は発生しない
+
+		return com_frequency3;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		
+		if( BCom.GetMoveTag() == "SeachCheck" ) // 
+		{
+			if( st.CheckPosState_Enemy( _PosState_Air ) && st.GetELenX() < 40000 && st.GetELenY() > 1000 && st.GetELenY() < 20000 )
+			{
+				BCom.Move_Jump( "JA" );
+			}
+			else
+			{
+				// 近づくまで監視を続けるので終わらない
+				//BCom.Move_End(-1); // 行動終了
+			}
+		}			
+		else if( BCom.GetMoveTag() == "TakasaCheck" ) // 
+		{
+			if( st.GetELenY() > 0 ) // 少し上にいるようだ
+			{
+				BCom.Move_Jump( "jump" ); // 二段ジャンプ
+			}
+			else
+			{
+				BCom.Move_Jump( "JC" );
+			}
+		}	
+		return 1;
+	}
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 9, 0,  30, 0,  _eComMoveFlag_AirNext );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "SeachCheck" ); // やっていいか
+	mtmp.Set( 0, 0,  10, 5,  _eComMoveFlag_MoveEnd );		
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "JA" );
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_B,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "TakasaCheck" ); // 高さチェック
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jump" ); // 高さチェック
+	mtmp.Set( 9, 0,  30, 0,  _eComMoveFlag_MoveableNext );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_B,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "JC" ); // 高さチェック
+	mtmp.Set( 0, _eComButton_C,  30, 0,  _eComMoveFlag_DamageNext|_eComMoveFlag_ThroughEnd|_eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_J236A );
+	mtmp.Set( 0, 0,  30, 0,  _eComMoveFlag_MoveEnd );	
+}
+
+
+{	// 中間牽制行動からのコンボ
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 30 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 30 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 80000 ) return 0; // 遠いとダメ
+		if( st.GetELenX() < 40000 ) return 0; // 近すぎてもダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() != 0 ) return 0; // 相手地上
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中は発生しない
+
+		return com_frequency3;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next = "Move" + BMvEff.Random_Limit(4);
+			BCom.Move_Jump( next );
+		}
+		return 1;
+	}
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Move0" ); // 
+	mtmp.Set( 0, _eComButton_B,  20, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd|_eComMoveFlag_MoveEnd );
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Move1" ); // 
+	mtmp.Set( 0, _eComButton_C,  30, 0,  _eComMoveFlag_DamageNext|_eComMoveFlag_ThroughEnd|_eComMoveFlag_HitEnd ); // ヒット確認
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_236A );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_214C );
+	mtmp.Set( 2, 0,  6, 0,  _eComMoveFlag_MoveEnd );
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Move2" ); // 様子見バックステップ
+	mtmp.SetSpSkill( def_CN_Dash_B );
+	mtmp.Set( 2, 0,  6, 0,  _eComMoveFlag_MoveEnd );	
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Move3" ); // 様子見バックジャンプ牽制
+	mtmp.Set( 7, 0,  10, 10,  0 );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_J236A );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+}
+
+
+{	// 通常技チェーン牽制
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 30 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 30 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 70000 ) return 0; // 遠いとダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() >= 26000 ) return 0; // 相手ほぼ地上
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中は発生しない
+
+		return com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		
+		local tag = BCom.GetMoveTag();
+		if( tag == "jp" ) // 
+		{
+			local next = "A";
+			
+			if( st.GetELenX() > 15000 ) next = "B";
+			if( st.GetELenX() > 20000 ) next = "2B";
+			if( st.GetELenX() > 40000 ) next = "C";
+			
+			BCom.Move_Jump( next );
+		}
+		else if( tag == "jpC" )
+		{
+			local next_ar = ["C","2C"];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}		
+		return 1;
+	}
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "A" );
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "B" );
+	mtmp.Set( 0, _eComButton_B,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "jpC" );
+		mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "2B" );
+	mtmp.Set( 2, _eComButton_B,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+		mtmp = stmp.PlusMove(); // 動き追加
+		mtmp.SetTag( "jpC" );
+		mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );		
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "C" );
+	mtmp.Set( 0, _eComButton_C,  30, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "2C" );
+	mtmp.Set( 2, _eComButton_C,  30, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );	
+}
+
+{	// 通常技チェーン牽制(空中)
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 10 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 10 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 80000 ) return 0; // 遠いとダメ
+		if( !st.CheckPosState( _PosState_Air ) ) return 0; // 空中じゃないとだめ
+		if( st.GetELenY() >= 26000 ) return 0; // 割と近い位置
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中は発生しない
+
+		return com_frequency2; //com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next = "A";
+			
+			if( st.GetELenX() > 15000 ) next = "B";
+			if( st.GetELenX() > 20000 ) next = "B";
+			if( st.GetELenX() > 40000 ) next = "C";
+			
+			BCom.Move_Jump( next );
+		}
+		return 1;
+	}
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "A" );
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "B" );
+	mtmp.Set( 0, _eComButton_B,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "C" );
+	mtmp.Set( 0, _eComButton_C,  30, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+	
+}
+
+
+{	// 追撃
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 0 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 100000 ) return 0; // 遠いとダメ
+		if( st.GetELenX() < 20000 ) return 0; // 近すぎてもダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() >= 26000 ) return 0; // 相手ほぼ地上
+		if( !st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中のみ発生しない
+
+		return com_frequency4; //com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next_ar = [com_TuigekiSkill_0, com_TuigekiSkill_1];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}
+		
+		return 1;
+	}
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "236A" );
+	mtmp.SetSpSkill( def_CN_Skill_236A );
+	mtmp.Set( 0, 0,  5, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "236B" );
+	mtmp.SetSpSkill( def_CN_Skill_236B );
+	mtmp.Set( 0, 0,  5, 0,  _eComMoveFlag_MoveEnd );
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "214A" );
+	mtmp.SetSpSkill( def_CN_Skill_214A );
+	mtmp.Set( 0, 0,  5, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "214B" );
+	mtmp.SetSpSkill( def_CN_Skill_214B );
+	mtmp.Set( 0, 0,  5, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "A+B" );
+	mtmp.SetSpSkill( def_CN_AtkAandB );
+	mtmp.Set( 0, 0,  60, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );	
+}
+
+{	// 追撃２
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 0 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 50000 ) return 0; // 遠いとダメ
+		//if( st.GetELenX() < 40000 ) return 0; // 近すぎてもダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() >= 60000 ) return 0; // 相手わりとどこでも
+		if( !st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中のみ発生しない
+
+		return com_frequency4; //com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_Skill_214A );
+	mtmp.Set( 0, 0,  20, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+}
+
+{	// 超技で追撃
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 0 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print("\n GetEXS:"+st.GetEXS());
+		if( st.GetELenX() > 50000 ) return 0; // 遠いときは発動しない
+		if( st.GetELenY() > 20000 ) return 0; // Ｙ軸離れすぎ失敗
+		if( st.GetELenY() < -20000 ) return 0; // Ｙ軸離れすぎ失敗
+		if( st.GetEXS() < com_EXSC_EXSkill  ) return 0; // EXS割合
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( !st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中のみ発生しない
+
+		return com_frequency4;//com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "SP" );
+	mtmp.SetSpSkill( def_CN_Skill_41236SP );
+	mtmp.Set( 0, 0,  5, 0,  0 );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "214EX" );
+	mtmp.SetSpSkill( def_CN_Skill_214EX );
+	mtmp.Set( 0, 0,  5, 0,  _eComMoveFlag_MoveEnd );
+	
+}
+
+{	// ゲージを使って追撃
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 0 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print("\n GetEXS:"+st.GetEXS());
+		if( st.GetELenX() > 50000 ) return 0; // 遠いときは発動しない
+		if( st.GetELenY() == 0 ) return 0; // 同じラインにいると失敗
+		if( st.GetEXS() < com_EXSC_EXSkill  ) return 0; // EXS割合
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( !st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中のみ発生しない
+
+		return com_frequency4;//com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next_ar = [com_TuigekiEXSkill_0, com_TuigekiEXSkill_1];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}
+		
+		return 1;
+	}
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "214EX" );
+	mtmp.SetSpSkill( def_CN_Skill_214EX );
+	mtmp.Set( 0, 0,  5, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "236EX" );
+	mtmp.SetSpSkill( def_CN_Skill_236EX );
+	mtmp.Set( 0, 0,  5, 0,  _eComMoveFlag_MoveEnd );	
+
+}
+
+{	// 浮いてる相手への追撃
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 0 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 40000 ) return 0; // 遠いとダメ
+		//if( st.GetELenX() < 40000 ) return 0; // 近すぎてもダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() < 30000 ) return 0; // ちょい上にいる
+		if( !st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中のみ発生しない
+
+		return com_frequency4;//com_frequency2; //com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next_ar = ["A","B","Jump"];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}
+		return 1;
+	}
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "A" );
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_MoveEnd|_eComMoveFlag_ThroughEnd ); // 拾う
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "B" );
+	mtmp.Set( 0, _eComButton_B,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_MoveEnd|_eComMoveFlag_ThroughEnd ); // 拾う
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Jump" );
+	mtmp.Set( 9, 0,  4, 0,  _eComMoveFlag_MoveEnd ); // ジャンプで追いかける
+}
+
+{	// 遠距離でやられorガードの相手をダッシュでおいかける
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 0 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() < 40000 ) return 0; // 近いとダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		//if( st.GetELenY() < 30000 ) return 0; // ちょい上にいる
+		if( !st.CheckEState( _eComState_Guard |_eComState_Damage ) ) return 0; // 相手がやられorガード中のみ
+
+		return com_frequency4;//com_frequency2; //com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		BCom.Move_End( 3 ); // 地上ダッシュ
+		return 1;
+	}
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+}
+
+
+{	// 密着行動（攻撃的なもの）
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 20 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 28000 ) return 0; // 遠いとダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() >= 60000 ) return 0; // 相手わりとどこでも
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中のみ発生しない
+
+		return com_frequency4; //com_frequency4; //com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next_ar = ["A","2A","6C",com_ActiveSkill_0,"4+A+B"];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}
+		return 1;
+	}
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "A" );
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "2A" );
+	mtmp.Set( 2, _eComButton_A,  30, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "6C" ); // 投げコスり
+	mtmp.Set( 6, _eComButton_C,  30, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "A+B" ); // インパクトコスり
+	mtmp.SetSpSkill( def_CN_AtkAandB );
+	mtmp.Set( 0, _eComButton_A|_eComButton_B,  60, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "2+A+B" ); // インパクトコスり
+	mtmp.SetSpSkill( def_CN_AtkCAandB );
+	mtmp.Set( 2, _eComButton_A|_eComButton_B,  60, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "4+A+B" ); // 闇コスり
+	mtmp.Set( 4, _eComButton_A|_eComButton_B,  30, 30,  _eComMoveFlag_ThroughEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, _eComButton_C,  10, 0,  _eComMoveFlag_GroundNext|_eComMoveFlag_MoveEnd );	
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, 0,  0, 30,  _eComMoveFlag_GroundNext ); // ボタン押すかどうか二択
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_C,  50, 0,  _eComMoveFlag_AirNext|_eComMoveFlag_ThroughEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+	
+}
+
+
+{	// 密着行動（防御的なもの）
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 20 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetELenX() > 30000 ) return 0; // 遠いとダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() != 0 ) return 0; // 相手地上のみ
+		if( st.CheckEState( _eComState_Damage ) ) return 0; // 相手がやられ中のみ発生しない
+
+		return com_frequency4; //com_frequency4; //com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		
+		if( BCom.GetMoveTag() == "jp" ) // 
+		{
+			local next_ar = ["Kame","Sagaru","Ireppa","BackStep","BackStep","4+A+B"];
+			local next = next_ar[ BMvEff.Random_Limit(next_ar.len()) ];
+			
+			// print("\n next:"+next);
+			BCom.Move_Jump( next );
+		}
+		return 1;
+	}
+	
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "jp" );
+	mtmp.Set( 0, 0,  2, 0,  _eComMoveFlag_MoveEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Kame" ); // 亀ガード
+	mtmp.Set( 1, 0,  30, 40,  _eComMoveFlag_StickHold|_eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Sagaru" ); // 後ろいれっぱ
+	mtmp.Set( 4, 0,  30, 90,  _eComMoveFlag_StickHold|_eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "Ireppa" ); // 投げコスり
+	mtmp.Set( 7, 0,  20, 20,  _eComMoveFlag_StickHold|_eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "BackStep" ); // バクステ
+	mtmp.SetSpSkill( def_CN_Dash_B );
+	mtmp.Set( 4, 0,  30, 0,  _eComMoveFlag_MoveEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetTag( "4+A+B" ); // 闇コスり
+	mtmp.Set( 4, _eComButton_A|_eComButton_B,  30, 30,  _eComMoveFlag_ThroughEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, _eComButton_C,  10, 0,  _eComMoveFlag_GroundNext|_eComMoveFlag_MoveEnd );	
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, 0,  0, 30,  _eComMoveFlag_GroundNext ); // ボタン押すかどうか二択
+
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_C,  50, 0,  _eComMoveFlag_AirNext|_eComMoveFlag_ThroughEnd );	
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitNext|_eComMoveFlag_ThroughEnd );
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A,  30, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );	
+}
+
+{	// 切り札
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetLotWait( 0 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 20 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		//print( format(" Len:%d, %d\n",st.GetELenX(), st.GetELenY() ))
+		if( st.GetHPP() > 40 ) return 0; // 瀕死時しか使わない
+		if( st.GetELenX() > com_Xlen_Kirifuda ) return 0; // 遠いとダメ
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		if( st.GetELenY() != 0 ) return 0; // 相手も地上を要求
+
+		return com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, _eComButton_A|_eComButton_C,  30, 0,  _eComMoveFlag_HitEnd|_eComMoveFlag_ThroughEnd );
+}
+
+{	// 投げぬけ 割り込みテスト
+	stmp = com.GetSkill(com_throw_recover_pos); // 作成
+	stmp.SetFlags( _eComSkillType_Interrupt ); // どこでも割り込み仕様
+	stmp.SetLotWait(60);
+	stmp.SetLotFailedAvg(throw_recover_avg); // 抜けすぎはうざいのでこれくらい
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+
+		// チェックを徹底的に
+		if( st.GetSkill() == com_throw_recover_pos ) return 0; // この行動中でした
+		if( st.IsPBound() != 2 ) return 0; // なげられていない
+
+		return com_frequency1;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		return 1;
+	}
+	// 瞬間にくるのでちょっとだけ待つ
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetWait( 2, 10 ); // 
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, _eComButton_C,  2, 0,  0 );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, _eComButton_C,  2, 0,  0 );
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, _eComButton_C,  2, 0,  _eComMoveFlag_MoveEnd );
+}
+
+{	// 飛び道具感知飛び込み
+	stmp = com.GetSkill(com_throw_recover_pos+1); // 作成
+	stmp.SetFlags( _eComSkillType_Interrupt ); // どこでも割り込み仕様
+	stmp.SetLotWait(60);
+	stmp.SetLotFailedAvg(20); // 
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+
+		// チェックを徹底的に
+		if( !st.IsPMoveable() ) return 0; // 
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+		local tobitime = st.GetTobiTime();
+		if( tobitime < 12  ||  st.GetTobiTime() > 30  )
+		{
+			local jplen = st.GetComJumpLen();
+			if( jplen == 0  ||  jplen > 60000  )  return 0; // 
+		}
+
+		return 100;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 9, 0,  12, 0,  _eComMoveFlag_MoveEnd );
+	// 
+}
+
+{	// 割り込み待機
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetFlags( _eComSkillType_Interrupt ); // どこでも割り込み仕様
+	stmp.SetLotWait( 60 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 20 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( !st.IsPMoveable() ) return 0; // 
+		if( st.GetELenX() > 40000 ) return 0; // 
+		if( st.GetELenY() > 30000 ) return 0; // 
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		return com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		local st = BCom.GetStatus();
+		return 1;
+	}
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 0, 0,  8, 0,  _eComMoveFlag_MoveEnd );
+}
+
+{	// 割り込みリバサ
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetFlags( _eComSkillType_NoInterrupt | _eComSkillType_Interrupt ); // どこでも割り込み仕様
+	stmp.SetLotWait( 120 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 50 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( !st.IsPMoveable() ) return 0; // 
+		if( st.GetELenX() > 35000 ) return 0; // 
+		if( st.GetELenY() > 10 ) return 0; // 
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		if( st.CheckEState( _eComState_MoveAble | _eComState_Bound ) ) return 0; // 
+		if( !st.CheckEState( _eComState_Chance ) ) return 0; // 
+
+		//print("\nAAAAA" + st.GetELenY() );
+
+		return com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.SetSpSkill( def_CN_AtkAandB );
+	mtmp.Set( 0, 0,  8, 0,  _eComMoveFlag_MoveEnd );
+}
+
+{	// 割り込み投げ
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetFlags( _eComSkillType_NoInterrupt | _eComSkillType_Interrupt ); // どこでも割り込み仕様
+	stmp.SetLotWait( 160 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 70 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( !st.IsPMoveable() ) return 0; // 
+		if( st.GetELenX() > 25000 ) return 0; // 
+		if( st.GetELenY() > 10 ) return 0; // 
+		if( !st.CheckPosState( _PosState_Ground ) ) return 0; // 地上じゃないとだめ
+
+		if( st.CheckEState( _eComState_Chance ) )
+		{
+			if( !st.CheckEState( _eComState_MoveAble ) ) return 0; // 
+		}
+
+
+		return com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, _eComButton_C,  20, 0,  _eComMoveFlag_MoveEnd );
+}
+
+{	// 割り込みアドバ
+	stmp = com.GetSkill(nowskillnum); nowskillnum++; // 作成
+	stmp.SetFlags( _eComSkillType_NoInterrupt | _eComSkillType_Interrupt ); // どこでも割り込み仕様
+	stmp.SetLotWait( 40 ); // 終了、失敗時のウェイト
+	stmp.SetLotFailedAvg( 70 ); // 失敗確率
+	stmp.checkfunc = function() // チェック
+	{
+		local st = BCom.GetStatus();
+		if( !st.CheckPState( _eComState_Guard ) ) return 0; // 自分がガード時のみ
+		if( st.GetELenX() > 300*128 ) return 0; // 相手との正X距離
+
+		return com_frequency2;
+	}
+	stmp.updatefunc = function() // 採用時の更新
+	{
+		return 1;
+	}
+	// 
+	mtmp = stmp.PlusMove(); // 動き追加
+	mtmp.Set( 6, _eComButton_A |_eComButton_B,  20, 0,  _eComMoveFlag_MoveEnd );
+}
+
+// 最後にglobal_com_tmpへ渡す
+ComBase_GlobalComTmp_Set( com );
+
+print("\n\n>com Loaded<\n")
+

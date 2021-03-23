@@ -1,0 +1,15 @@
+_dp("\n[_sc.txt]");
+
+Battle_Status <-
+{
+	// きりふだ
+	Kirifuda_PointMax = 2, // 切り札最大値（基本値３）
+	Kirifuda_Type = 1, // 切り札タイプ（0:攻撃的赤 1:防御的青）	
+	
+	// Jem_0とJem_1は設定済みなのでJem_2とJem_3に設定する
+	Jem_2 = 4001,	// 攻撃を１０回ガードしたらクライマックスゲージが１本増加
+	
+}
+
+Battle_Std.InsertTable( Battle_Status, Battle_Std.GetStd_BattleStatusTable() ); //デフォルト
+_dp(" -> Load OK");

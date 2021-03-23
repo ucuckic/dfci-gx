@@ -1,0 +1,5 @@
+bgm_array <- [];
+
+bgm_array.append( { num=300 } );
+bgm_array.append( { num=301 } );
+bgm_array.append( { num=302 } );

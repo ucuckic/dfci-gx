@@ -1,0 +1,18 @@
+[data]
+// vsHiw00
+100 = Hmph, you look rather low-bred to me....
+
+// vsSha00
+110 = You seem like my kinda girl...
+
+500 = Fight you? Okay, whatever, I guess.
+501 = Ugh... What a drag.
+502 = Oh well, looks like we're gonna fight...
+510 = Oh boy, that's lame.
+511 = You're not even in my league.
+512 = Hahaha, maybe I overdid it!
+513 = Are you really that weak?
+520 = Don't think about getting back up!
+521 = Geez... One after another...
+530 = I've had enough of this!
+531 = How utterly annoying...

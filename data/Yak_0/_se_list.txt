@@ -1,0 +1,388 @@
+print("\n>>_se_list");
+
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Yak/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Yak00_6101", type=0, category=1}; // 覚悟はできたか？
+// クライマックスブースト発動
+// st[81] = { path=1, file="Alc00_7100", type=0, category=1}; // この力で…守りたい、みんなを！
+// ブラストＯＫ
+// st[82] = { path=1, file="Alc00_4900", type=0, category=1}; // よーし元気でた！
+
+// 登場シーン	
+st[100] = { path=1, file="Yak00_2000", type=0, category=1}; // この時を待ってたぜ！
+st[101] = { path=1, file="Yak00_2001", type=0, category=1}; // 時はきたれり､行くぞ！
+st[102] = { path=1, file="Yak00_2002", type=0, category=1}; // よし､来い！
+
+// 戦闘勝利・汎用	
+st[110] = { path=1, file="Yak00_2100", type=0, category=1}; // 十年早いんだよ！
+st[111] = { path=1, file="Yak00_2101", type=0, category=1}; // 二十年早いんだよ！
+// 戦闘勝利・辛勝	
+// st[112] = { path=1, file="Yak00_2102", type=0, category=1}; // せええい！　はぁあ！！
+// 戦闘勝利・楽勝	
+st[113] = { path=1, file="Yak00_2103", type=0, category=1}; // オラオラオラー！
+
+// ラウンド勝利	
+st[120] = { path=1, file="Yak00_2150", type=0, category=1}; // 本気でかかって来い！
+st[121] = { path=1, file="Yak00_2151", type=0, category=1}; // まだ終わりじゃないぞ！　立て！
+
+// タイムアップ判定負け	
+st[130] = { path=1, file="Yak00_2200", type=0, category=1}; // 何が足りないのか……
+st[131] = { path=1, file="Yak00_2201", type=0, category=1}; // 及ばなかったか……
+
+// 弱攻撃	
+st[140] = { path=1, file="Yak00_2300_b", type=0, category=1}; // は
+st[141] = { path=1, file="Yak00_2301_b", type=0, category=1}; // ふ
+st[142] = { path=1, file="Yak00_2302", type=0, category=1}; // て
+st[143] = { path=1, file="Yak00_2303", type=0, category=1}; // し
+st[144] = { path=1, file="Yak00_2304", type=0, category=1}; // や
+
+// 中攻撃	
+st[150] = { path=1, file="Yak00_2400_b", type=0, category=1}; // たぁ！
+st[151] = { path=1, file="Yak00_2401", type=0, category=1}; // とう！
+st[152] = { path=1, file="Yak00_2402", type=0, category=1}; // えい！
+st[153] = { path=1, file="Yak00_2403", type=0, category=1}; // テア！
+st[154] = { path=1, file="Yak00_2404", type=0, category=1}; // どりゃ！
+st[155] = { path=1, file="Yak00_2405", type=0, category=1}; // セイッ！
+st[156] = { path=1, file="Yak00_2406", type=0, category=1}; // ハイ！
+
+// 強攻撃	
+st[160] = { path=1, file="Yak00_2500", type=0, category=1}; // ハーッ！
+st[161] = { path=1, file="Yak00_2501", type=0, category=1}; // とぉあ！
+st[162] = { path=1, file="Yak00_2502", type=0, category=1}; // だぁー！
+st[163] = { path=1, file="Yak00_2503", type=0, category=1}; // でやー！
+st[164] = { path=1, file="Yak00_2504", type=0, category=1}; // せいやっ！
+st[165] = { path=1, file="Yak00_2505", type=0, category=1}; // ふんっ！
+st[166] = { path=1, file="Yak00_2506", type=0, category=1}; // オラァ！
+
+// 特殊攻撃	
+// st[170] = { path=1, file="Yak00_2600", type=0, category=1}; // ホァイ！
+// st[171] = { path=1, file="Yak00_2601_b", type=0, category=1}; // えいやぁああ！
+// st[172] = { path=1, file="Yak00_2602_b", type=0, category=1}; // うおおぁ！
+st[173] = { path=1, file="Yak00_2603", type=0, category=1}; // オラオラァ！
+// st[174] = { path=1, file="Yak00_2604", type=0, category=1}; // どぉりゃあ！
+// st[175] = { path=1, file="Yak00_2605_b", type=0, category=1}; // でいやぁああ！
+// st[176] = { path=1, file="Yak00_2606", type=0, category=1}; // ぜぇええい！
+// st[177] = { path=1, file="Yak00_2607_b", type=0, category=1}; // いやぁあああ！
+
+// 投げ技成功	
+st[180] = { path=1, file="Yak00_2700", type=0, category=1}; // 心意把！　　※「しんいは」技の名前です。
+// st[181] = { path=1, file="Yak00_2701", type=0, category=1}; // 逃がさん！
+st[182] = { path=1, file="Yak00_2702", type=0, category=1}; // 隙だらけだ！
+
+// 投げ技失敗	
+// st[190] = { path=1, file="Yak00_2800", type=0, category=1}; // なんだと！？
+// st[191] = { path=1, file="Yak00_2801", type=0, category=1}; // くそっ！
+
+// 敵の投げ技を回避	
+st[200] = { path=1, file="Yak00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// 甘いぞ！
+st[201] = { path=1, file="Yak00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };	// うおーりゃあ！
+
+// 挑発アクション	
+// st[210] = { path=1, file="Yak00_3100", type=0, category=1}; // さっさとかかって来い！
+// st[211] = { path=1, file="Yak00_3101", type=0, category=1}; // アンタの本気を見せてくれ！
+
+// ジャンプ	
+// st[220] = { path=1, file="Yak00_3200", type=0, category=1}; // とうっ！
+st[221] = { path=1, file="Yak00_3201", type=0, category=1}; // はっ
+st[222] = { path=1, file="Yak00_3202", type=0, category=1}; // 上だ！
+
+// ダッシュ	
+st[230] = { path=1, file="Yak00_3300", type=0, category=1}; // ふっ！
+st[231] = { path=1, file="Yak00_3301", type=0, category=1}; // 今だ！
+st[232] = { path=1, file="Yak00_3302", type=0, category=1}; // いくぞ！
+
+// バックステップ	
+st[240] = { path=1, file="Yak00_3400", type=0, category=1}; // しっ
+st[241] = { path=1, file="Yak00_3401", type=0, category=1}; // ふっ
+// st[242] = { path=1, file="Yak00_3402", type=0, category=1}; // 殺気……
+
+// 小攻撃ガード	
+st[250] = { path=1, file="Yak00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// く…
+st[251] = { path=1, file="Yak00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// ふ…
+st[252] = { path=1, file="Yak00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1 };	// む…
+
+// 中攻撃ガード	
+st[260] = { path=1, file="Yak00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// ぐっ
+st[261] = { path=1, file="Yak00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// どうした？
+st[262] = { path=1, file="Yak00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1 };	// ふん
+
+// 大攻撃ガード	
+st[270] = { path=1, file="Yak00_3700", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// ぐぅう！
+st[271] = { path=1, file="Yak00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// なかなか
+st[272] = { path=1, file="Yak00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1 };	// これは
+
+// 攻撃を見切り余裕でガード	
+st[280] = { path=1, file="Yak00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 見える！
+st[281] = { path=1, file="Yak00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// そんな攻撃！
+st[282] = { path=1, file="Yak00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1 };	// 甘いぜ！
+
+// ガード失敗	
+st[290] = { path=1, file="Yak00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// しまった！？
+st[291] = { path=1, file="Yak00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// まさか！？
+st[292] = { path=1, file="Yak00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1 };	// ぬかった！？
+
+// 受け身	
+st[300] = { path=1, file="Yak00_4000", type=0, category=1}; // やるなっ！
+st[301] = { path=1, file="Yak00_4001", type=0, category=1}; // なかなかやる！
+st[302] = { path=1, file="Yak00_4002", type=0, category=1}; // はっ！
+
+// バリア発動	
+// st[310] = { path=1, file="Yak00_4100", type=0, category=1}; // 固める！
+// st[311] = { path=1, file="Yak00_4101", type=0, category=1}; // 殺気！
+// st[312] = { path=1, file="Yak00_4102", type=0, category=1}; // 備える！
+
+// バリアガード成功	
+// st[320] = { path=1, file="Yak00_4200", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// どうしたどうした！
+// st[321] = { path=1, file="Yak00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// それではダメだ！
+// st[322] = { path=1, file="Yak00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };	// 余裕が無いな
+
+// 小ダメージ	
+st[330] = { path=1, file="Yak00_4300", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// ぐ！
+st[331] = { path=1, file="Yak00_4301", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// う！
+st[332] = { path=1, file="Yak00_4302", type=0, category=1, prio=Def_SEP_DamageLv1, check=1 };	// おぉ！
+
+// 中ダメージ	
+st[340] = { path=1, file="Yak00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// がっ
+st[341] = { path=1, file="Yak00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// なに！？
+st[342] = { path=1, file="Yak00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };	// うあ！
+
+// 大ダメージ	
+st[350] = { path=1, file="Yak00_4500", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// うおおお～
+st[351] = { path=1, file="Yak00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// どぅあっ！
+st[352] = { path=1, file="Yak00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };	// ぐはぁ！！
+
+// 電撃ダメージ	
+// st[360] = { path=1, file="Yak00_4600", type=0, category=1}; // 体が痺れて……
+// 麻痺ダメージ	
+// st[361] = { path=1, file="Yak00_4601", type=0, category=1}; // 頭が！
+// 特殊ダメージ	
+// st[362] = { path=1, file="Yak00_4602", type=0, category=1}; // 立て直さなくては…
+
+// ダウン	
+st[370] = { path=1, file="Yak00_4700", type=0, category=1, prio=Def_SEP_KO };	// ぐっはあ！
+st[371] = { path=1, file="Yak00_4701", type=0, category=1, prio=Def_SEP_KO };	// くっ､強い！！
+st[372] = { path=1, file="Yak00_4702", type=0, category=1, prio=Def_SEP_KO };	// うああぁ！
+
+// ダウン・ノックアウト	
+st[380] = { path=1, file="Yak00_4800", type=0, category=1, prio=Def_SEP_KO };	// うわあああああ！
+st[381] = { path=1, file="Yak00_4801", type=0, category=1, prio=Def_SEP_KO };	// ぐぅ、ああああああー！
+st[382] = { path=1, file="Yak00_4802", type=0, category=1, prio=Def_SEP_KO };	// 俺の八極拳がぁあああ！
+
+// 起きあがり	
+st[390] = { path=1, file="Yak00_4900", type=0, category=1}; // まだまだぁ！
+st[391] = { path=1, file="Yak00_4901", type=0, category=1}; // ここからだ！
+st[392] = { path=1, file="Yak00_4902", type=0, category=1}; // 次だ！
+
+// 起きあがり・瀕死	
+// st[400] = { path=1, file="Yak00_5000", type=0, category=1}; // ぐうっ
+// st[401] = { path=1, file="Yak00_5001", type=0, category=1}; // まだだ！
+// st[402] = { path=1, file="Yak00_5002", type=0, category=1}; // 中々やる！
+
+// ブラスト	
+st[410] = { path=1, file="Yak00_5100_b", type=0, category=1}; // 本気で行くぞ！！
+st[411] = { path=1, file="Yak00_5101_b", type=0, category=1}; // 八極拳の極意！
+st[412] = { path=1, file="Yak00_5102_b", type=0, category=1}; // うおおお！
+
+// コンボブラスト	
+st[420] = { path=1, file="Yak00_5200", type=0, category=1}; // 終わらないぜ！
+st[421] = { path=1, file="Yak00_5201", type=0, category=1}; // 拳に込める……！
+
+// バウンドブラスト	
+st[430] = { path=1, file="Yak00_5300", type=0, category=1}; // でぇりゃあああ！
+st[431] = { path=1, file="Yak00_5301", type=0, category=1}; // そこまでだっ！
+st[432] = { path=1, file="Yak00_5302", type=0, category=1}; // させないぜ！
+
+// 攻撃サポートキャラ呼び出し	
+st[440] = { path=1, file="Yak00_5400_b", type=0, category=1}; // 任せた！
+st[441] = { path=1, file="Yak00_5401", type=0, category=1}; // 今こそ勝機！！
+st[442] = { path=1, file="Yak00_5402", type=0, category=1}; // 共に行くぞ！
+
+// 補助サポートキャラ呼び出し	
+// st[450] = { path=1, file="Yak00_5500", type=0, category=1}; // 頼む！
+// st[451] = { path=1, file="Yak00_5501", type=0, category=1}; // アシスト！
+// st[452] = { path=1, file="Yak00_5502", type=0, category=1}; // 援護を！
+
+// 防御サポートキャラ呼び出し	
+// st[460] = { path=1, file="Yak00_5600", type=0, category=1}; // 助かる…！
+// st[461] = { path=1, file="Yak00_5601", type=0, category=1}; // フォロー！
+// st[462] = { path=1, file="Yak00_5602", type=0, category=1}; // まずい、距離を取る！
+
+// 好調時にポテンシャル発動	
+st[470] = { path=1, file="Yak00_6100", type=0, category=3}; // 力がみなぎる！
+st[471] = { path=1, file="Yak00_6101", type=0, category=3}; // 覚悟はできたか？
+st[472] = { path=1, file="Yak00_6102", type=0, category=3}; // 不思議な力を感じる……
+
+// ピンチ時にポテンシャル発動	
+st[480] = { path=1, file="Yak00_6200", type=0, category=3}; // ここからが本番だ！
+st[481] = { path=1, file="Yak00_6201", type=0, category=3}; // 楽しくなってきたぜ！
+st[482] = { path=1, file="Yak00_6202", type=0, category=3}; // はぁあああ……ふぅぅうううう……
+
+// レアな隠しポテンシャル発動	
+// st[490] = { path=1, file="Yak00_6300", type=0, category=3}; // すべてが見える！
+// st[491] = { path=1, file="Yak00_6301", type=0, category=3}; // こ､これが極意か！？
+
+// 激突演出	
+// st[500] = { path=1, file="Yak00_6400", type=0, category=3}; // 八極拳の破壊力、その身で体感しな！
+// st[501] = { path=1, file="Yak00_6401", type=0, category=3}; // 修行の成果、今こそ見せてやる！
+// st[502] = { path=1, file="Yak00_6402_b", type=0, category=3}; // そのわずかな隙、この拳が打つ！
+
+// 必殺技１	
+st[510] = { path=1, file="Yak00_7000", type=0, category=1}; // 修羅覇王靠華山！　（※「しゅら　はおう　こうかざん」技名です。）
+// st[511] = { path=1, file="Yak00_7001", type=0, category=1}; // ふ！　ふん！　ホォアイ！
+
+// 必殺技2	
+st[515] = { path=1, file="Yak00_7050_c", type=0, category=1}; // 上歩川掌！
+st[516] = { path=1, file="Yak00_7051", type=0, category=1}; // っふ！！
+
+// 必殺技3	
+st[520] = { path=1, file="Yak00_7100_c", type=0, category=1}; // 猛虎硬爬山！
+st[521] = { path=1, file="Yak00_7101", type=0, category=1}; // ふっ！
+
+// 必殺技4	
+st[525] = { path=1, file="Yak00_7150", type=0, category=1}; // 連環腿！
+st[526] = { path=1, file="Yak00_7151_s0", type=0, category=1}; // でぇい！　とりゃぁ！！
+st[527] = { path=1, file="Yak00_7151_s1", type=0, category=1}; // でぇい！　とりゃぁ！！
+st[528] = { path=1, file="Yak00_7150_b", type=0, category=1}; // 連環腿！！
+
+// 必殺技5	
+st[530] = { path=1, file="Yak00_7200_b", type=0, category=1}; // 揚炮！
+st[531] = { path=1, file="Yak00_7201_b", type=0, category=1}; // 見切ったぜ！
+
+// 必殺技6	
+st[535] = { path=1, file="Yak00_7250", type=0, category=1}; // 虎撲！
+st[536] = { path=1, file="Yak00_7251", type=0, category=1}; // ていやっ！
+st[537] = { path=1, file="Yak00_7250_b", type=0, category=1}; // 虎撲！
+st[538] = { path=1, file="Yak00_7251_b", type=0, category=1}; // ていやっ！
+
+// 必殺技7	
+st[540] = { path=1, file="Yak00_7300_d", type=0, category=1}; // 白虎双掌打！
+st[541] = { path=1, file="Yak00_7301_b", type=0, category=1}; // ホァアイ！！
+
+// 必殺技8	
+st[545] = { path=1, file="Yak00_7350", type=0, category=1}; // 貼山靠！
+st[546] = { path=1, file="Yak00_7351", type=0, category=1}; // てやぁああ！
+
+// 必殺技9	
+st[550] = { path=1, file="Yak00_7400", type=0, category=1}; // 開胯！
+st[551] = { path=1, file="Yak00_7401", type=0, category=1}; // ふっ！
+
+// 必殺技10	
+st[555] = { path=1, file="Yak00_7450_e", type=0, category=1}; // 提膝弾腿！
+st[556] = { path=1, file="Yak00_7451_b", type=0, category=1}; // ふっ！
+
+// 必殺技11	
+st[560] = { path=1, file="Yak00_7500", type=0, category=1}; // 鉄山靠！
+st[561] = { path=1, file="Yak00_7501", type=0, category=1}; // ホァアイ！！
+
+// 超必殺技1	
+// st[565] = { path=1, file="Yak00_8000_s0", type=0, category=1}; // これぞ奥義！　ふん！　ふっ！　ほぁああああい！！
+st[566] = { path=1, file="Yak00_8000_s1", type=0, category=1}; // これぞ奥義！　ふん！　ふっ！　ほぁああああい！！
+st[567] = { path=1, file="Yak00_8000_s2", type=0, category=1}; // これぞ奥義！　ふん！　ふっ！　ほぁああああい！！
+st[568] = { path=1, file="Yak00_8000_s3", type=0, category=1}; // これぞ奥義！　ふん！　ふっ！　ほぁああああい！！
+// st[569] = { path=1, file="Yak00_8001_s0", type=0, category=1}; // 最強無敵！　でぇい！　むん！　どりゃぁあああ！！
+// st[570] = { path=1, file="Yak00_8001_s1", type=0, category=1}; // 最強無敵！　でぇい！　むん！　どりゃぁあああ！！
+// st[571] = { path=1, file="Yak00_8001_s2", type=0, category=1}; // 最強無敵！　でぇい！　むん！　どりゃぁあああ！！
+// st[572] = { path=1, file="Yak00_8001_s3", type=0, category=1}; // 最強無敵！　でぇい！　むん！　どりゃぁあああ！！
+st[573] = { path=1, file="Yak00_8002_s0", type=0, category=1}; // 究極奥義！　ほうげき！　うんしん！　そうこしょう！
+st[574] = { path=1, file="Yak00_8002_s1", type=0, category=1}; // 究極奥義！　ほうげき！　うんしん！　そうこしょう！
+st[575] = { path=1, file="Yak00_8002_s2", type=0, category=1}; // 究極奥義！　ほうげき！　うんしん！　そうこしょう！
+st[576] = { path=1, file="Yak00_8002_s3", type=0, category=1}; // 究極奥義！　ほうげき！　うんしん！　そうこしょう！
+
+// 超必殺技2	
+// st[580] = { path=1, file="Yak00_8100_s0", type=0, category=1}; // 八極拳の真髄！　せいやぁああ！！
+// st[581] = { path=1, file="Yak00_8100_s1", type=0, category=1}; // 八極拳の真髄！　せいやぁああ！！
+st[582] = { path=1, file="Yak00_8101_s0", type=0, category=1}; // 受けてみろ！　オラオラオラー！！　オラァ！！！
+st[583] = { path=1, file="Yak00_8101_s1", type=0, category=1}; // 受けてみろ！　オラオラオラー！！　オラァ！！！
+st[584] = { path=1, file="Yak00_8101_s2", type=0, category=1}; // 受けてみろ！　オラオラオラー！！　オラァ！！！
+st[585] = { path=1, file="Yak00_8102_s0", type=0, category=1}; // アンタに見切れるか？　　これが八極拳だー！！！
+// st[586] = { path=1, file="Yak00_8102_s1", type=0, category=1}; // アンタに見切れるか？　　これが八極拳だー！！！
+
+
+// // 対人戦３連続勝利
+// 1000	いい調子だ！このまま突き進もう！
+
+// // 対人戦１０連続勝利
+// 1001	ここまで勝ち残ってきたのもアンタのお陰だな！
+
+// // 汎用勝利
+// 1010	十年早いんだよ！！
+
+// // 汎用勝利
+// 1011	もっと俺を熱くさせてくれ！！
+
+// // 汎用勝利
+// 1012	真の強さとは何か……もっと強い奴と戦えば、その答えは見つかるのだろうか。
+
+// // 汎用勝利
+// 1013	もっと……もっと強いやつと戦いたい！
+
+// // 汎用勝利
+// 1014	またいつでも相手してやる。再戦したくば……来いッ！
+
+// // 汎用勝利
+// 1015	沢山の格闘家達と対峙してきたが、なかなか手ごわい相手だった。
+
+// // 汎用勝利
+// 1016	再戦したくば来い！
+
+// // 勝利画面レアボイス
+// 1017	俺のクンフーもまだまだ足らないな。精進せねば！
+
+// // 勝利画面レアボイス
+// 1018	二十年早いんだよ！
+
+// // キャラセレクト画面セレクト待機5秒
+// 1100	俺の名は結城晶。よろしくな。
+
+// // キャラセレクト画面セレクト待機15秒
+// 1120	一緒に見せてやろうぜ！！　修行の成果を！
+
+// // キャラセレクト画面キャラクター決定
+// 1130	よし！いくぞ！
+
+// // コンティニュー画面コンテニュー待機
+// 1200	八極拳はまだこんなものじゃないぞ！
+
+// // コンティニュー画面再戦決定
+// 1210	次こそは勝利を掴む！
+
+// // コンティニュー画面ゲームオーバー
+// 1220	ここまでだというのか……
+
+// // 乱入出迎えボイス
+// 1300	む？新手かっ！
+
+// // 乱入出迎えボイス
+// 1301	俺は誰の挑戦でも受ける！
+
+// // タイトルコール
+// 1700	ファイティング・クライマックス！
+
+// // タイトルコール
+// 1701	電撃文庫、ファイティング・クライマックス！
+
+// // エンディング１（5～6秒程度）
+// 8200	アンタと組めて楽しかったぜ！　またよろしく頼む！
+
+// // エンディング１（5～6秒程度）
+// 8201	また一緒に、最強無敵という「夢」目指せそうぜ！

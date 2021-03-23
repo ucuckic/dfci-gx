@@ -1,0 +1,21 @@
+[data]
+// vsSha00
+100 = Even your flames shall freeze before me!
+
+// vsKrn00
+110 = I have the best big brother in the world!
+
+// vsMis00
+120 = This CAD will be the end of you!
+
+500 = I don't need my brother's help for this.
+501 = I can handle this all by myself.
+502 = I'm not as merciful as my brother...
+510 = I dedicate this win to my big brother.
+511 = Sorry to say, but you lost.
+512 = ...Phew.
+513 = Everything I do is for my brother.
+520 = I guess I went a little too hard on you.
+521 = We've won, my brother!
+530 = All this power and yet...
+531 = How humiliating...

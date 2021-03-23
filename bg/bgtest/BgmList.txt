@@ -1,0 +1,11 @@
+bgm_array <- [];
+
+bgm_array.append( { num=200 } );
+bgm_array.append( { num=201 } );
+bgm_array.append( { num=202 } );
+bgm_array.append( { num=203 } );
+bgm_array.append( { num=204 } );
+bgm_array.append( { num=205 } );
+bgm_array.append( { num=206 } );
+bgm_array.append( { num=207 } );
+bgm_array.append( { num=208 } );

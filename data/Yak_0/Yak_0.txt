@@ -1,0 +1,13 @@
+[System]
+ProjectName=Yak
+[DataFile]
+FileNum= 3
+File00=_temp.HA6
+File01=Yak.HA6
+File02=../BaseData.HA6
+[BmpcutFile]
+FileNum= 1
+File00=Yak.cg
+[PAniFile]
+FileNum= 1
+File00=Yak_ef00.pat

@@ -1,0 +1,3 @@
+[Data]
+DropObj = 1
+DropObj_Type = -1

@@ -1,0 +1,351 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00_Loop = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Loop" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00_End = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_End" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Eff_IMBK = BMvEff.GetPatternNum( { datatype=0, pat="Eff_IMBK" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Eff_IMBK_Noatk = BMvEff.GetPatternNum( { datatype=0, pat="Eff_IMBK_Noatk" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		
+		Battle_Std.Sousai.Init_NoHitFlag(); // ヒットフラグを与えない相殺
+
+		BSound.SE_Play( { type=_SeType_Player, num=[172] } );
+		
+		BMvTbl.SetLP(0,0); // 相殺でとった回数
+		BMvTbl.SetLP(1,0); // 前回相殺でとって消えてもいいエフェクトを呼んだときのMvCount
+		
+		if( BMvTbl.GetMuki() == 1 )
+		{
+			// 右向き
+			// _dp("\n右向き");
+			BMvTbl.SetHan6LayerMask( { val = (1<<1) } );
+		}
+		else
+		{
+			// 左向き
+			// _dp("\n左向き");
+			BMvTbl.SetHan6LayerMask( { val = (1<<0) } );
+		}
+		Battle_Std.AddXPos_CheckFrontStage( 0, 400 );
+	}
+	function FrameUpdate_After()
+	{
+		Battle_Std.Sousai.FrameUpdate_NoHitFlag();
+	}
+	function HitInterrupt_After() : (pat_num_Sup00_Loop, pat_num_Sup00_End, pat_num_Eff_IMBK, pat_num_Eff_IMBK_Noatk)
+	{
+		local mvhs = Battle_Std.Sousai.HitInterrupt( { noeffect=1, nosound=1, hitstop=4 } );
+		if( mvhs ) // 有効なら0以外
+		{
+			if( mvhs.isFirstUpdate )
+			{
+				Battle_Std.SupSt_AddFlag( def_PP_Success );
+				
+				local mvs = BMvTbl.GetMvStatus();
+				local count = BMvTbl.AddLP(0,1); // よんだ回数記憶
+				local mvcount = mvs.MvCount;
+				local last_mvcount = BMvTbl.GetLP(1); // 前回消えてもいいエフェクトを呼んだMvCount(0もある)
+				local is_CallEffectTiming = (mvcount - last_mvcount > 10); // 前回エフェクトから10Fぐらい経過してないとエフェクトは呼ばない
+				// _dp("\nキャッチ回数:"+count+" 時間:"+mvs.MvCount );
+				if( count < 30 || mvs.MvCount < 180 ) // この回数までは何度も取り続ける( AddLPなので1多い )
+				{
+					if( is_CallEffectTiming )
+					{
+						// FrameID100と同じだが、こっちはパターンが変わる
+						// ので、呼んでいたエフェクトは消えるよ
+						BMvTbl.SetPattern( pat_num_Sup00_Loop ); // ループカウントがある場所に戻る
+					}
+					else
+					{
+						// こっちはパターンが変わらないので、エフェクトは消えない
+						BMvTbl.JumpFrameID( 100 ); // ループカウントがある場所に戻る
+					}
+				}
+				else // 取りすぎた＆時間が立ちすぎた
+				{
+					BMvTbl.SetPattern( pat_num_Sup00_End ); // もうとらない絵まで進める
+				}
+				
+				if( count == 1 ) // 相殺１回目は攻撃判定つき
+				{
+					local eff = BMvEff.CreateObject( { start_pat=pat_num_Eff_IMBK } );
+					BSound.SE_Play( { type=_SeType_Player, num=[170,171,173] } );
+					BMvTbl.SetLP(1,mvcount); // 消えてもいいエフェクトを呼んだMvCountを記憶(初回は消えないけど)
+				}
+				else if( is_CallEffectTiming ) // 10Fぐらい隙間が無いとダメにする
+				{
+					// パターン変更（取った）で消えるオブジェクトでエフェクトを呼ぶ
+					local eff = BMvEff.CreateObject( { start_pat=pat_num_Eff_IMBK_Noatk } );
+					if( eff.push() )
+					{
+						BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange } );
+						eff.pop();
+					}
+					BMvTbl.SetLP(1,mvcount); // 消えてもいいエフェクトを呼んだMvCountを記憶
+				}
+			}
+			BMvTbl.SetFinalizeCode(0); // 同フレームに殴られていると撤退するので行動上書き
+		}
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup10_Left = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Left" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_sp10_atkeff = BMvEff.GetPatternNum( { datatype=0, pat="sp10_atkeff" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_sup10_IMBK = BMvEff.GetPatternNum( { datatype=0, pat="sup10_IMBK" } ); // パターン文字列のパターン番号を事前取得
+
+
+t.Mv_SupportChara2 <-
+{
+	function Init_After() : (pat_num_Sup10, pat_num_Sup10_Left)
+	{
+		local usepat = ( BMvTbl.GetMuki() == 1 )? pat_num_Sup10 : pat_num_Sup10_Left;
+		BMvTbl.SetPattern( usepat );
+
+		// Battle_Std.AddXPos_CheckFrontStage( 0, 550 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		Battle_Std.AddXPos_NearEnemy( 250, 450 ); // X移動距離, 相手とこれ以上近づかない距離
+		
+		Battle_Std.Sousai.Init(); // 相殺
+		
+		BMvTbl.SetLP(0,0); // 相殺でとった回数
+		BMvTbl.SetLP(1,0); // 前回相殺でとってエフェクトを呼んだときのMvCount
+
+		BMvTbl.SetLP(7,0); // 一方通行を殴ったかどうか
+
+		BMvTbl.SetLP(8,0); // その幻想をぶち殺したか（ボイスを何度もならさないようにする）
+	}
+	function FrameUpdate_After() : (pat_num_sp10_atkeff)
+	{
+		Battle_Std.Sousai.FrameUpdate();
+
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			BSound.SE_Play( { type=_SeType_Player, num=[122] } );
+			break;
+		}
+		
+		if( BMvTbl.GetLP(7) == 1 )
+		{
+			local main = BMvCore.GetMainCharaData(); // プレイヤー情報を取得
+			if( main.push() )
+			{
+				if( BMvTbl.GetCharaNo()==Def_ChrNo_Mis)
+				{
+					_dp("\n 美琴に呼ばれて一方通行をそげぶしたのでトロフィーゲット");
+					BMvTbl.Achievement_Unlock( _eAchievement_MIS );
+				}
+				main.pop();
+			}
+			
+			BMvTbl.SetLP(7,2); // おわり
+			
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_sp10_atkeff, x=172<<7, y=-136<<7 } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange|_ObjFlags_MoveTimeStopAll } );
+				eff.pop();
+			}
+			// ついでに画面手前にPrio変える
+			BMvTbl.SetPrio( _CharaPrio_Near_Layer_7 );
+
+			if( BMvTbl.GetLP(8) == 0 ) // まだボイスならしていない
+			{
+				BMvTbl.SetLP(8,1);
+				BSound.SE_Play( { type=_SeType_Player, num=[170] } );
+			}
+			
+			local st = BMvTbl.MvHitStatus();
+			st.Count = 40; // ヒットストップ発生
+			BMvTbl.SetMvHitStatus( st );
+			
+			// BMvEff.SetStopTime( { time=40 } );
+			
+			// local pos = BMvTbl.GetPosition( 0 );
+			// BMvEff.SetCamera_Focus( { x=pos.x, y=pos.y-(120*128), zoom=1.5, time=[20,60,10], type_in=1 } );
+			// BMvEff.CutInProc_Set({ time=[3,77,10], cutin_mv="",erasetype=2, bgtype=1 }); 
+			BMvEff.SetCamera_Quake( { time=40, type=2, } );
+		}
+	}
+	function HitInterrupt_After() : (pat_num_sp10_atkeff, pat_num_sup10_IMBK)
+	{
+		// 右手でパンチしたときだけ演出を入れる
+		if( Battle_Std.CheckDamageTiming_FrameID( 500 ) ) // 一方通行で見てるので注意
+		{
+			local eff = BMvEff.CreateObject( { start_pat=pat_num_sp10_atkeff, x=172<<7, y=-136<<7 } );
+			if( eff.push() )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_EraseParentPatChange } );
+				eff.pop();
+			}
+			// ついでに画面手前にPrio変える
+			BMvTbl.SetPrio( _CharaPrio_Near_Layer_7 );
+			
+			if( BMvTbl.GetLP(8) == 0 ) // まだボイスならしていない
+			{
+				BMvTbl.SetLP(8,1);
+				BSound.SE_Play( { type=_SeType_Player, num=[170] } );
+			}
+		}
+		
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			Battle_Std.SupSt_AddFlag( def_PP_Success );
+		}		
+		
+		local mvhs = Battle_Std.Sousai.HitInterrupt( { noeffect=1, nosound=1, hitstop=8 } );
+		if( mvhs ) // 有効なら0以外
+		{
+			if( mvhs.isFirstUpdate )
+			{
+				local mvs = BMvTbl.GetMvStatus();
+				local count = BMvTbl.AddLP(0,1); // よんだ回数記憶
+				local mvcount = mvs.MvCount;
+				local last_mvcount = BMvTbl.GetLP(1); // 前回消えてもいいエフェクトを呼んだMvCount(0もある)
+				// 初回or前回エフェクトから少し経過してないとエフェクトは呼ばない
+				local is_CallEffectTiming = ( count == 1 || (mvcount - last_mvcount > 10) );
+				
+				if( count == 1 )
+				{
+					BSound.SE_Play( { type=_SeType_Player, num=[170] } );
+				}
+				
+				// _dp("\n mvcount - last_mvcount:"+ (mvcount - last_mvcount) );
+				if( is_CallEffectTiming )
+				{
+					local eff = BMvEff.CreateObject( { start_pat=pat_num_sup10_IMBK } );
+					if( eff.push() )
+					{
+						BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll } );
+						eff.pop();
+					}
+					
+					BMvTbl.SetLP(1,mvcount); // エフェクトを呼んだMvCountを記憶
+				}
+				
+			}
+			BMvTbl.SetFinalizeCode(0); // 同フレームに殴られていると撤退するので行動上書き
+		}		
+	}
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } ); // やられ音声		
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } ); // 撤退音声		
+	}
+}
+
+
+TOM_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Tom_s );
+
+_dp(" -> Load OK");

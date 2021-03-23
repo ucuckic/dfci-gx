@@ -1,0 +1,70 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Zer_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Zer00_4901", type=0, category=1}; // ぶち殺してやろう
+// クライマックスブースト発動
+st[81] = { path=1, file="Zer00_7002", type=0, category=1}; // 承認せよ、我はゼロなり
+// ブラストＯＫ
+st[82] = { path=1, file="Zer00_4900", type=0, category=1}; // 我輩の出番だな！
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Zer00_2100", type=0, category=1}; // 見たか、この我輩の力を！
+st[101] = { path=1, file="Zer00_2101", type=0, category=1}; // まぁ、当然だな
+
+// ラウンド敗北	
+st[110] = { path=1, file="Zer00_2200", type=0, category=1}; // この馬鹿者がぁ！
+st[111] = { path=1, file="Zer00_2201", type=0, category=1}; // 我輩、極めて不愉快だ
+
+// 通常攻撃	
+// st[120] = { path=1, file="Zer00_2500", type=0, category=1}; // は
+// st[121] = { path=1, file="Zer00_2501", type=0, category=1}; // とう
+// st[122] = { path=1, file="Zer00_2502", type=0, category=1}; // そら
+
+// 撤退	
+// st[130] = { path=1, file="Zer00_4000", type=0, category=1}; // 機を逃したか…
+// st[131] = { path=1, file="Zer00_4001", type=0, category=1}; // あってたまるか！
+
+// ダメージ	
+st[140] = { path=1, file="Zer00_4500", type=0, category=1}; // いたっ
+// st[141] = { path=1, file="Zer00_4501", type=0, category=1}; // ああっ
+// st[142] = { path=1, file="Zer00_4502", type=0, category=1}; // ぐぇっ
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Zer00_4600", type=0, category=1}; // ひどいではないか
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Zer00_4900", type=0, category=1}; // 我輩の出番だな！
+st[161] = { path=1, file="Zer00_4901", type=0, category=1}; // ぶち殺してやろう
+
+// 必殺技１	
+st[170] = { path=1, file="Zer00_7000_b"  , type=0, category=1}; // 却下だ
+st[171] = { path=1, file="Zer00_7001_b"  , type=0, category=1}; // 却下する
+
+// ガーキャン
+st[172] = { path=1, file="Zer00_7002_c"  , type=0, category=1}; // 承認せよ、我はゼロなり
+st[173] = { path=1, file="Zer00_7003_b"  , type=0, category=1}; // それは我輩の魔法だ
+
+// 必殺技２	
+st[180] = { path=1, file="Zer00_7100"  , type=0, category=1}; // ミーザ・リ・キブ
+// st[181] = { path=1, file="Zer00_7101"  , type=0, category=1}; // 蠢き捕らえ締め上げろ！
+st[182] = { path=1, file="Zer00_7102_s0", type=0, category=1}; // 捕縛の章・第八項、蔦籠（カプラタ）！
+// st[183] = { path=1, file="Zer00_7103_b"  , type=0, category=1}; // 承認せよ、我はゼロなり！

@@ -1,0 +1,3 @@
+reoffset naoto walk_b animation
+reoffset naoto stda animation
+draw hurtboxes for existing attack patterns

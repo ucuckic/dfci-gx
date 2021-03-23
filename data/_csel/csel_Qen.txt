@@ -1,0 +1,10 @@
+[System]
+ProjectName=csel_Qen
+[DataFile]
+FileNum= 1
+File00=csel_Qen.HA6
+[BmpcutFile]
+FileNum= 1
+File00=csel_Qen.cg
+[PAniFile]
+FileNum= 0

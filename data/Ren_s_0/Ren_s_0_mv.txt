@@ -1,0 +1,916 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+// 銃口の位置を取得する
+// 銃口の位置は特殊判定7で設定する
+// 子のオブジェクトから呼び出す場合はレンをpushしてから使うこと
+local getMuzzlePosition = function()
+{
+	local muzzlePos = {
+		isdone = 0,
+		x = 0,
+		y = 0,
+	}
+	
+	local muzzleHanteiRect = BMvEff.GetHanteiRect ( { check=[ _Hantei_Etc, 7 ] } ); // 銃口の座標取得
+	if( muzzleHanteiRect.sx != _Hantei_Error )
+	{
+		muzzlePos.isdone = 1; // 有効
+		muzzlePos.x = muzzleHanteiRect.sx;
+		muzzlePos.y = muzzleHanteiRect.sy;
+		
+		if( BMvTbl.GetMuki()==-1 )
+		{
+			muzzlePos.x = muzzleHanteiRect.ex; // 左向きの時は終点になる
+		}
+	}
+	return muzzlePos;
+}
+
+// 銃口から出るマズルフラッシュとスモークを作成する
+local createMuzzleFlash = function() : (getMuzzlePosition)
+{
+	local muzzlePos = getMuzzlePosition(); // 銃口の座標取得
+	
+	if( muzzlePos.isdone == 0 ) return; // 特殊判定が無かった時は失敗
+	
+	local muzzleFlash = BMvEff.CreateObject( { mvname="Mv_Obj_Eff_MuzzleFlash" } ); // マズルフラッシュ
+	if( muzzleFlash.push() )
+	{
+		BMvTbl.SetPosition( { x=muzzlePos.x, y=muzzlePos.y } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_ParentMove } );
+		muzzleFlash.pop();
+	}
+	
+	local smoke = BMvEff.CreateObject( { mvname="Mv_Obj_Eff_Smoke" } ); // スモーク
+	if( smoke.push() )
+	{
+		BMvTbl.SetPosition( { x=muzzlePos.x, y=muzzlePos.y } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_ParentMove } );
+		smoke.pop();
+	}
+}
+
+local pat_num_marker = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Marker" } ); // パターン文字列のパターン番号を事前取得
+t.Mv_Obj_Eff_Marker <-
+{
+	function Init() : (pat_num_marker)
+	{
+		BMvTbl.SetPattern( pat_num_marker );
+	}
+	function FrameUpdate()
+	{
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_muzzleflash = BMvEff.GetPatternNum( { datatype=0, pat="Eff_MuzzleFlash" } ); // パターン文字列のパターン番号を事前取得
+t.Mv_Obj_Eff_MuzzleFlash <-
+{
+	function Init() : (pat_num_muzzleflash)
+	{
+		BMvTbl.SetPattern( pat_num_muzzleflash );
+	}
+	function FrameUpdate()
+	{
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_smoke_a = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Smoke_a" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_smoke_b = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Smoke_b" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_smoke_c = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Smoke_c" } ); // パターン文字列のパターン番号を事前取得
+t.Mv_Obj_Eff_Smoke <-
+{
+	function Init() : (pat_num_smoke_a,pat_num_smoke_b,pat_num_smoke_c)
+	{
+		// スモークはランダムで3パターンのうちどれかを表示する
+		local rnd = BMvEff.Random_Limit(3);
+		switch( rnd )
+		{
+		case 0:
+			BMvTbl.SetPattern( pat_num_smoke_a );
+			break;
+		case 1:
+			BMvTbl.SetPattern( pat_num_smoke_b );
+			break;
+		case 2:
+			BMvTbl.SetPattern( pat_num_smoke_c );
+			break;
+		}
+	}
+	function FrameUpdate()
+	{
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+// バレットラインを生成する
+// 銃口の位置は特殊判定7で設定する
+local pat_num_bulletline_long = BMvEff.GetPatternNum( { datatype=0, pat="Eff_BulletLine_Long" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_bulletline_short = BMvEff.GetPatternNum( { datatype=0, pat="Eff_BulletLine_Short" } ); // パターン文字列のパターン番号を事前取得
+local maketmpl_BulletLine = function( param={} ) : (pat_num_bulletline_long,pat_num_bulletline_short,getMuzzlePosition)
+{
+	local ret_tmpl = {};
+	local use_param = {
+		pat_num_bulletline = pat_num_bulletline_long,
+		baseBulletLength = 380<<7, // バレットラインのデフォルトの長さ
+	}
+	
+	switch(param.type)
+	{
+	case "Long":
+		use_param.pat_num_bulletline = pat_num_bulletline_long;
+		use_param.baseBulletLength = 380<<7;
+		break;
+	case "Short":
+		use_param.pat_num_bulletline = pat_num_bulletline_short;
+		use_param.baseBulletLength = 280<<7;
+		break;
+	}
+	
+	ret_tmpl.Init <- function() : (use_param)
+	{
+		BMvTbl.SetPattern( use_param.pat_num_bulletline );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_ParentMove } );
+	}
+	ret_tmpl.FrameUpdate <- function() : (use_param)
+	{
+		local parentObj = BMvCore.GetParentCharaData();
+		if( parentObj.push() )
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			local isHit=0; // 弾が相手に触れているかどうか
+			local hs = BMvTbl.GetMvHitStatus();
+			if( hs.Type & _HitType_Hit )
+			{	
+				isHit=1;
+			}
+			parentObj.pop();
+			
+			local param3 = mvs.Param3;
+			if( param3 & 16 ) // バレットライン消去したいタイミング
+			{
+				BMvTbl.SetFinalize( 0 );
+				return;
+			}
+			
+			if( isHit )
+			{
+				local kyori = Battle_Std.GetEnemyDistance();
+				local per = 10000*kyori/use_param.baseBulletLength; // SetScaleのパラメータが10000＝1倍なので×10000する
+				if( per > 10000 )
+				{
+					per = 10000; // 遠い場合は拡大しない
+				}
+				else if( per < 2000 )
+				{
+					per = 2000; // 近すぎても最低限の長さは確保する
+				}
+				
+				BMvTbl.SetScale( { x=per } ); // 横に縮小
+			}
+		}
+	}
+	ret_tmpl.Finalize <- function()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	return ret_tmpl;
+}
+t.Mv_Obj_Eff_BulletLine_Long <- maketmpl_BulletLine({ type="Long" });
+t.Mv_Obj_Eff_BulletLine_Short <- maketmpl_BulletLine({ type="Short" });
+
+
+// 射程範囲内の相手にマーカーを生成する
+// 射程範囲は特殊判定8で設定する
+local createMarker = function()
+{
+	local enemy = BMvEff.CheckHantei( { src=[ _Hantei_Etc, 8, 0 ], dst=[ _Hantei_Kurai, 0, -1 ], flags=_HC_EnemyPc|_HC_WithoutNoHanteiFlagObj } );
+	if( enemy.isdone() )
+	{
+		local markerHanteiRect = BMvEff.GetHanteiRect ( { check=[ _Hantei_Etc, 8 ] } ); // 射程の座標取得
+		local rnd = BMvEff.Random_Limit(30);
+		local rndMove = (rnd-15)<<7;
+		local epos = Battle_Std.GetEnemyPosition();
+		if( markerHanteiRect.sx != _Hantei_Error )
+		{
+			local pos_y = markerHanteiRect.sy;
+			epos.y = pos_y;
+		}
+			
+		local marker = BMvEff.CreateObject( { mvname="Mv_Obj_Eff_Marker" } ); // マーカー
+		if( marker.push() )
+		{
+			BMvTbl.SetPosition( { x=epos.x+rndMove, y=epos.y+rndMove } ); // 相手に合わせてマーカー表示
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+			marker.pop();
+		}
+	}
+}
+
+local pat_num_baghit = BMvEff.GetPatternNum( { datatype=0, pat="Eff_BagHit" } ); // パターン文字列のパターン番号を事前取得
+t.Mv_Obj_Eff_BagHit <-
+{
+	function Init() : (pat_num_baghit)
+	{
+		BMvTbl.SetPattern( pat_num_baghit );
+	}
+	function FrameUpdate()
+	{
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+local pat_num_openbag = BMvEff.GetPatternNum( { datatype=0, pat="Eff_OpenBag" } ); // パターン文字列のパターン番号を事前取得
+t.Mv_Obj_Eff_OpenBag <-
+{
+	function Init() : (pat_num_openbag)
+	{
+		BMvTbl.SetPattern( pat_num_openbag );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_FromParentStop } ); 
+	}
+	function FrameUpdate()
+	{
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+t.Mv_Null_Scaner_Maker <-
+{
+	function Init()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_ParentMove|_ObjFlags_ParentMuki } );
+	}
+	function FrameUpdate()
+	{
+		// 親のparam3が128の間だけスキャンする
+		local parentObj = BMvCore.GetParentCharaData();
+		if( parentObj.push() )
+		{
+			local parentMvs = BMvTbl.GetMvStatus();
+			parentObj.pop();
+			local param3 = parentMvs.Param3;
+			
+			if( !(param3 & 128) ) // スキャン終了
+			{
+				BMvTbl.SetFinalize(0);
+				return;
+			}
+		}
+		
+		// 25Fに一回スキャンを走らせる(スキャンアニメ1回の半分のF)
+		local mvs = BMvTbl.GetMvStatus();
+		local mvs_MvCount = mvs.MvCount;
+		if( mvs_MvCount%25==0 )
+		{
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_Scaner" } );
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+local pat_num_scaner = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Scaner" } ); // パターン文字列のパターン番号を事前取得
+t.Mv_Obj_Eff_Scaner <-
+{
+	function Init() : (pat_num_scaner)
+	{
+		BMvTbl.SetPattern( pat_num_scaner );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange } );
+	}
+	function FrameUpdate()
+	{
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+
+// param3の値は
+//   1:プレイヤーの攻撃にレンが反応する
+//   2:相手の接触にレンが反応する
+//   4:銃を撃っている
+//   8:マーカーを表示する
+// 128:スキャナーを表示している
+
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00 ); // 表示するパターンを設定
+		
+		// 表示座標指定
+		Battle_Std.AddXPos_NearEnemy( 100, 100 ); // 移動距離, これ以上相手と近くならない
+		
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=1000, flag=_ClearFlag_ChangeMv } );
+		
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+		
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AutoSPGuardAtk ); // ずっとシールド状態フラグ
+		
+		BMvTbl.SetLP(0,0); // カバンから飛び出したかどうか
+		BMvTbl.SetLP(1,0); // 移動した回数
+		BMvTbl.SetLP(2,0); // 移動タイプ　0：通常、1：速い移動
+		BMvTbl.SetLP(3,0); // 殴ったかどうか
+		BMvTbl.SetLP(4,0); // 相手を検知したかどうか
+	}
+	function FrameUpdate_After() : (createMuzzleFlash,createMarker,getMuzzlePosition)
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		local param3 = mvs.Param3;
+		if( param3 & 1 && BMvTbl.GetLP(3)==0 ) // レンがカバンの中で待機中（1回だけ自分の攻撃に反応する）
+		{
+			// 特殊判定に攻撃が触れたらレンが飛び出す
+			local attack = BMvEff.CheckHantei( { src=[ _Hantei_Etc, 0, 1 ], dst=[ _Hantei_Attack , 0, -1 ], flags=_HC_FavourPc|_HC_FavourObj|_HC_WithoutNoHanteiFlagObj } );
+			if( attack.push() )
+			{
+				local lefthitcount = BMvTbl.CalcHitValue(0);
+				local naguri_throw = Battle_Std.MvAction.CheckFlag( def_MC_ThrowRect );
+				local isLow = Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_AtkLow ); // 弱攻撃レベル
+				attack.pop();
+				
+				if( !naguri_throw && lefthitcount>=1 ) // 投げ属性じゃないかつ残りヒット数が1以上
+				{
+					BMvTbl.SetLP(3,1); // 殴ったのを記憶
+					if( !isLow )
+					{
+						BMvTbl.SetLP(2,1); // 速く移動する
+					}
+					BMvEff.CreateObject( { mvname="Mv_Obj_Eff_BagHit" } ); // 殴りエフェクト表示
+					BMvTbl.JumpFrameID( 15 );
+				}
+			}
+		}
+		if( param3 & 2 ) // レンがカバンの中で待機中
+		{
+			// 特殊判定に相手が触れたらレンが飛び出す
+			local enemy = BMvEff.CheckHantei( { src=[ _Hantei_Etc, 4, 2 ], dst=[ _Hantei_Kurai, 0, -1 ], flags=_HC_EnemyPc|_HC_WithoutNoHanteiFlagObj } );
+			if( enemy.push() )
+			{
+				local bs = BtlMvStd.GetBoundStatus();
+				enemy.pop();
+				
+				if( !(bs.isBound && bs.IsDown()) ) // ダウン中は反応しない
+				{
+					BMvTbl.SetLP(4,1); // 相手を検知した
+					// 触れたので飛び出る
+					BMvTbl.JumpFrameID( 99 ); // 飛び出る1F前に飛ぶ（カバンの絵が無いFに飛ぶと1Fだけカバンが消えてしまうので）
+				}
+			}
+		}
+		if( param3 & 4 && mvs.isFrameUpdate ) // 銃発射
+		{
+			createMuzzleFlash(); // マズルフラッシュ作成
+		}
+		if( param3 & 8 && mvs.isFrameUpdate ) // マーカー生成
+		{
+			createMarker();
+		}
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case  5: // スキャン開始
+			BMvEff.CreateObject( { mvname="Mv_Null_Scaner_Maker" } );
+			break;
+		case 15: // 攻撃判定付きで移動する
+			if( BMvTbl.GetLP(1)<1 ) // 最大1回移動する
+			{
+				BMvTbl.AddLP(1,1); // 移動した回数加算
+				
+				// 判定ツールでベクトル設定すると後ろに移動する時困るのでスクリプトでやること
+				local vec_x = 500;
+				local add_x = 50;
+				
+				if( BMvTbl.GetLP(2)==1) // 速く移動する
+				{
+					vec_x = 3500;
+					add_x = -50;
+				}
+				
+				local distance = Battle_Std.GetEnemyDistance();
+				if( distance < 0 ) // 相手が後ろにいる場合はベクトル反転
+				{
+					vec_x *= -1;
+					add_x *= -1;
+				}
+				
+				BMvTbl.SetVector( { x=vec_x, y=0, addx=add_x, addy=0, flags=["vec_Div"] });
+				BMvTbl.SetLP(2,0); // 移動タイプ初期化
+			}
+			else
+			{
+				// もう移動しないで飛び出す
+				BMvTbl.JumpFrameID( 99 ); // 飛び出る1F前に飛ぶ（カバンの絵が無いFに飛ぶと1Fだけカバンが消えてしまうので）
+			}
+			break;
+		case 20: // 減速する
+			local nowVec = BMvTbl.GetVector( { flags=["vec_Div"] } );
+			local vec_x = 1000;
+			local add_x = -100;
+			
+			if( nowVec.x < 0 ) // 後ろに移動している場合はベクトル反転
+			{
+				vec_x *= -1;
+				add_x *= -1;
+			}
+			
+			BMvTbl.SetVector( { x=vec_x, y=0, addx=add_x, addy=0, flags=["vec_Div"] });
+			break;
+		case  90: // カバンの移動が終了
+			if( BMvTbl.GetLP(3)==1 )
+			{
+				// 殴られ済みなら飛び出す
+				BMvTbl.JumpFrameID( 99 ); // 飛び出る1F前に飛ぶ（カバンの絵が無いFに飛ぶと1Fだけカバンが消えてしまうので）
+			}
+			break;
+		case 100: // カバンの蓋が開く
+			if( BMvTbl.GetLP(4)==1 ) // 相手を検知した時はそれっぽいボイス
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[173,174,177] } );
+			}
+			else // 自主的に飛び出た
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[171,176,180] } );
+			}
+			break;
+		case 110: // レン登場
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_OpenBag" } ); // カバン表示
+			BMvTbl.SetLP(0,1); // カバンから飛び出した
+			BMvTbl.SetMuki( _Direction_Auto ); // カバン表示した後に振り向かないとカバンまで反転してしまうので判定ツールじゃなくてこっちでやる
+			Battle_Std.SupportSetMuki(); // のけぞりの方向をレンの向き準拠にするため、親の向きを合わせる
+			break;
+		case 200: // 銃初段発射
+			local muzzlePos = getMuzzlePosition(); // 銃口の座標取得
+			if( muzzlePos.isdone )
+			{
+				local bulletLine = BMvEff.CreateObject( { mvname="Mv_Obj_Eff_BulletLine_Short" } ); // バレットラインを生成する
+				if( bulletLine.push() )
+				{
+					BMvTbl.SetPosition( { x=muzzlePos.x, y=muzzlePos.y } );
+					bulletLine.pop();
+				}
+			}
+			break;
+		case 900: // 撤収
+			BSound.SE_Play( { type=_SeType_Player, num=[175] } );
+			break;
+		}
+		
+	}
+	function HitInterrupt_After()
+	{
+	}
+}
+
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[141,142] } ); // やられ音声
+		
+		if( BMvTbl.GetLP(0)==0 ) // カバンから飛び出ていない
+		{
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_OpenBag" } ); // カバン表示
+		}
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } ); // やられ音声
+		
+		if( BMvTbl.GetLP(0)==0 ) // カバンから飛び出ていない
+		{
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_OpenBag" } ); // カバン表示
+		}
+	}
+}
+
+
+local pat_num_SupEx00 = BMvEff.GetPatternNum( { datatype=0, pat="SupEx00" } ); // パターン文字列のパターン番号を事前取得
+t.Mv_SupportCharaEx <-
+{
+	function Init_After() : (pat_num_SupEx00)
+	{
+		BMvTbl.SetPattern( pat_num_SupEx00 );
+		
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=1000, flag=_ClearFlag_ChangeMv } );
+		
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+		
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AutoSPGuardAtk ); // ずっとシールド状態フラグ
+		
+		BMvTbl.SetLP(0,0); // カバンから飛び出したかどうか
+		BMvTbl.SetLP(1,0); // 移動した回数
+		BMvTbl.SetLP(2,0); // 移動タイプ　0：通常、1：速い移動
+		BMvTbl.SetLP(3,0); // 殴ったかどうか
+		BMvTbl.SetLP(4,0); // 相手を検知したかどうか
+	}
+	function FrameUpdate_After() : (createMuzzleFlash,createMarker,getMuzzlePosition)
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		local param3 = mvs.Param3;
+		
+		if( param3 & 1 && BMvTbl.GetLP(3)==0 ) // レンがカバンの中で待機中（1回だけ自分の攻撃に反応する）
+		{
+			// 特殊判定にプレイヤーの攻撃が触れたらレンが移動する
+			local attack = BMvEff.CheckHantei( { src=[ _Hantei_Etc, 0, 1 ], dst=[ _Hantei_Attack , 0, -1 ], flags=_HC_FavourPc|_HC_FavourObj } );
+			if( attack.push() )
+			{
+				local lefthitcount = BMvTbl.CalcHitValue(0);
+				local naguri_throw = Battle_Std.MvAction.CheckFlag( def_MC_ThrowRect );
+				local isLow = Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_AtkLow ); // 弱攻撃レベル
+				attack.pop();
+				
+				if( !naguri_throw && lefthitcount>=1 ) // 投げ属性じゃないかつ残りヒット数が1以上
+				{
+					BMvTbl.SetLP(3,1); // 殴ったのを記憶
+					if( !isLow )
+					{
+						BMvTbl.SetLP(2,1); // 速く移動する
+					}
+					BMvEff.CreateObject( { mvname="Mv_Obj_Eff_BagHit" } ); // 殴りエフェクト表示
+					BMvTbl.JumpFrameID( 15 );
+				}
+			}
+		}
+		if( param3 & 2 ) // レンがカバンの中で待機中（敵に反応する）
+		{
+			// 特殊判定に相手が触れたらレンが飛び出す
+			local enemy = BMvEff.CheckHantei( { src=[ _Hantei_Etc, 4, 2 ], dst=[ _Hantei_Kurai, 0, -1 ], flags=_HC_EnemyPc|_HC_WithoutNoHanteiFlagObj } );
+			if( enemy.push() )
+			{
+				local bs = BtlMvStd.GetBoundStatus();
+				enemy.pop();
+				
+				if( !(bs.isBound && bs.IsDown()) ) // ダウン中は反応しない
+				{
+					BMvTbl.SetLP(4,1); // 相手を検知した
+					// 触れたので飛び出る
+					BMvTbl.JumpFrameID( 99 ); // 飛び出る1F前に飛ぶ（カバンの絵が無いFに飛ぶと1Fだけカバンが消えてしまうので）
+				}
+			}
+		}
+		if( param3 & 4 && mvs.isFrameUpdate ) // 銃発射
+		{
+			createMuzzleFlash(); // マズルフラッシュ作成
+		}
+		if( param3 & 8 && mvs.isFrameUpdate ) // マーカー生成
+		{
+			createMarker();
+		}
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case  5: // スキャン開始
+			BMvEff.CreateObject( { mvname="Mv_Null_Scaner_Maker" } );
+			break;
+		case 10: // ちょっと移動する
+		case 15: // 攻撃判定付きで移動する
+			if( BMvTbl.GetLP(1)<4 ) // 最大4回移動する
+			{
+				BMvTbl.AddLP(1,1); // 移動した回数加算
+				
+				// 判定ツールでベクトル設定すると後ろに移動する時困るのでスクリプトでやること
+				// エクステンドは移動量多くする
+				local vec_x = 1000;
+				local add_x = 50;
+				
+				if( BMvTbl.GetLP(2)==1) // 速く移動する
+				{
+					// エクステンドは移動量多くする
+					vec_x = 4500;
+					add_x = -50;
+				}
+				
+				local distance = Battle_Std.GetEnemyDistance();
+				if( distance < 0 ) // 相手が後ろにいる場合はベクトル反転
+				{
+					vec_x *= -1;
+					add_x *= -1;
+				}
+				
+				BMvTbl.SetVector( { x=vec_x, y=0, addx=add_x, addy=0, flags=["vec_Div"] });
+				BMvTbl.SetLP(2,0); // 移動タイプ初期化
+			}
+			else
+			{
+				// もう移動しないで飛び出す
+				BMvTbl.JumpFrameID( 99 ); // 飛び出る1F前に飛ぶ（カバンの絵が無いFに飛ぶと1Fだけカバンが消えてしまうので）
+			}
+			break;
+		case 20: // 減速する
+			local nowVec = BMvTbl.GetVector( { flags=["vec_Div"] } );
+			local vec_x = 1000;
+			local add_x = -100;
+			
+			if( nowVec.x < 0 ) // 後ろに移動している場合はベクトル反転
+			{
+				vec_x *= -1;
+				add_x *= -1;
+			}
+			
+			BMvTbl.SetVector( { x=vec_x, y=0, addx=add_x, addy=0, flags=["vec_Div"] });
+			break;
+		case  90: // カバンの移動が終了
+			if( BMvTbl.GetLP(3)==1 )
+			{
+				// 殴られ済みなら飛び出す
+				BMvTbl.JumpFrameID( 99 ); // 飛び出る1F前に飛ぶ（カバンの絵が無いFに飛ぶと1Fだけカバンが消えてしまうので）
+			}
+			break;
+		case 100: // カバンの蓋が開く
+			if( BMvTbl.GetLP(4)==1 ) // 相手を検知した時はそれっぽいボイス
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[173,174,177] } );
+			}
+			else // 自主的に飛び出た
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[171,176,180] } );
+			}
+			break;
+		case 110: // レン登場
+			BMvEff.CreateObject( { mvname="Mv_Obj_Eff_OpenBag" } ); // カバン表示
+			BMvTbl.SetLP(0,1); // カバンから飛び出した
+			BMvTbl.SetMuki( _Direction_Auto ); // カバン表示した後に振り向かないとカバンまで反転してしまうので判定ツールじゃなくてこっちでやる
+			Battle_Std.SupportSetMuki(); // のけぞりの方向をレンの向き準拠にするため、親の向きを合わせる
+			break;
+		case 200: // 銃初段発射
+			local muzzlePos = getMuzzlePosition(); // 銃口の座標取得
+			if( muzzlePos.isdone )
+			{
+				local bulletLine = BMvEff.CreateObject( { mvname="Mv_Obj_Eff_BulletLine_Long" } ); // バレットラインを生成する
+				if( bulletLine.push() )
+				{
+					BMvTbl.SetPosition( { x=muzzlePos.x, y=muzzlePos.y } );
+					bulletLine.pop();
+				}
+			}
+			break;
+		case 900: // 撤収
+			BSound.SE_Play( { type=_SeType_Player, num=[175] } );
+			break;
+		}
+		
+		// ステージ外に行かないようにする
+		local vec = BMvTbl.GetVector( { flags=_Vector_Div } ); // 慣性部分を初期値に
+		local pos = BMvTbl.GetPosition();
+		local mukiXvec = vec.x*BMvTbl.GetMuki(); // チェック用
+		if( pos.x + mukiXvec > def_POS_GamenHajiX )
+		{
+			BMvTbl.SetPosition( { x=def_POS_GamenHajiX } );
+			if( mukiXvec > 0 )
+			{
+				vec.x = 0;
+				vec.addx = 0;
+				BMvTbl.SetVector( { x=0, addx=0, flags=_Vector_Div } );
+			}
+		}
+		else if( pos.x + mukiXvec < -def_POS_GamenHajiX )
+		{
+			BMvTbl.SetPosition( { x=-def_POS_GamenHajiX } );
+			if( mukiXvec < 0 )
+			{
+				vec.x = 0;
+				vec.addx = 0;
+				BMvTbl.SetVector( { x=0, addx=0, flags=_Vector_Div } );
+			}
+		}
+	}
+}
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamageEx <- t.Mv_SupportCharaDamage;
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscapeEx <- t.Mv_SupportCharaEscape;
+
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <-
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10 );
+		
+		// 表示座標指定
+		// ※空ダから呼び出すと、相手とど密着で出現して発生4Fとかになってたので
+		// 　相手の位置だけ見るように変更
+		// Battle_Std.AddXPos_NearEnemy( -200, 1100 ); // 移動距離, これ以上相手と近くならない
+		
+		// 相手の座標を見て出現する
+		local ePos = Battle_Std.GetEnemyPosition(); // 相手の座標取得
+		local muki = BMvTbl.GetMuki(); // 自分の向きを基準に出現位置を決める（相手に向かって背を向けないようにする）
+		local setPos = ePos.x - (1100<<7)*muki; // 出現する座標
+		
+		BMvTbl.SetPosition( { x=setPos } );
+		
+		
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=1000, flag=_ClearFlag_ChangeMv } );
+		
+		Battle_Std.MoveCode.AddFlag( def_MC_Sousai ); // 相殺される
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkBall ); // 飛び道具
+		
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AutoSPGuardAtk ); // ずっとシールド状態フラグ
+		
+		BMvTbl.SetLP(0,0); // 足を止めて撃ち始めたか
+		BMvTbl.SetLP(1,0); // 何発撃ったか
+	}
+	function FrameUpdate_After() : (createMuzzleFlash,createMarker,getMuzzlePosition)
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		local param3 = mvs.Param3; // param3 & 4は弾を発射している
+		switch( Battle_Std.GetUpdateFrameID( mvs ) )
+		{
+		case 100: // 走り始め
+			BSound.SE_Play( { type=_SeType_Player, num=[190,192,193] } );
+			break;
+		case 150: // 銃初段発射
+		case 350: // 足を止めてからの初段発射
+			local bulletLine = BMvEff.CreateObject( { mvname="Mv_Obj_Eff_BulletLine_Short" } ); // バレットラインを生成する
+			local muzzlePos = getMuzzlePosition(); // 銃口の座標取得
+			if( bulletLine.push() )
+			{
+				BMvTbl.SetPosition( { x=muzzlePos.x, y=muzzlePos.y } );
+				bulletLine.pop();
+			}
+			break;
+		case 300: // 足を止めて撃っている
+			local bulletNum = BMvTbl.GetLP(1);
+			if( bulletNum>=15 ) // 撃った弾が15発以上
+			{
+				BMvTbl.JumpFrameID(500); // 撃ち終わりへ
+			}
+			break;
+		case 900: // 撤収
+			BSound.SE_Play( { type=_SeType_Player, num=[175] } );
+			break;
+		}
+		
+		if( param3 & 4 && mvs.isFrameUpdate )
+		{
+			BMvTbl.AddLP(1,1); // 撃った数を増やす
+			createMuzzleFlash(); // マズルフラッシュ作成
+		}
+		else
+		{
+			// 近くまで行ったら足を止めてみる
+			local ePosst = Battle_Std.GetPointStatus_NearEnemy();
+			local kyori = ePosst.distance_x/128;
+			local backCornerKyori = Battle_Std.GetBackCornerDistance(); // 後ろの画面端までの距離
+			if( kyori < 300 && BMvTbl.GetLP(0)==0 && backCornerKyori>0 )
+			{
+				BMvTbl.SetLP(0,1); // 足を止めた
+				BMvTbl.JumpFrameID( 200 );
+			}
+		}
+		if( param3 & 8 && mvs.isFrameUpdate ) // マーカー生成
+		{
+			createMarker();
+		}
+	}
+	function HitInterrupt_After()
+	{
+		// 近くまで行ったら足を止めてみる
+		if( BMvTbl.GetLP(0)==0 )
+		{
+			local ePosst = Battle_Std.GetPointStatus_NearEnemy();
+			local kyori = ePosst.distance_x/128;
+			local backCornerKyori = Battle_Std.GetBackCornerDistance(); // 後ろの画面端までの距離
+			if( kyori < 400 && backCornerKyori>0 )
+			{
+				BMvTbl.SetLP(0,1); // 足を止めて撃ち始めた
+				BMvTbl.JumpFrameID( 200 );
+			}
+		}
+	}
+}
+
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[141,142] } ); // やられ音声
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup10_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } ); // やられ音声
+	}
+}
+
+
+
+REN_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Ren_s );
+
+_dp(" -> Load OK");

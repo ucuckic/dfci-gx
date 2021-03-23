@@ -1,0 +1,12 @@
+[System]
+ProjectName=Emi
+[DataFile]
+FileNum= 2
+File00=_temp.HA6
+File01=Emi.HA6
+[BmpcutFile]
+FileNum= 1
+File00=Emi.cg
+[PAniFile]
+FileNum= 1
+File00=Emi_ef00.pat

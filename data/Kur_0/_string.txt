@@ -1,0 +1,21 @@
+[data]
+// vsAsu00
+100 = What are you talking about?
+
+// vsMis00
+110 = Electric powers, huh? This should be fun!
+
+// vsYkn00
+120 = Oh? And fighting in a miniskirt?
+
+500 = Now, shall we get this started?
+501 = No holding back.
+502 = Come on! Show me what you've got!
+510 = You'll need a King or two to beat me!
+511 = Good match. Let's do it again sometime.
+512 = Well, well... You exceeded my expectations.
+513 = Forgive me. I meant to go easy on you.
+520 = I really enjoyed that.
+521 = Don't tell me you're finished already?
+530 = Losing at a time like this?!
+531 = I-I'm impressed...

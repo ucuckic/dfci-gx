@@ -1,0 +1,2427 @@
+//サポートキャラのMvを作るのに使う関数
+
+Battle_Std.SupportChara <- {};
+
+Battle_Std.SupportChara.MakeMoveTable <- function( tmpl, _ChrNo )
+{
+	local std_mvtbl = GetStdMoveTable( _ChrNo );
+	Battle_Std.MergeTable( tmpl, std_mvtbl ); //tmplに標準Mvを上書きする
+	local retmv = Battle_Std.GetMoveTableFromTmpl( tmpl ); //tmplなのか判断しつつ変換してmv化
+	return retmv;
+}
+
+Battle_Std.SupportChara.GetStdMoveTable <- function( _ChrNo )
+{
+	local ret_tbl = {};
+	
+	ret_tbl.Mv_CheckHitbox_Debug <-
+	{
+		function Init()
+		{
+		
+		}
+		function FrameUpdate()
+		{
+			local oya = BMvCore.GetParentCharaData();
+			local s = BMvTbl.GetMvStatus();
+			if(s.CallCount==0)
+			{
+				if(oya.push())
+				{
+					local ps = BMvTbl.GetMvStatus();
+					local mvname = BMvTbl.GetMvName();
+					if( mvname == "Mv_Obj_CheckSupportFrame" )
+					{
+						oya.pop();
+						BMvTbl.SetFinalize(0);
+					}
+					
+					if(oya.isPlayer())
+					{
+						if( oya.isPlayer() ) 
+						{
+							if(Def_Dbg_DrawHitBox_Outline)
+							{
+								Battle_Std.DrawHitBoxes_Outlined();
+							}
+							else
+							{
+								Battle_Std.DrawHitBoxes();
+							}
+						}
+					}
+					else
+					{
+						if( ps.DataPattern != 0 )
+						{
+							if(Def_Dbg_DrawHitBox_Outline)
+							{
+								Battle_Std.DrawHitBoxes_Outlined();
+							}
+							else
+							{
+								Battle_Std.DrawHitBoxes();
+							}
+						}
+					}
+					
+					
+					oya.pop();
+					
+				}
+			}
+		}
+		function Finalize()
+		{
+			//Battle_Std.DrawDebugAttackInfo( "obj destroy" );
+			
+			BMvTbl.SetDeleteMoveTable();
+		}
+	}
+	
+	ret_tbl.Mv_Obj_HitboxBox_Debug <-
+	{
+		function Init()
+		{
+			//BMvTbl.SetLP(1,-1); //hitcheckflag
+			
+			//BMvTbl.JumpFrameID( 100 );
+			
+			BMvTbl.SetLP(4,BMvTbl.GetLP(0)); 
+		}
+		function FrameUpdate()
+		{		
+			local s = BMvTbl.GetMvStatus();	
+			if(s.CallCount==0)
+			{
+				local oya = BMvCore.GetParentCharaData();
+				
+				local p_layer = _CharaPrio_GaugeCombo_P1; // _CharaPrio_Near_Layer_0
+				local o_layer = _CharaPrio_GaugeCombo_P1;
+				
+				//Battle_Std.DrawDebugAttackInfo( "flag val "+_CharaPrio_GaugeCombo_P1 );
+						
+				if(oya.isPlayer())
+				{
+					BMvTbl.SetPrio( p_layer );
+				}
+				else
+				{
+					BMvTbl.SetPrio( o_layer );
+				}
+				
+				if(oya.push())
+				{
+					local bs = BMvTbl.GetMvStatus();
+					
+					oya.pop();
+					
+					if(s.MvCount > 0) BMvTbl.SetFinalize(0);
+					
+					/*
+					
+					if( BMvTbl.GetLP(0) != BMvTbl.GetLP(4) )
+					{
+						BMvTbl.SetFinalize(0); // by doing it here it corrects for mid move frame jumps hopefully
+					}
+
+					BMvTbl.SetLP(4,bs.DataFrame);
+					
+					if( ( BMvTbl.GetLP(0) == BMvTbl.GetLP(4) && bs.isFrameUpdate ) && s.MvCount > 0	 ) BMvTbl.SetFinalize(0); // correct for looping sequences
+					*/
+				}
+			}
+			
+			//Battle_Std.DrawDebugAttackInfo( "box create val "+BMvTbl.GetLP(0)+" theval "+val );
+			
+			//if( oya.isPlayer()==0 && BMvTbl.GetLP(1)==0 ) BMvTbl.SetFinalize(0); // correct for created objects
+		}
+		function Finalize()
+		{
+			//Battle_Std.DrawDebugAttackInfo( "box destroy" );
+			
+			BMvTbl.SetDeleteMoveTable();
+		}
+	}
+//-----------------------------------------------------------------------------
+
+
+local CHRMAX = 300; //キャラ番号最大値
+local chrparam = {};
+
+chrparam.Param <- {}; //キャラ別の細かいフレームとかのテーブル
+chrparam.Get <- function( tbl={} ) //chrparam.Paramから作成中のキャラ番号の値を取ってくる
+{
+	local checktype = tbl.type;
+	local checkchrnum = tbl.chrnum;
+	
+	if( checktype in Param )
+	{
+		local ret = Param[checktype][checkchrnum];
+		btl_debPrint_CharacterMake("【定義】chrparam:"+checktype+" chr:"+checkchrnum+" -> "+ret);
+		return ret;
+	}
+	else
+	{
+		btl_debError_CharacterMake("【警告】chrparamで未定義:"+checktype+" chr:"+checkchrnum);
+		return 0;
+	}
+}
+/*
+const Def_ChrNo_Wil_s		= 101;
+const Def_ChrNo_Lea_s		= 102;
+const Def_ChrNo_Tom_s		= 103;
+const Def_ChrNo_Kro_s		= 104;
+const Def_ChrNo_Sbt_s		= 105;
+const Def_ChrNo_Tks_s		= 106;
+const Def_ChrNo_Aen_s		= 107;
+const Def_ChrNo_Akj_s		= 108;
+const Def_ChrNo_Crt_s		= 109;
+const Def_ChrNo_Hol_s		= 110;
+const Def_ChrNo_Kgk_s		= 111;
+const Def_ChrNo_Har_s		= 112;
+const Def_ChrNo_Bog_s		= 113;
+const Def_ChrNo_Ino_s		= 114;
+const Def_ChrNo_Kin_s		= 115;
+const Def_ChrNo_Mas_s		= 116;
+const Def_ChrNo_Ero_s		= 117;
+const Def_ChrNo_Mou_s		= 118;
+const Def_ChrNo_Pai_s		= 119;
+const Def_ChrNo_Alc_s		= 120;
+const Def_ChrNo_Fro_s		= 121;
+
+*/
+
+{
+	local type = "攻撃タイプ"; // PP63(def_PP_SupportAttackType)に記憶されます
+	// def_PP_SA_NeutralAttack|def_PP_SA_SideAttack はなくすともうエラーになるので注意
+	chrparam.Param[type] <- array(CHRMAX, def_PP_SA_NeutralAttack|def_PP_SA_SideAttack ); // 1:1種類 2:左右 4:回避
+	chrparam.Param[type][Def_ChrNo_Wil_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Lea_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Kro_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Tks_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Akj_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Har_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Crt_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Tom_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Bog_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Hol_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Mou_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Kgk_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Ero_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Ino_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Kin_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Mas_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Pai_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+
+	chrparam.Param[type][Def_ChrNo_Aen_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	
+	chrparam.Param[type][Def_ChrNo_Alc_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Dok_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack|def_PP_SA_ReversalAttack;
+	chrparam.Param[type][Def_ChrNo_Acr_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Izy_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Fro_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Smy_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+
+	chrparam.Param[type][Def_ChrNo_Uih_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Iry_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Asm_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack|def_PP_SA_ClimaxAttack;
+	chrparam.Param[type][Def_ChrNo_Zer_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack|def_PP_SA_GuardCancelAttack;
+	chrparam.Param[type][Def_ChrNo_Ren_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+	chrparam.Param[type][Def_ChrNo_Rus_s] = def_PP_SA_NeutralAttack|def_PP_SA_SideAttack;
+}
+
+// ↑をフラグで対応 
+// (1<<0) : def_PP_SA_NeutralAttack N
+// (1<<1) : def_PP_SA_SideAttack 46
+// (1<<2) : def_PP_SA_ReversalAttack Esc
+// (1<<3) : def_PP_SA_ClimaxAttack 41236D
+// (1<<4) : def_PP_SA_GuardCancelAttack ガーキャン(ガード中D)
+
+// 新しく設定できる項目リスト
+// サポキャンするとCPかコンボ補正にいい補正か悪い補正かがかかる
+// 相殺時の時間停止＋フレーム
+// 得意属性じゃない攻撃でも相殺時に＋とか
+
+{
+	local type = "キャンセルサポートダメージ補正";
+	chrparam.Param[type] <- array(CHRMAX, [0,0] ); // 0だと何もしない（乗算100と同じ）
+}
+
+{
+	local type = "キャンセルサポートＣＰ補正";
+	chrparam.Param[type] <- array(CHRMAX, [0,0] ); // 0だと何もしない（乗算100と同じ）
+}
+
+{
+	local type = "回避リキャスト回復速度";
+	chrparam.Param[type] <- array(CHRMAX, [20,150] );
+	chrparam.Param[type][Def_ChrNo_Dok_s] = [20,110]; // 通常,バフの効果係数
+}
+
+{
+	local type = "呼び出されフレーム"; // def_PP_SupAtkTypeA_CalledFrame と def_PP_SupAtkTypeB_CalledFrameに記憶
+	chrparam.Param[type] <- array(CHRMAX, [30,38,60,10] );
+	chrparam.Param[type][Def_ChrNo_Wil_s] = [28,38];
+	chrparam.Param[type][Def_ChrNo_Lea_s] = [32,38];
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [32,32];
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [30,30];
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [38,30];
+	chrparam.Param[type][Def_ChrNo_Tks_s] = [ 0,27]; // 5Sは呼び出し硬直0
+	chrparam.Param[type][Def_ChrNo_Aen_s] = [33,32];
+	chrparam.Param[type][Def_ChrNo_Akj_s] = [40,32];
+	chrparam.Param[type][Def_ChrNo_Crt_s] = [28,34];
+	chrparam.Param[type][Def_ChrNo_Hol_s] = [29,28];
+	chrparam.Param[type][Def_ChrNo_Kgk_s] = [[30,36],30];
+	chrparam.Param[type][Def_ChrNo_Har_s] = [[39,45],28];
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [30,40];
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [30,22];
+	chrparam.Param[type][Def_ChrNo_Kin_s] = [27,28];
+	chrparam.Param[type][Def_ChrNo_Mas_s] = [30,32];
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [34,30];
+	chrparam.Param[type][Def_ChrNo_Mou_s] = [24,27];
+	chrparam.Param[type][Def_ChrNo_Pai_s] = [36,32];
+	chrparam.Param[type][Def_ChrNo_Alc_s] = [28,38];
+	chrparam.Param[type][Def_ChrNo_Dok_s] = [30,30];
+	chrparam.Param[type][Def_ChrNo_Acr_s] = [30,32];
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [32,32];
+	chrparam.Param[type][Def_ChrNo_Fro_s] = [29,39];
+	chrparam.Param[type][Def_ChrNo_Smy_s] = [34,34];
+
+	// chrparam.Param[type][Def_ChrNo_Uih_s] = [ 0,34]; // 5Sは呼び出し硬直0
+	chrparam.Param[type][Def_ChrNo_Uih_s] = [38,0];
+	chrparam.Param[type][Def_ChrNo_Iry_s] = [0,32];
+	chrparam.Param[type][Def_ChrNo_Asm_s] = [[27,38],[28,39]];
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [32,32];
+	chrparam.Param[type][Def_ChrNo_Ren_s] = [[29,38],38];
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [32,38];
+}
+
+{
+	//最大値10000
+	// TODO:※フレーム指定の方が分かりやすい
+	// 値 Fra | 値 Fra | 値 Fra | 値 Fra | 値 Fra| 値 Fra| 
+	//--------+--------+--------+--------+-------+--------
+	// 60 167 | 50 200 | 40 250 | 30 333 | 20 500| 10 1000
+	// 59 169 | 49 204 | 39 256 | 29 345 | 19 526|  9 1111
+	// 58 172 | 48 208 | 38 263 | 28 357 | 18 556|  8 1250
+	// 57 175 | 47 213 | 37 270 | 27 370 | 17 588|  7 1429
+	// 56 179 | 46 217 | 36 278 | 26 385 | 16 625|  6 1667
+	// 55 182 | 45 222 | 35 286 | 25 400 | 15 667|  5 2000
+	// 54 185 | 44 227 | 34 294 | 24 417 | 14 714|  4 2500
+	// 53 189 | 43 233 | 33 303 | 23 435 | 13 769|  3 3333
+	// 52 192 | 42 238 | 32 313 | 22 455 | 12 833|  2 5000
+	// 51 196 | 41 244 | 31 323 | 21 476 | 11 909|  1 10000
+	
+	local type = "リキャスト回復速度";
+	chrparam.Param[type] <- array(CHRMAX, [50,50,50,25] );
+	chrparam.Param[type][Def_ChrNo_Wil_s] = [60,35];
+	chrparam.Param[type][Def_ChrNo_Lea_s] = [60,50];
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [20,30];
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [60,20];
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [20,30]; // ダメージもエスケープも同じ値にすること
+	chrparam.Param[type][Def_ChrNo_Tks_s] = [50,40];
+	chrparam.Param[type][Def_ChrNo_Aen_s] = [35,35];
+	chrparam.Param[type][Def_ChrNo_Akj_s] = [35,27];
+	chrparam.Param[type][Def_ChrNo_Crt_s] = [60,50];
+	chrparam.Param[type][Def_ChrNo_Hol_s] = [45,40];
+	chrparam.Param[type][Def_ChrNo_Kgk_s] = [[60,40],45];
+	chrparam.Param[type][Def_ChrNo_Har_s] = [30,55];
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [50,11];
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [20,60];
+	chrparam.Param[type][Def_ChrNo_Kin_s] = [60,40];
+	chrparam.Param[type][Def_ChrNo_Mas_s] = [45,40];
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [20,50];
+	chrparam.Param[type][Def_ChrNo_Mou_s] = [[60,25],[60,25]];
+	chrparam.Param[type][Def_ChrNo_Pai_s] = [50,40];
+	chrparam.Param[type][Def_ChrNo_Alc_s] = [50,45];
+	chrparam.Param[type][Def_ChrNo_Dok_s] = [45,40];
+	chrparam.Param[type][Def_ChrNo_Acr_s] = [20,35]; // 
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [20,30];
+	chrparam.Param[type][Def_ChrNo_Fro_s] = [43,27];
+	chrparam.Param[type][Def_ChrNo_Smy_s] = [50,45];
+
+	chrparam.Param[type][Def_ChrNo_Uih_s] = [35,35];
+	chrparam.Param[type][Def_ChrNo_Iry_s] = [60,50];
+	chrparam.Param[type][Def_ChrNo_Asm_s] = [[50,35],[50,35],80];
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [20,45,80,25];
+	chrparam.Param[type][Def_ChrNo_Ren_s] = [[40,40],30];
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [20,35];
+}
+
+{
+	// ダメージを与えた、当て身に成功した、などの時
+	// サポートのPPに何か値を入れて処理
+	// 当て身系の救済措置的に入れてみよう（打撃系は全部は仕込んでないです）
+	// -1 だとリキャストと同じ
+	local type = "成功リキャスト回復速度";
+	chrparam.Param[type] <- array(CHRMAX, [-1,-1,-1,-1] ); // -1 だとリキャストと同じ
+	// chrparam.Param[type][Def_ChrNo_Wil_s] = [60,30];
+	// chrparam.Param[type][Def_ChrNo_Lea_s] = [60,50];
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [40,-1];
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [-1,35];
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [40,-1]; // ダメージもエスケープも同じ値にすること
+	chrparam.Param[type][Def_ChrNo_Tks_s] = [-1,60];
+	// chrparam.Param[type][Def_ChrNo_Aen_s] = [35,60];
+	// chrparam.Param[type][Def_ChrNo_Akj_s] = [35,27];
+	// chrparam.Param[type][Def_ChrNo_Crt_s] = [60,50];
+	// chrparam.Param[type][Def_ChrNo_Hol_s] = [60,25];
+	// chrparam.Param[type][Def_ChrNo_Kgk_s] = [50,35];
+	// chrparam.Param[type][Def_ChrNo_Har_s] = [27,48];
+	// chrparam.Param[type][Def_ChrNo_Bog_s] = [50,15];
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [40,-1];
+	// chrparam.Param[type][Def_ChrNo_Kin_s] = [60,60];
+	// chrparam.Param[type][Def_ChrNo_Mas_s] = [45,30];
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [35,-1];
+	// chrparam.Param[type][Def_ChrNo_Mou_s] = [45,45];
+	// chrparam.Param[type][Def_ChrNo_Pai_s] = [50,40];
+	// chrparam.Param[type][Def_ChrNo_Alc_s] = [55,27];
+	// chrparam.Param[type][Def_ChrNo_Dok_s] = [45,50];
+	// chrparam.Param[type][Def_ChrNo_Acr_s] = [20,50]; // 必ず成功なのでやらない
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [30,-1]; // ハイブリなので遅め
+	// chrparam.Param[type][Def_ChrNo_Fro_s] = [43,27];
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [40,-1,-1,-1];
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [30,-1]; // ハイブリなので遅め
+}
+
+{
+	local type = "ダメージリキャスト回復速度";
+	chrparam.Param[type] <- array(CHRMAX, [20,20,20,20] );
+	chrparam.Param[type][Def_ChrNo_Wil_s] = [30,20];
+	chrparam.Param[type][Def_ChrNo_Lea_s] = [18,17];
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [18,27];
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [25,20];
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [20,30];
+	chrparam.Param[type][Def_ChrNo_Tks_s] = [20,17];
+	chrparam.Param[type][Def_ChrNo_Aen_s] = [18,20];
+	chrparam.Param[type][Def_ChrNo_Akj_s] = [30,22]; // 回復早め
+	chrparam.Param[type][Def_ChrNo_Crt_s] = [25,20];
+	chrparam.Param[type][Def_ChrNo_Hol_s] = [40,25];
+	chrparam.Param[type][Def_ChrNo_Kgk_s] = [[30,20],20];
+	chrparam.Param[type][Def_ChrNo_Har_s] = [18,30];
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [35,10];
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [20,55];
+	chrparam.Param[type][Def_ChrNo_Kin_s] = [20,20];
+	chrparam.Param[type][Def_ChrNo_Mas_s] = [25,20];
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [20,30];
+	chrparam.Param[type][Def_ChrNo_Mou_s] = [40,40];
+	chrparam.Param[type][Def_ChrNo_Pai_s] = [20,20];
+	chrparam.Param[type][Def_ChrNo_Alc_s] = [40,25]; // 治りが早い
+	chrparam.Param[type][Def_ChrNo_Dok_s] = [18,20];
+	chrparam.Param[type][Def_ChrNo_Acr_s] = [15,17]; // 
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [15,20];	
+	chrparam.Param[type][Def_ChrNo_Fro_s] = [20,20];
+	chrparam.Param[type][Def_ChrNo_Smy_s] = [25,25];
+	
+	chrparam.Param[type][Def_ChrNo_Uih_s] = [20,20]; 
+	chrparam.Param[type][Def_ChrNo_Iry_s] = [40,20];
+	chrparam.Param[type][Def_ChrNo_Asm_s] = [20,20,15];
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [20,20,20,18];
+	chrparam.Param[type][Def_ChrNo_Ren_s] = [[20,20],20];
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [20,20];
+}
+
+{
+	local type = "エスケープリキャスト回復速度";
+	chrparam.Param[type] <- array(CHRMAX, [30,30,30,30] );
+	chrparam.Param[type][Def_ChrNo_Wil_s] = [35,25];
+	chrparam.Param[type][Def_ChrNo_Lea_s] = [30,30];
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [20,27];
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [35,20];
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [20,30];
+	chrparam.Param[type][Def_ChrNo_Tks_s] = [28,30];
+	chrparam.Param[type][Def_ChrNo_Aen_s] = [27,30];
+	chrparam.Param[type][Def_ChrNo_Akj_s] = [32,24]; // 回復早め
+	chrparam.Param[type][Def_ChrNo_Crt_s] = [35,25];
+	chrparam.Param[type][Def_ChrNo_Hol_s] = [40,30];
+	chrparam.Param[type][Def_ChrNo_Kgk_s] = [30,30];
+	chrparam.Param[type][Def_ChrNo_Har_s] = [20,40];
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [35, 8];
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [20,55];
+	chrparam.Param[type][Def_ChrNo_Kin_s] = [22,30];
+	chrparam.Param[type][Def_ChrNo_Mas_s] = [35,30];
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [20,30];
+	chrparam.Param[type][Def_ChrNo_Mou_s] = [40,40];
+	chrparam.Param[type][Def_ChrNo_Pai_s] = [30,30];
+	chrparam.Param[type][Def_ChrNo_Alc_s] = [40,25]; // 治りが早い
+	chrparam.Param[type][Def_ChrNo_Dok_s] = [27,30];
+	chrparam.Param[type][Def_ChrNo_Acr_s] = [15,30]; // 
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [15,30];
+	chrparam.Param[type][Def_ChrNo_Fro_s] = [27,20];
+	chrparam.Param[type][Def_ChrNo_Smy_s] = [30,30];
+	
+	chrparam.Param[type][Def_ChrNo_Uih_s] = [25,25]; 
+	chrparam.Param[type][Def_ChrNo_Iry_s] = [40,30];
+	chrparam.Param[type][Def_ChrNo_Asm_s] = [30,30,20];
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [20,30,30,15];
+	chrparam.Param[type][Def_ChrNo_Ren_s] = [[25,25],25]; 
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [20,30];
+}
+
+
+{
+	//このフレーム以降はプレイヤーののけぞりで撤収しない
+	//このフレームまではプレイヤーを殴られるとEscする
+	//-1にするとずっと撤収しない
+	// ※追加仕様
+	// 特殊判定16があるフレームは強行します
+	local type = "強行化フレーム";
+	chrparam.Param[type] <- array(CHRMAX, [30,30,9999,9999] );
+	chrparam.Param[type][Def_ChrNo_Wil_s] = [13,25]; // 30->40 攻撃モーションが出る前までのF 相打ちが強いので多少弱くしました
+	chrparam.Param[type][Def_ChrNo_Lea_s] = [30,47]; // 20->30 竜巻エフェクトが出る前までのF
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [9999,30]; // 食らったら絶対消える（投げとか無効化するので）
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [30,36];
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [9999,30];
+	chrparam.Param[type][Def_ChrNo_Tks_s] = [1,65]; // 5S発生保障
+	chrparam.Param[type][Def_ChrNo_Aen_s] = [9999,30];
+	chrparam.Param[type][Def_ChrNo_Akj_s] = [60,60];
+	chrparam.Param[type][Def_ChrNo_Crt_s] = [30,65]; // 60->65 地上の相手にバイクが当たる直前までに追い返せないと危険でした
+	chrparam.Param[type][Def_ChrNo_Hol_s] = [30,30];
+	chrparam.Param[type][Def_ChrNo_Kgk_s] = [[30,70],30];
+	chrparam.Param[type][Def_ChrNo_Har_s] = [[115,9999],63]; // 90->105 地上の相手に当たる直前までに追い返せないと危険でした
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [35,9999];
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [9999,30];
+	chrparam.Param[type][Def_ChrNo_Kin_s] = [27,47];
+	chrparam.Param[type][Def_ChrNo_Mas_s] = [70,9999];
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [9999,45];
+	chrparam.Param[type][Def_ChrNo_Mou_s] = [30,30];
+	chrparam.Param[type][Def_ChrNo_Pai_s] = [30,30];
+	chrparam.Param[type][Def_ChrNo_Alc_s] = [30,120];
+	chrparam.Param[type][Def_ChrNo_Dok_s] = [30,30];
+	chrparam.Param[type][Def_ChrNo_Acr_s] = [9999,30]; // 
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [9999,27];		
+	chrparam.Param[type][Def_ChrNo_Fro_s] = [9999,9999];
+	chrparam.Param[type][Def_ChrNo_Smy_s] = [36,90];
+	
+	// chrparam.Param[type][Def_ChrNo_Uih_s] = [1,65]; // 5S発生保障
+	chrparam.Param[type][Def_ChrNo_Uih_s] = [9999,9999];
+	chrparam.Param[type][Def_ChrNo_Iry_s] = [1,38]; // 5S発生保障
+	chrparam.Param[type][Def_ChrNo_Asm_s] = [[40,43],[40,43],9999];
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [9999,38,9999,9999];
+	chrparam.Param[type][Def_ChrNo_Ren_s] = [[9999,9999],9999];
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [9999,9999];
+}
+
+{
+	local type = "失敗行動１書き換え有効";
+	chrparam.Param[type] <- array(CHRMAX, [1,1,1,0] );
+	
+	// 当身系サポートは反応しない
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [1,0,1,0];
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [0,1,1,0];
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [0,1,1,0];
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [0,1,1,0];
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [0,1,1,0];
+
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [0,0,0,0]; // ブギポ最強
+	chrparam.Param[type][Def_ChrNo_Acr_s] = [0,1,1,0];
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [0,1,1,0];
+
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [0,1,1,1];
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [0,1,1,0];
+}
+
+{
+	local type = "失敗行動１リキャスト回復速度"; // これは5Sも6Sも同じ回復速度になる
+	chrparam.Param[type] <- array(CHRMAX, 10 );
+	
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = 30; // 無敵のお兄さま
+	chrparam.Param[type][Def_ChrNo_Alc_s] = 25; // 治りが早い
+}
+
+{
+	local type = "ＣＡブーストリキャスト回復速度"; // これは5Sも6Sも同じ回復速度になる
+	chrparam.Param[type] <- array(CHRMAX, [60,110] ); // 結構早いのかもしれない 回復速度,バフがのってる時係数
+}
+
+
+
+{
+	local type = "コンボ中リキャスト有効"; // 
+	chrparam.Param[type] <- array(CHRMAX, [0,0,0,0] );
+	
+	chrparam.Param[type][Def_ChrNo_Alc_s] = [1,1];
+}
+
+
+
+{
+	local type = "RO-KYU-BU(1)座標"; // 
+	chrparam.Param[type] <- array(CHRMAX, [0,0,0,0] ); // 有効か, 向き反転, X, Y
+	
+	chrparam.Param[type][Def_ChrNo_Wil_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Lea_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Tks_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Aen_s] = [1,0, -60,0];
+	chrparam.Param[type][Def_ChrNo_Akj_s] = [1,1, -80,0];
+	chrparam.Param[type][Def_ChrNo_Crt_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Hol_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Kgk_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Har_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [1,1, -80,0];
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [1,0, -80,-150];
+	chrparam.Param[type][Def_ChrNo_Kin_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Mas_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [1,1, -80,0];
+	chrparam.Param[type][Def_ChrNo_Mou_s] = [1,0, -80,-50];
+	chrparam.Param[type][Def_ChrNo_Pai_s] = [1,0,-200,0];
+	chrparam.Param[type][Def_ChrNo_Alc_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Dok_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Acr_s] = [1,0, -40,0];
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Fro_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Smy_s] = [1,0, -80,0];
+	
+	chrparam.Param[type][Def_ChrNo_Iry_s] = [1,0,-220,0];
+	chrparam.Param[type][Def_ChrNo_Asm_s] = [1,1, -90,0];
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [1,1, -80,0];
+	chrparam.Param[type][Def_ChrNo_Uih_s] = [1,0, -50,0];
+	chrparam.Param[type][Def_ChrNo_Ren_s] = [1,0, -50,0];
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [1,0, -50,0];
+	
+}
+
+{
+	local type = "RO-KYU-BU(2)座標"; // 
+	chrparam.Param[type] <- array(CHRMAX, [0,0,0,0] ); // 有効か, 向き反転, X, Y
+	
+	chrparam.Param[type][Def_ChrNo_Wil_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Lea_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Tks_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Aen_s] = [1,0, -60,0];
+	chrparam.Param[type][Def_ChrNo_Akj_s] = [1,1, -80,0];
+	chrparam.Param[type][Def_ChrNo_Crt_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Hol_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Kgk_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Har_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [1,1, -80,0];
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [1,1, -80,-150];
+	chrparam.Param[type][Def_ChrNo_Kin_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Mas_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [1,1, -80,0];
+	chrparam.Param[type][Def_ChrNo_Mou_s] = [1,0, -80,-50];
+	chrparam.Param[type][Def_ChrNo_Pai_s] = [1,1, -60,0];
+	chrparam.Param[type][Def_ChrNo_Alc_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Dok_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Acr_s] = [1,0, -40,0];
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Fro_s] = [1,0, -80,0];
+	chrparam.Param[type][Def_ChrNo_Smy_s] = [1,0, -80,0];
+	
+	chrparam.Param[type][Def_ChrNo_Iry_s] = [1,0, -70,0];
+	chrparam.Param[type][Def_ChrNo_Asm_s] = [1,1, -90,0];
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [1,1, -80,0];
+	chrparam.Param[type][Def_ChrNo_Uih_s] = [1,0, -60,0];	
+	chrparam.Param[type][Def_ChrNo_Ren_s] = [1,0, -60,0];
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [1,0, -80,0];
+}
+
+{
+	// ウェイトはエクステンドかどうか見れないタイミングだった
+	// これがかかるのはスキルサポ（236Dとか214D）のみ
+	// 14Fより早いやつはそんだけ発生遅くするイメージ
+	// 16Fより遅いやつはキャラによっては補正をかけるイメージ(14F組は優遇)
+	// 10Fの時間停止があるので、-10Fまでは指定可能、それ以上は無効のはず
+	// スキルサポはデフォでプレイヤーの呼び出し硬直が-10Fされるが、
+	// この値をいじっても呼び出し硬直は変化させていないので、+なら硬直差有利になったりもする
+	local type = "呼び出しウェイトフレーム";
+	chrparam.Param[type] <- array(CHRMAX, [0,0] );
+	chrparam.Param[type][Def_ChrNo_Wil_s] = [ -8,  0]; //  29  71
+	chrparam.Param[type][Def_ChrNo_Lea_s] = [-10, -7]; //  34  51
+	chrparam.Param[type][Def_ChrNo_Tom_s] = [  0, -5]; //   9  19　※6S少し優遇
+	chrparam.Param[type][Def_ChrNo_Kro_s] = [-10,-10]; //  60   - 
+	chrparam.Param[type][Def_ChrNo_Sbt_s] = [  0, -1]; //   -  21
+	chrparam.Param[type][Def_ChrNo_Tks_s] = [  0,  0]; //   -   -
+	chrparam.Param[type][Def_ChrNo_Aen_s] = [-10,  0]; //  30  14
+	chrparam.Param[type][Def_ChrNo_Akj_s] = [-10,-10]; // 134  54 ストブらじお
+	chrparam.Param[type][Def_ChrNo_Crt_s] = [  5,  0]; //   8  41
+	chrparam.Param[type][Def_ChrNo_Hol_s] = [ -5, -8]; //  21  24
+	chrparam.Param[type][Def_ChrNo_Kgk_s] = [ -2, -8]; //  16  
+	chrparam.Param[type][Def_ChrNo_Har_s] = [ -5, -8]; // 120  41
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [-10,-10]; //  42 314
+	chrparam.Param[type][Def_ChrNo_Ino_s] = [-10,-10]; //  27  34
+	chrparam.Param[type][Def_ChrNo_Kin_s] = [  0, -8]; //  14  53
+	chrparam.Param[type][Def_ChrNo_Mas_s] = [ -7, -5]; //  23  58
+	chrparam.Param[type][Def_ChrNo_Ero_s] = [ -2, -8]; //   -  37
+	chrparam.Param[type][Def_ChrNo_Mou_s] = [ -6, -8]; //  21  33 ※魔王バージョンチェック
+	chrparam.Param[type][Def_ChrNo_Pai_s] = [ -5, -5]; //  24  29
+	chrparam.Param[type][Def_ChrNo_Alc_s] = [ -7,-10]; //  65 154
+	chrparam.Param[type][Def_ChrNo_Dok_s] = [  2,  0]; //   9  20
+	chrparam.Param[type][Def_ChrNo_Acr_s] = [  0, -1]; //   -  17 ラストオーダー
+	chrparam.Param[type][Def_ChrNo_Izy_s] = [  0,  4]; //   -  10
+	chrparam.Param[type][Def_ChrNo_Fro_s] = [-10,-10]; //  42  92
+	chrparam.Param[type][Def_ChrNo_Smy_s] = [-10, -7]; //  36  62 ※空中サポある
+	chrparam.Param[type][Def_ChrNo_Uih_s] = [ -5,  0]; //  74   -
+	chrparam.Param[type][Def_ChrNo_Iry_s] = [  0, -8]; //   -  33
+	chrparam.Param[type][Def_ChrNo_Asm_s] = [ -3,  0]; //  19  14
+	chrparam.Param[type][Def_ChrNo_Zer_s] = [  0, -8]; //   -  34
+	chrparam.Param[type][Def_ChrNo_Ren_s] = [ -4, -7]; //  23  45
+	chrparam.Param[type][Def_ChrNo_Rus_s] = [ -1,-10]; //  41  29　※コンボ中15
+}
+
+{
+	// 必殺技のサポート呼び出し時にかかる乗算補正
+	local type = "必殺サポート補正";
+	chrparam.Param[type] <- array(CHRMAX, [1,80] ); // タイプ - 0:無効 1:乗算
+}
+
+{
+	// アコのヒールの回復量に最終的にかかる係数
+	local type = "ヒール回復量係数";
+	chrparam.Param[type] <- array(CHRMAX, [0,0,0,0] ); // 0 : 未指定 ※エクステンド版も指定可能
+	chrparam.Param[type][Def_ChrNo_Bog_s] = [0, 25];
+}
+
+{
+	// アコのバフでリキャがどんだけ早くなるかの係数
+	local type = "バフリキャスト回復係数";
+	chrparam.Param[type] <- array(CHRMAX, [110,110,120,110] );
+}
+
+
+// 配列だったら２つの値を返す
+// そうでなければ同じ値を返す
+// エクステンドアクション用
+chrparam.GetArrayParam <- function( _type, _ChrNo, i )
+{
+	local ret = 
+	{
+		Normal = 0,
+		Extend = 0,
+	}
+	local param = Get( { type=_type, chrnum=_ChrNo } );
+	
+	local use_i = i;
+	
+	if( use_i > param.len()-1 )
+	{
+		use_i = 0; // オーバーなので
+		print("\n ☆定義不足はみ出た:"+_type+" キャラ番:"+_ChrNo );
+	}
+	
+	// 配列定義なら割り振り、そうでなければ共通にする
+	if( typeof param[use_i] == "array" )
+	{
+		ret.Normal = param[use_i][0];
+		ret.Extend = param[use_i][1];
+	}
+	else
+	{
+		ret.Normal = param[use_i];
+		ret.Extend = param[use_i];
+	}
+	
+	return ret;
+}
+
+Battle_Std.AddHitEffects( ret_tbl, _ChrNo ); // ヒットエフェクトMvを追加する
+
+
+// ----------------------------------------------------------------------------
+// ゲーム全体の割り込み関数
+// ----------------------------------------------------------------------------
+//function Std_MoveTable::GeneralInterrupt( info )
+//※これはメインキャラとして入ってくる
+ret_tbl.GeneralInterrupt <- function( info )
+{
+	// info は BMvTbl::MvInterruptInfo クラス
+	switch( info.type ) // typeで分岐
+	{
+	case _InterruptType_Ko_Atk: // KOした
+		break;
+	case _InterruptType_Ko_Def: // KOされた
+		break;
+	case _InterruptType_Judge: // Judge
+		break;
+	case _InterruptType_DrawMotion: // ドロー(DDCのみ)
+		break;
+	case _InterruptType_WinMotion: // 勝ち呼び出し(DDCのみ)
+		// 決着勝利かどうかチェック
+		local rs = BMvTbl.GetMvRoundStatus();
+		if( rs.isWinRound )
+		{
+			local draw_message = 1; // 勝利メッセージを出す
+			
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				local mvname = BMvTbl.GetMvName();
+				main.pop();
+				
+				if( mvname=="Mv_Skill_DownKirifuda" )
+				{
+					_dp("\n※[Mv_Skill_DownKirifuda]なのでサポート勝利フキダシを出さない");
+					draw_message = 0;
+				}
+			}
+			if( draw_message )
+			{
+				BMvEff.CreateObject( { mvname="Mv_WinMotionMessageWait", datatype=2 } );
+			}
+		}
+		break;
+	case _InterruptType_LoseMotion: // 負け呼び出し(DDCのみ)
+		// 決着敗北かどうかチェック
+		local rs = BMvTbl.GetMvRoundStatus();
+		if( rs.isLoseRound )
+		{
+			
+		}
+		else
+		{
+			BMvEff.CreateObject( { mvname="Mv_LoseMotionMessageWait", datatype=2 } );
+		}
+		break;
+	case _InterruptType_SupportCharge: // サポートゲージがたまった(DDCのみ)
+		BMvEff.CreateObject( { mvname="Mv_SupportChargeMessage", datatype=2 } );
+		// tDDC.Support_SetMessage( "いける！", 200, -1 ); // 
+		break;
+	case _InterruptType_BlastCharge:
+		tDDC.Jem_SetMessageEx( 2, 82, "BLAST OK", -1 ); // ポテンシャルカットイン
+		break;
+	}
+}
+
+ret_tbl.Mv_SupportChargeMessage <-
+{
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		BMvTbl.SetFinalize(0);
+		_dp("\n -> Mv_SupportChargeMessage ");
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+// コンボ中リキャストで出てくるやつ
+// waitは必ず通る
+ret_tbl.Mv_SupportComboChargeMessageWait <-
+{
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		
+		if( Battle_Std.CharaisKO() )
+		{
+			BMvTbl.SetFinalize(10); // すぐ消滅
+		}
+		else
+		{
+			BMvTbl.SetFinalize(0); // メッセージへ進む
+		}
+		_dp("\n -> Mv_SupportComboChargeMessageWait ");
+	}
+	function Finalize_Std()
+	{
+		Battle_Std.SwitchNextMoveTable("Mv_SupportComboChargeMessage", [10,"..."] ); //デフォ,[code,mv]...
+	}
+}
+
+// こっちは通らないことがある
+ret_tbl.Mv_SupportComboChargeMessage <-
+{
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		BMvTbl.SetFinalize(0);
+		_dp("\n -> Mv_SupportComboChargeMessage ");
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+ret_tbl.Mv_WinMotionMessageWait <-
+{
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+	}
+	function Update_Std()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.MvCount > 90 ) BMvTbl.SetFinalize(0);
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetNextMoveTable( "Mv_WinMotionMessage" );
+	}
+}
+
+ret_tbl.Mv_WinMotionMessage <-
+{
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		BMvTbl.SetFinalize(0);
+		//tDDC.Support_SetMessage( "よくやった！", 200, -1 ); // 
+		_dp("\n -> Mv_WinMotionMessage ");
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+ret_tbl.Mv_LoseMotionMessageWait <-
+{
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+	}
+	function Update_Std()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.MvCount > 90 ) BMvTbl.SetFinalize(0);
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetNextMoveTable( "Mv_LoseMotionMessage" );
+	}
+}
+
+ret_tbl.Mv_LoseMotionMessage <-
+{
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		BMvTbl.SetFinalize(0);
+		//tDDC.Support_SetMessage( "ざんねん！", 200, -1 ); // 
+		_dp("\n -> Mv_LoseMotionMessage ");
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+ret_tbl.Mv_DownMessage <-
+{
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		BMvTbl.SetFinalize(0);
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+//登場タイミングで呼ばれて
+// 行動文字列を返す、行動が存在しないまたは""が返されると Mv_Neutral が呼ばれる
+ret_tbl.GetEntranceMvName <- function()
+//function Std_MoveTable::GetEntranceMvName()
+{
+	return "Mv_Startup";
+}
+
+
+//攻撃がヒットするとよばれる
+//相手のDamageImpactと同時
+ret_tbl.AttackImpact <- function( info )
+{
+	Battle_Std.AttackImpact_StdFunc(info);
+}
+
+//攻撃を受けるとよばれる
+//相手のAttackImpactと同時
+ret_tbl.DamageImpact <- function( info )
+{
+	Battle_Std.DamageImpact_StdFunc(info);
+}
+
+
+// ラウンド敗北で生成される
+// ret_tbl.Mv_Voice_RoundLoseInit <-
+// {
+	// function Init_Std()
+	// {
+		// BMvEff.SetObjectFlags( { flags=_ObjFlags_NoRender } );
+	// }
+	// function FrameUpdate_Std()
+	// {
+		// local mvs = BMvTbl.GetMvStatus();
+		// if( mvs.MvCount > 90 ) BMvTbl.SetFinalize(0);
+	// }
+	// function Finalize_Std()
+	// {
+		// BMvTbl.SetNextMoveTable( "Mv_Voice_RoundLose" );
+	// }
+// }
+
+// ret_tbl.Mv_Voice_RoundLose <-
+// {
+	// function Init_Std()
+	// {
+		// BMvTbl.SetFinalize(0);
+	// }
+	// function Finalize_Std()
+	// {
+		// BMvTbl.SetDeleteMoveTable();
+	// }
+// }
+
+
+local support_AttackTypeFlag = chrparam.Get( { type="攻撃タイプ", chrnum=_ChrNo } );
+// local support_AttackTypeCount = ( ( support_AttackTypeFlag&def_PP_SA_SideAttack ) == 0 )? 1: 2;
+local support_AttackType_Frames = chrparam.Get( { type="呼び出されフレーム", chrnum=_ChrNo } );
+
+local support_AttackType_FramesParamA = chrparam.GetArrayParam( "呼び出されフレーム", _ChrNo, 0 );
+local support_AttackType_FramesParamB = chrparam.GetArrayParam( "呼び出されフレーム", _ChrNo, 1 );
+// local support_ChangeKyoukouFrame = support_AttackType_FramesParam.Normal;
+// local support_ChangeKyoukouFrameEx = support_AttackType_FramesParam.Extend;
+		
+
+local support_EnableMissType1_Ar = chrparam.Get( { type="失敗行動１書き換え有効", chrnum=_ChrNo } );
+local support_EnableMissType1_5S = support_EnableMissType1_Ar[0];
+local support_EnableMissType1_6S = support_EnableMissType1_Ar[1];
+local support_EnableMissType1_CA = support_EnableMissType1_Ar[2];
+local support_EnableMissType1_GC = support_EnableMissType1_Ar[3];
+
+local support_AttackType_Wait_5S = chrparam.GetArrayParam( "呼び出しウェイトフレーム", _ChrNo, 0 ).Normal;
+local support_AttackType_Wait_6S = chrparam.GetArrayParam( "呼び出しウェイトフレーム", _ChrNo, 1 ).Normal;
+
+ret_tbl.Mv_Startup <- //開幕かませ
+{
+	function Init_Std() : (support_AttackTypeFlag, support_AttackType_Frames, support_EnableMissType1_5S, support_EnableMissType1_6S, support_AttackType_FramesParamA, support_AttackType_FramesParamB, support_EnableMissType1_CA, support_EnableMissType1_GC, support_AttackType_Wait_5S, support_AttackType_Wait_6S)
+	{
+		BMvTbl.SetFinalize(0);	
+
+		local mvs = BMvTbl.GetMvStatus();
+		_dp("\nサポートキャラ["+mvs.CharaNo+"]の攻撃タイプ:"+support_AttackTypeFlag );
+		BMvTbl.SetPP(def_PP_SupportAttackType,support_AttackTypeFlag); // 記憶
+
+		// _dp("\n フレーム A:"+support_AttackType_Frames[0] +" B:"+support_AttackType_Frames[1] );
+		// _dp("\n_フレーム A:"+support_AttackType_FramesParamA.Normal +" B:"+support_AttackType_FramesParamB.Normal );
+		// BMvTbl.SetPP( def_PP_SupAtkTypeA_CalledFrame, support_AttackType_Frames[0] );
+		// BMvTbl.SetPP( def_PP_SupAtkTypeB_CalledFrame, support_AttackType_Frames[1] );
+		
+		BMvTbl.SetPP( def_PP_SupAtkTypeA_CalledFrame, support_AttackType_FramesParamA.Normal );
+		BMvTbl.SetPP( def_PP_SupAtkTypeB_CalledFrame, support_AttackType_FramesParamB.Normal );
+
+		BMvTbl.SetPP( def_PP_SupAtkTypeExA_CalledFrame, support_AttackType_FramesParamA.Extend );
+		BMvTbl.SetPP( def_PP_SupAtkTypeExB_CalledFrame, support_AttackType_FramesParamB.Extend );
+
+		BMvTbl.SetPP( def_PP_SupAtkTypeCA_CalledFrame, 120 ); // 決め打ち※未使用のはず
+
+		// ↓２つの値は調整の結果、未使用になったはず
+		// _dp("\n support_AttackType_Wait_5S:"+support_AttackType_Wait_5S );
+		// _dp("\n support_AttackType_Wait_6S:"+support_AttackType_Wait_6S );
+		BMvTbl.SetPP( def_PP_SkillSupTypeA_CallWaitFrame, support_AttackType_Wait_5S );// 236Dサポの発生までのウェイト（キャラ差）
+		BMvTbl.SetPP( def_PP_SkillSupTypeB_CallWaitFrame, support_AttackType_Wait_6S );// 214Dサポの発生までのウェイト（キャラ差）
+		
+		// アコのヒールの回復量係数が入ってる
+		BMvTbl.SetPP( def_PP_SupHealRecastHosei, 0 ); // 攻撃毎に更新
+		
+
+		if( support_EnableMissType1_5S )
+		{
+			Battle_Std.SupSt_AddFlag( def_PP_EnableMissType1_5S );
+		}
+		if( support_EnableMissType1_6S )
+		{
+			Battle_Std.SupSt_AddFlag( def_PP_EnableMissType1_6S );
+		}
+		if( support_EnableMissType1_CA )
+		{
+			Battle_Std.SupSt_AddFlag( def_PP_EnableMissType1_CA );
+		}
+		if( support_EnableMissType1_GC )
+		{
+			Battle_Std.SupSt_AddFlag( def_PP_EnableMissType1_GC );
+		}		
+		
+		for( local slot=0; slot<=10; slot ++ )
+		{
+			// _dp("\n[PP_"+slot+"初期化]");
+			BMvTbl.SetPP( slot, 0 ); // 0～10は念のため0で初期化しておこう
+		}
+		
+		BMvTbl.SetPP( def_PP_SupFinCount, 0 ); // サポートFinまで進んだ回数加算
+	}
+	function LastUpdate_Std() //
+	{
+		BMvTbl.SetRoundStart(); //戦闘開始可能状態にする
+	}	
+	function Finalize_Std()
+	{
+		BMvTbl.SetNextMoveTable( "Mv_Neutral" );
+	}
+}
+
+ret_tbl.Mv_Neutral <-
+{
+	function Init_Std()
+	{
+	}
+	function Update_Std()
+	{
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetNextMoveTable( "Mv_Neutral" );
+	}
+}
+
+
+local debug_recast = chrparam.Get( { type="リキャスト回復速度", chrnum=_ChrNo } );
+
+ret_tbl.Mv_Obj_CheckSupportFrame <-
+{
+	param = 
+	{
+		startup = 0,
+		active = 0,
+		recovery = 0,
+		
+		active_end = 0,
+		
+		kurai_start = 0,
+		kurai_end = 0,
+		
+		total = 0,
+		
+		// 細かいデータ
+		kousoku_hit = 0, // ヒット～相手が動けるようになるまでF
+		kousoku_start = 0,
+		kousoku_end = 0,
+	}
+	function CalcFrame()
+	{
+		_dp("\n 結果");
+		local mvs = BMvTbl.GetMvStatus();
+		param.active = param.active_end - param.startup;
+		if( param.kurai_start != 0 && param.kurai_end == 0 )
+		{
+			param.kurai_end = mvs.MvCount;
+		}
+		param.total = mvs.MvCount;
+		
+		if( param.kousoku_start != 0 && param.kousoku_end == 0 )
+		{
+			param.kousoku_end = mvs.MvCount;
+		}
+		param.kousoku_hit = param.kousoku_end - param.kousoku_start;
+	}
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_NoRender } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );		
+		BMvTbl.SetPosition( {y=1024, flags=_Position_CaptureShift } );
+
+		BMvTbl.SetLP(0,0); // 攻撃判定のチェック状況
+		BMvTbl.SetLP(1,0); // 食らい判定のチェック状況
+		
+		foreach( i, v in param )
+		{
+			// _dp("\n リセット:"+i );
+			param[i] = 0; // 初期化
+		}
+	}
+	function FrameUpdate_Std()
+	{
+		// BMvTbl.SetPattern( 999 );
+        // オブジェクト側から呼び出し
+		local atkMvisEnd = 0;
+		local oya = BMvCore.GetParentCharaData(); // 見つかったオブジェクト取得
+		if( oya.push() )
+		{
+			local o_mvn = BMvTbl.GetMvName();
+			
+			local isAtkMv = Battle_Std.IsMatchMvNameArray([
+			"Mv_SupportChara",
+			"Mv_SupportCharaEx",
+			"Mv_SupportChara2",
+			"Mv_SupportCharaEx2",
+			"Mv_SupportCharaFinish",
+			"Mv_SupportCharaFinish2",
+			"Mv_SupportCharaFinishEx",
+			"Mv_SupportCharaFinishEx2",
+			"Mv_GuardSupportChara",
+			"Mv_GuardSupportCharaEx",
+			"Mv_ClimaxSupportChara",
+			"Mv_ClimaxSupportCharaEx",
+			] );
+			oya.pop();
+			
+			if( !isAtkMv )
+			{
+				if( mvname.find("Mv_SupAtk_") == 0 )
+				{
+					
+				}
+				else
+				{
+					atkMvisEnd = 1;
+				}
+			}
+		}
+		else
+		{
+			atkMvisEnd = 1;
+		}
+
+		if( atkMvisEnd )
+		{
+			BMvTbl.SetFinalize( 0 );
+			return;
+		}
+		
+		
+		local mvs = BMvTbl.GetMvStatus();
+		local mvcount = mvs.MvCount;
+		local firstupdate = (mvs.CallCount==0 || mvs.isFrameUpdate)? 1 : 0;
+		
+		// 攻撃判定のチェック
+		local atk_checkst = BMvTbl.GetLP(0);
+		local atk_hantei = BMvEff.CheckHantei( { src=[ _Hantei_Kurai, 0, -1 ], dst=[ _Hantei_Attack, 0, -1 ], flags=_HC_FavourPc|_HC_FavourObj } );
+		switch( atk_checkst )
+		{
+		case 0:
+			// 攻撃判定がでてくるまでチェックを続ける
+			if( atk_hantei.isdone() )
+			{
+				BMvTbl.SetLP(0,10);
+				param.startup = mvcount;
+			}
+			break;
+		case 10:
+			// 持続判定
+			if( atk_hantei.isdone() )
+			{
+				// 持続が続いている
+			}
+			else
+			{
+				// 持続が無くなったかも
+				BMvTbl.SetLP(0,20);
+				param.active_end = mvcount;
+			}
+			break;
+		}
+		
+		// やられ判定とか無敵判定とかチェック
+		local kurai_checkst = BMvTbl.GetLP(1);
+		// local kurai_hantei = BMvEff.CheckHantei( { src=[ _Hantei_Kurai, 0, -1 ], dst=[ _Hantei_Kurai, 0, -1 ], flags=_HC_FavourPc|_HC_FavourObj } );
+		local kurai_find = 0;
+		
+        local hanteiobj = BMvEff.CCheckRect(); // オブジェクト作成
+
+        // 設定
+        hanteiobj.SetPlayer(); //プレイヤー情報設定
+        hanteiobj.SetSrc( [ _Hantei_Kurai, 0, -1 ] ); //自分の情報設定
+        hanteiobj.SetDst( [ _Hantei_Kurai, 0, -1 ] ); //相手の情報設定
+        hanteiobj.SetFlags( _HC_EnemyPc|_HC_FavourObj ); //検索条件設定
+
+        while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
+        {
+			local enemy = hanteiobj.GetCharaData(); // 見つかったオブジェクト取得
+			if( enemy.push() )
+			{
+				local mvname = BMvTbl.GetMvName();
+				enemy.pop();
+
+				if( mvname.find("SupportChara") != null ||  mvname.find("Mv_SupAtk_") == 0 )
+				{
+					kurai_find = 1;
+				}
+			}
+        }
+		
+		// _dp("\n kurai_find:"+kurai_find );
+		
+		switch( kurai_checkst )
+		{
+		case 0:
+			// 判定がでてくるまでチェックを続ける
+			if( kurai_find )
+			{
+				BMvTbl.SetLP(1,10);
+				param.kurai_start = mvcount;
+			}
+			break;
+		case 10:
+			// 持続判定
+			if( kurai_find )
+			{
+				// 持続が続いている
+			}
+			else
+			{
+				// 持続が無くなったかも
+				BMvTbl.SetLP(1,20);
+				param.kurai_end = mvcount;
+			}
+			break;
+		}
+		
+		
+		// 相手ののけぞりの終わりをチェック
+		// local enemy = BMvCore.GetEnemyCharaData();
+		// if( enemy.push() )
+		// {
+			
+			// enemy.pop();
+		// }
+		
+		local enemyIsDamage = Battle_Std.CheckEnemyisBound();
+		if( enemyIsDamage )
+		{
+			if( param.kousoku_start == 0 )
+			{
+				_dp("\n 開始:"+mvcount );
+				param.kousoku_start = mvcount;
+			}
+		}
+		else
+		{
+			if( param.kousoku_start != 0 )
+			{
+				if( param.kousoku_end == 0 )
+				{
+					_dp("\n 終了:"+mvcount );
+					
+					param.kousoku_end = mvcount;
+				}
+			}
+		}
+	}
+	function Finalize_Std() : (debug_recast)
+	{
+		CalcFrame(); // フレーム計算
+
+		// 結果表示
+		if( Def_Dbg_TotalFrameLog )
+		{
+			// _dp("\n 発生F:"+param.startup+" 持続:"+param.active );
+			_dp("\n 発生F:"+(param.startup+1)+" 全体F:"+param.total );
+			_dp("\n 食らい判定F:"+param.kurai_start+"～"+param.kurai_end );
+			_dp("\n 拘束F:"+param.kousoku_hit );
+			// _dp("\n 全体F 5S:"+param.total );
+			// _dp("\n RECAST 5S:"+(10000/debug_recast[0]) );
+			// _dp("\n RECAST 6S:"+(10000/debug_recast[1]) );
+		}
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+
+
+
+
+// サポートキャラMv仕様
+// Mv_SupportCharaWait
+// 　メインキャラの呼び出し命令後、実際に呼ばれるまでのウェイト
+// Mv_SupportChara
+// 　サポートキャラが呼び出されてから
+// 　ここから次のMvらに移行する
+// 		Mv_SupportCharaFinish
+//		　攻撃を受けずに攻撃を終了した時
+//		Mv_SupportCharaEscape
+//		　メインキャラがダメージを受けた時
+//		Mv_SupportCharaDamage
+//		　サポートキャラ自体がダメージを受けた時
+// Mv_SupportCharaEnd
+// 　消えるときは最後必ずここを通る
+
+local addtmpl_SupportChara = function( _mvtbl ) : (chrparam, _ChrNo)
+{
+	// 行動リスト
+	local mvlist = [
+	{ type=def_PP_SA_NeutralAttack, wait="Mv_SupportCharaWait", wait_esc="Mv_SupportCharaWaitEscape", atk="Mv_SupportChara", atk_ex="Mv_SupportCharaEx", atk_esc="Mv_SupportCharaEscape", atk_esc_ex="Mv_SupportCharaEscapeEx", atk_dmg="Mv_SupportCharaDamage", atk_dmg_ex="Mv_SupportCharaDamageEx", atk_fin="Mv_SupportCharaFinish", atk_fin_ex="Mv_SupportCharaFinishEx", end="Mv_SupportCharaEnd" },
+	{ type=def_PP_SA_SideAttack,    wait="Mv_SupportCharaWait2", wait_esc="Mv_SupportCharaWaitEscape2", atk="Mv_SupportChara2", atk_ex="Mv_SupportCharaEx2", atk_esc="Mv_SupportCharaEscape2", atk_esc_ex="Mv_SupportCharaEscapeEx2", atk_dmg="Mv_SupportCharaDamage2", atk_dmg_ex="Mv_SupportCharaDamageEx2", atk_fin="Mv_SupportCharaFinish2", atk_fin_ex="Mv_SupportCharaFinishEx2", end="Mv_SupportCharaEnd2" },
+	{ type=def_PP_SA_ClimaxAttack,      flags=1, wait="Mv_ClimaxSupportCharaWait", wait_esc="Mv_ClimaxSupportCharaWaitEscape", atk="Mv_ClimaxSupportChara", atk_ex="Mv_ClimaxSupportCharaEx", atk_esc="Mv_ClimaxSupportCharaEscape", atk_esc_ex="Mv_ClimaxSupportCharaEscapeEx", atk_dmg="Mv_ClimaxSupportCharaDamage", atk_dmg_ex="Mv_ClimaxSupportCharaDamageEx", atk_fin="Mv_ClimaxSupportCharaFinish", atk_fin_ex="Mv_ClimaxSupportCharaFinishEx", end="Mv_ClimaxSupportCharaEnd" },
+	{ type=def_PP_SA_GuardCancelAttack, flags=2, wait="Mv_GuardSupportCharaWait", wait_esc="Mv_GuardSupportCharaWaitEscape", atk="Mv_GuardSupportChara", atk_ex="Mv_GuardSupportCharaEx", atk_esc="Mv_GuardSupportCharaEscape", atk_esc_ex="Mv_GuardSupportCharaEscapeEx", atk_dmg="Mv_GuardSupportCharaDamage", atk_dmg_ex="Mv_GuardSupportCharaDamageEx", atk_fin="Mv_GuardSupportCharaFinish", atk_fin_ex="Mv_GuardSupportCharaFinishEx", end="Mv_GuardSupportCharaEnd" },
+	]
+	// flags & 1 : CA用処理が入る
+	// flags & 2 : GC用処理が入る
+	
+	local support_AttackTypeFlag = chrparam.Get( { type="攻撃タイプ", chrnum=_ChrNo } );
+
+	local support_SkillSupHoseiSt = chrparam.Get( { type="必殺サポート補正", chrnum=_ChrNo } );
+
+	// これおかしいでしょｗ
+	// def_PP_SA_SideAttackなくてdef_PP_SA_ClimaxAttackだけあるとダメっぽい
+	// とりあえず定義数オーバーだけチェック
+	local support_AttackTypeCount = 0;
+	if( support_AttackTypeFlag&def_PP_SA_NeutralAttack ) support_AttackTypeCount++;
+	if( support_AttackTypeFlag&def_PP_SA_SideAttack ) support_AttackTypeCount++;
+	if( support_AttackTypeFlag&def_PP_SA_ClimaxAttack ) support_AttackTypeCount++;
+	if( support_AttackTypeFlag&def_PP_SA_GuardCancelAttack ) support_AttackTypeCount++;
+	
+	if( support_AttackTypeCount > mvlist.len() ) 
+	{
+		support_AttackTypeCount = mvlist.len();
+		_dp("\n警告:サポート攻撃種類定義オーバー");
+	}
+	
+	for( local i=0; i<mvlist.len(); i++ )
+	{
+		if( !(support_AttackTypeFlag & mvlist[i].type) )
+		{
+			_dp("\n 未定義行動:"+i+" スキップ");
+			continue; // 未定義なのでスキップ
+		}
+		
+		local mvname_atk = mvlist[i].atk;
+		local mvname_atk_ex = mvlist[i].atk_ex;
+		local mvname_end = mvlist[i].end;
+		local mvname_atk_esc= mvlist[i].atk_esc;
+		local mvname_atk_esc_ex= mvlist[i].atk_esc_ex;
+		local mvname_atk_dmg = mvlist[i].atk_dmg;
+		local mvname_atk_dmg_ex = mvlist[i].atk_dmg_ex;
+		local mvname_atk_fin = mvlist[i].atk_fin;
+		local mvname_atk_fin_ex = mvlist[i].atk_fin_ex;
+		
+		local mvname_wait_esc = mvlist[i].wait_esc;
+
+		local mvListFlags = ("flags" in mvlist[i])? mvlist[i].flags : 0;
+
+		// 発動までに経由するmv
+		local makeTmpl_Wait = function( mvparam = {} ) : (mvListFlags, mvname_wait_esc, support_SkillSupHoseiSt)
+		{
+			local ret_tmpl = {};
+			
+			local atkWaitFra = ("waitFra" in mvparam)? mvparam.waitFra : 0;
+			
+			ret_tmpl.Init_Std <- function() : (atkWaitFra, support_SkillSupHoseiSt )
+			{
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_NoRender } );
+				// BMvTbl.SetLP(0,0); // 発動までのウェイト入れるかどうか（呼びだし関数から指定される）
+				_dp("\n 呼び出しウェイトいれる？:"+BMvTbl.GetLP(0)+" atkWaitFra:"+atkWaitFra );
+				
+				local supAtkWait = BMvTbl.GetLP(0); // !=0:ウェイト処理ある
+				_dp("\n スキルサポかどうか:"+supAtkWait );
+				if( supAtkWait )
+				{
+					local main = BMvCore.GetMainCharaData();
+					if( main.push() )
+					{
+						// 補正をかけたりする
+						if( support_SkillSupHoseiSt[0] == 1 )
+						{
+							_dp("\n サポート呼び出し乗算補正:"+support_SkillSupHoseiSt[1] );
+						
+							BMvEff.ComboView_Set( { val=support_SkillSupHoseiSt[1], type=1 } ); // 補正を乗算
+						}
+						
+						main.pop();
+					}
+					
+					Battle_Std.SupSt_AddFlag( def_PP_FromSkillSup ); // スキルサポなのを記憶
+				}
+				else
+				{
+					Battle_Std.SupSt_DelFlag( def_PP_FromSkillSup ); // スキルサポではない
+				}
+				
+				BMvTbl.SetPP(def_PP_SupHealRecastHosei,0); // リキャスト補正値を未指定に戻す。Atkとかで設定
+				
+				// バフがのっていたらフラグをたてる？
+				local supBuffLv = BMvTbl.GetPP(def_PP_SupBuffLv);
+				_dp("\n supBuffLv"+supBuffLv );
+				if( supBuffLv )
+				{
+					Battle_Std.SupBuffSt_AddFlag( def_PP_SBS_EnableAtk );
+				}
+				else
+				{
+					Battle_Std.SupBuffSt_DelFlag( def_PP_SBS_EnableAtk );
+				}
+				//EXバフの効果は最初で消される…？
+				Battle_Std.SupBuffSt_DelFlag( def_PP_SBS_ExBuff );
+				
+				Battle_Std.SupSt_DelFlag( def_PP_DmgEscNoSafeFinalize ); // サポのDmgやEscの保険処理で60Fで消えるのを999Fにするフラグ
+			}
+			
+			
+			ret_tmpl.FrameUpdate_Std <- function() : (mvListFlags, atkWaitFra)
+			{
+				// CA用
+				if( mvListFlags & 1 )
+				{
+					local mvs = BMvTbl.GetMvStatus();
+					if( mvs.MvCount >= 120 ) // 保険処理
+					{
+						BMvTbl.SetFinalize( 200 ); // 安全な方に抜ける
+					}
+					
+					// 親のやられなどで消えることもあるぞい
+					// 親が行動可能になったりしても失敗にしとこう？
+					
+					local main = BMvCore.GetMainCharaData();
+					if( main.push() )
+					{
+						local main_mvs = BMvTbl.GetMvStatus();
+						
+						local main_mvname = BMvTbl.GetMvName();
+						local main_chara_isDamage = Battle_Std.CheckPlayerisDamage();
+						main.pop();
+						
+						
+						// 呼び出された時のMvと違っていて、それが呼び出しMvじゃなさそうなら終わる
+						// 攻撃キャンセルでヒットストップ中にだすと、このMvには攻撃ヒットストップ中にくるので
+						// 呼び出しMvまで進んでいないこともある
+						local checkMv = ( main_mvname == "Mv_CallClimaxSupport" || main_mvname == "Mv_CallClimaxSupportAir" );
+						if( BMvTbl.CheckMvUniqueID( { datatype=_DataType_Player } ) == 0 )
+						{
+							// 呼びだされた時のmvと違っていて、かつ呼び出し用のmvじゃない＝やられとかで抜けた
+							if( !checkMv )
+							{
+								BMvTbl.SetFinalize( 200 ); // 撤収
+							}
+						}
+						
+						if( checkMv )
+						{
+							// 親のMvCountで発生Fを調整する
+							local waitFrame = ( Battle_Std.CheckEnemyisDamage() )? 0 : 17;
+							
+							if( main_mvs.MvCount >= waitFrame ) // これが実質の発生F調整になるよ
+							{
+								BMvTbl.SetFinalize( 100 );
+							}
+						}
+						if( main_chara_isDamage )
+						{
+							_dp("\n 親が殴られたので撤収");
+							BMvTbl.SetFinalize( 200 );
+						}
+					}
+				}
+				else
+				{
+					local mvs = BMvTbl.GetMvStatus();
+					local main_chara_isDamage = false;
+
+					local player = BMvCore.GetMainCharaData();
+					if( player.push() )
+					{
+						main_chara_isDamage = Battle_Std.CheckPlayerisDamage();
+						player.pop();
+					}
+					
+					if( main_chara_isDamage )
+					{
+						BMvTbl.SetFinalize(200);
+					}
+
+					// 呼び出しウェイト入れる予約がある場合
+					if( BMvTbl.GetLP(0) == 1 )
+					{	
+						if( mvs.MvCount >= atkWaitFra+10 )
+						{
+							BMvTbl.SetFinalize(100);
+						}
+					}
+					else
+					{
+						if( mvs.MvCount >= 0 )
+						{
+							BMvTbl.SetFinalize(100);
+						}					
+					}
+				}
+			}
+			
+			ret_tmpl.Finalize_Std <- function() : (mvparam, mvname_wait_esc)
+			{
+				Battle_Std.SwitchNextMoveTable("...", [100,mvparam.atk], [200,mvname_wait_esc] ); //デフォ,[code,mv]...
+			}
+			
+			return ret_tmpl;
+		}
+		
+		local param = chrparam.GetArrayParam( "呼び出しウェイトフレーム", _ChrNo, i );
+		local support_AtkWaitFrame = param.Normal; // Extend版は無い
+		_mvtbl[ mvlist[i].wait ] <- makeTmpl_Wait( { waitFra=support_AtkWaitFrame, atk=mvname_atk } );
+		
+		local param = chrparam.GetArrayParam( "強行化フレーム", _ChrNo, i );
+		local support_ChangeKyoukouFrame = param.Normal;
+		local support_ChangeKyoukouFrameEx = param.Extend;
+		
+		local param = chrparam.GetArrayParam( "リキャスト回復速度", _ChrNo, i );
+		local support_RecastPower = param.Normal;
+		local support_RecastPowerEx = param.Extend;		
+
+		local param = chrparam.GetArrayParam( "ヒール回復量係数", _ChrNo, i );
+		local support_HealRecastHosei = param.Normal;
+		local support_HealRecastHoseiEx = param.Extend;
+
+		local pat_num_SupDmgEff = BMvEff.GetPatternNum( { datatype=1, pat="SupportDamageEff" } ); // パターン文字列のパターン番号を事前取得
+		
+		local makeTmpl_Atk = function( mvparam = {} ) : (support_ChangeKyoukouFrame, pat_num_SupDmgEff, mvname_atk_fin, mvname_atk_esc, mvname_atk_dmg, mvname_atk_ex, mvListFlags)
+		{
+			local ret_tmpl = {};
+			
+			ret_tmpl.Init_Std <- function() : (mvparam, mvListFlags)
+			{
+				Battle_Std.SupportAtk_Init();
+				
+				// CA用
+				if( mvListFlags & 1 )
+				{
+					// 流石に自動で振り向いていいのでは
+					BMvTbl.SetMuki( _Direction_Auto );
+				}
+				
+				if( mvparam.ex == 0 ) // extendのmvが指定されていない＝既にextend
+				{
+					Battle_Std.SupSt_AddFlag( def_PP_ExtendAtk );
+				}
+				
+				_dp("\n mvparam.recast:"+mvparam.recast+" Frame:"+10000/mvparam.recast );
+				BMvTbl.SetPP( def_PP_SupRecastPower, mvparam.recast );
+				
+				_dp("\n mvparam.healHosei:"+mvparam.healHosei );
+				BMvTbl.SetPP( def_PP_SupHealRecastHosei, mvparam.healHosei );
+			}
+			
+			ret_tmpl.FrameUpdate_Std <- function() : (mvparam, pat_num_SupDmgEff)
+			{
+				local mvs = BMvTbl.GetMvStatus();
+				
+				if( mvparam.ex != 0 ) // エクステンドMv指定があれば処理を行う
+				{
+					// _dp("\n 通常チェック");
+					// エクステンド処理を仕込んでおく
+					local main = BMvCore.GetMainCharaData();
+					// 特殊判定14がある箇所でホールドチェックを行う
+					// 特殊判定14が無くなったらフラグの有無をたてる
+					
+					// _dp("\n st:"+Battle_Std.SupSt_CheckFlag( def_PP_ExtendCheckStart )+" ed:"+Battle_Std.SupSt_CheckFlag( def_PP_ExtendCheckEnd ) );
+					
+					if( !Battle_Std.SupSt_CheckFlag( def_PP_ExtendCheckEnd ) )
+					{
+						local etc14 = BMvEff.GetHanteiRect ( { check=[ _Hantei_Etc, 14 ], flags=0 } );
+						if( etc14.sx != _Hantei_Error )
+						{
+							// _dp("\n etc14あったのでエクステンド処理");
+							Battle_Std.SupSt_AddFlag( def_PP_ExtendCheckStart );
+							if( main.push() )
+							{
+								local releaseButton = ( BMvTbl.CheckButtonHold( (1<<3) ) == 0 )
+								
+								main.pop();
+								
+								if( releaseButton )
+								{
+									// _dp("\n Dボタンを離した");
+									Battle_Std.SupSt_AddFlag( def_PP_ReleaseButton );
+								}
+							}
+						}
+						else if( Battle_Std.SupSt_CheckFlag( def_PP_ExtendCheckStart ) )
+						{
+							Battle_Std.SupSt_AddFlag( def_PP_ExtendCheckEnd );
+							
+							if( !Battle_Std.SupSt_CheckFlag( def_PP_ReleaseButton ) )
+							{
+								_dp("\n エクステンド攻撃なのが確定");
+								BMvTbl.SetFinalize( 120 );
+							}
+							else
+							{
+								_dp("\n 通常攻撃なのが確定");
+							}
+						}
+					}
+				}
+				
+				if( mvs.CallCount !=0 ) return; // 140428:新しく追加した処理　影響チェック
+
+				Battle_Std.SupportAtk_DamageFinalize( pat_num_SupDmgEff ); // fincode90だったら90でファイナライズ
+				
+				Battle_Std.SupportAtk_EscapeFinalize( mvparam.kyoukou ); // 親が殴られたら60でファイナライズ
+
+				// 自分に食らい判定に敵の攻撃判定が触れていたら帰る
+				if( Battle_Std.CheckObjectisYarare() )
+				{
+					BMvTbl.SetFinalizeCode(90); // 次のフレームで終了するっす
+				}
+			}
+			ret_tmpl.Finalize_Std <- function() : (mvparam)
+			{
+				if( mvparam.ex )
+				{
+					Battle_Std.SwitchNextMoveTable(mvparam.fin, [60,mvparam.esc], [90,mvparam.dmg], [120,mvparam.ex] ); //デフォ,[code,mv]...
+				}
+				else
+				{
+					Battle_Std.SwitchNextMoveTable(mvparam.fin, [60,mvparam.esc], [90,mvparam.dmg] ); //デフォ,[code,mv]...
+				}
+			}			
+			
+			return ret_tmpl;
+		}
+		
+		_mvtbl[ mvlist[i].atk ] <- makeTmpl_Atk( { kyoukou=support_ChangeKyoukouFrame, fin=mvname_atk_fin, esc=mvname_atk_esc, dmg=mvname_atk_dmg, ex=mvname_atk_ex, recast=support_RecastPower, healHosei=support_HealRecastHosei } );
+		_mvtbl[ mvlist[i].atk_ex ] <- makeTmpl_Atk( { kyoukou=support_ChangeKyoukouFrameEx, fin=mvname_atk_fin_ex, esc=mvname_atk_esc_ex, dmg=mvname_atk_dmg_ex, ex=0, recast=support_RecastPowerEx, healHosei=support_HealRecastHoseiEx } );
+		
+
+
+		local param = chrparam.GetArrayParam( "成功リキャスト回復速度", _ChrNo, i );
+		local support_SuccessRecastPower = param.Normal;
+		local support_SuccessRecastPowerEx = param.Extend;
+
+		local param = chrparam.GetArrayParam( "ダメージリキャスト回復速度", _ChrNo, i );
+		local support_DamageRecastPower = param.Normal;
+		local support_DamageRecastPowerEx = param.Extend;
+
+		local param = chrparam.GetArrayParam( "エスケープリキャスト回復速度", _ChrNo, i );
+		local support_EscapeRecastPower = param.Normal;
+		local support_EscapeRecastPowerEx = param.Extend;
+		
+		local param = chrparam.GetArrayParam( "バフリキャスト回復係数", _ChrNo, i );
+		local support_BuffRecastHosei = param.Normal;
+		local support_BuffRecastHoseiEx = param.Extend;
+
+		local makeTmpl_Esc = function( mvparam = {} )
+		{
+			local ret_tmpl = {};
+			
+			local flags = ( "flags" in mvparam )? mvparam.flags : 0;
+			
+			ret_tmpl.Init_Std <- function() : (flags)
+			{
+				// Wait中に抜けた時のEscはEscを通過するだけなので即Finalizeする
+				if( flags & 1 )
+				{
+					BMvTbl.SetFinalize( 0 );
+				}
+			}
+			
+			ret_tmpl.Update_Std <- function()
+			{
+				// 保険処理
+				local finFrame = ( Battle_Std.SupSt_CheckFlag( def_PP_DmgEscNoSafeFinalize ) )? 999 : 60;
+				local mvs = BMvTbl.GetMvStatus();
+				if( mvs.MvCount >= finFrame )
+				{
+					BMvTbl.SetFinalize(0);
+				}
+			}			
+			
+			ret_tmpl.Finalize_Std <- function() : (mvparam)
+			{
+				Battle_Std.SupSt_DelFlag( def_PP_ActiveAtkMove ); // 攻撃Mvが終わった
+			
+				local very_slow_recast = Battle_Std.SupSt_CheckFlag( def_PP_VerySlowRecast ); // 回復を超遅くする
+				local changeExtendRecast = Battle_Std.SupSt_CheckFlag( def_PP_SetExtendRecast ); // エクステンド時のリキャストに切り替えるか？
+				local enableBuff = Battle_Std.SupBuffSt_CheckFlag( def_PP_SBS_EnableAtk );
+				
+				local player = BMvCore.GetMainCharaData();
+				
+				if( player.push() )
+				{
+					if( very_slow_recast ) // 実質一方通行だけの処理
+					{
+						local recasttime = 4; // 人権は無くなる
+						if( enableBuff && mvparam.buffHosei ) recasttime = recasttime * mvparam.buffHosei / 100; // 少し早くなるよ
+						tDDC.Support_SetPowerupRecastMax( 12 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					else
+					{
+						local recasttime = ( changeExtendRecast )? mvparam.exrecast : mvparam.recast;
+						if( enableBuff && mvparam.buffHosei ) recasttime = recasttime * mvparam.buffHosei / 100; // 少し早くなるよ
+						if( Def_IGNS_RecastSpeedUpLv2 && Battle_Std.CheckDoubleIgnition(Def_IGNT_SupportCharacter) )
+						{
+							_dp("\n リキャスト+LV2:"+recasttime );
+							recasttime = recasttime * Def_IGNS_RecastSpeedUpLv2 / 100;
+							_dp("-> "+recasttime );
+						}
+						else if( Def_IGNS_RecastSpeedUp && Battle_Std.CheckIgnition(Def_IGNT_SupportCharacter) )
+						{
+							_dp("\n リキャスト+LV1:"+recasttime );
+							recasttime = recasttime * Def_IGNS_RecastSpeedUp / 100;
+							_dp("-> "+recasttime );
+						}
+						tDDC.Support_SetPowerupRecastMax( 60 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					player.pop();
+				}				
+			
+				BMvTbl.SetNextMoveTable( mvparam.end );
+			}			
+			
+			return ret_tmpl;
+		}
+		
+		_mvtbl[ mvlist[i].atk_esc ] <- makeTmpl_Esc( { recast=support_EscapeRecastPower, exrecast=support_EscapeRecastPowerEx ,end=mvname_end, buffHosei=support_BuffRecastHosei } );
+		_mvtbl[ mvlist[i].atk_esc_ex ] <- makeTmpl_Esc( { recast=support_EscapeRecastPowerEx, exrecast=support_EscapeRecastPowerEx, end=mvname_end, buffHosei=support_BuffRecastHoseiEx } );
+		_mvtbl[ mvlist[i].wait_esc ] <- makeTmpl_Esc( { recast=support_EscapeRecastPower, exrecast=support_EscapeRecastPowerEx ,end=mvname_end, flags=1, buffHosei=support_BuffRecastHosei } );
+
+		local makeTmpl_Dmg = function( mvparam = {} )
+		{
+			local ret_tmpl = {};
+			
+			ret_tmpl.Init_Std <- function()
+			{
+				
+			}
+			
+			ret_tmpl.Update_Std <- function()
+			{
+				// 保険処理
+				local finFrame = ( Battle_Std.SupSt_CheckFlag( def_PP_DmgEscNoSafeFinalize ) )? 999 : 60;
+				local mvs = BMvTbl.GetMvStatus();
+				if( mvs.MvCount >= finFrame )
+				{
+					BMvTbl.SetFinalize(0);
+				}
+			}			
+			
+			ret_tmpl.Finalize_Std <- function() : (mvparam)
+			{
+				Battle_Std.SupSt_DelFlag( def_PP_ActiveAtkMove ); // 攻撃Mvが終わった
+
+				local very_slow_recast = Battle_Std.SupSt_CheckFlag( def_PP_VerySlowRecast ); // 回復を超遅くする
+				local changeExtendRecast = Battle_Std.SupSt_CheckFlag( def_PP_SetExtendRecast ); // エクステンド時のリキャストに切り替えるか？
+				local enableBuff = Battle_Std.SupBuffSt_CheckFlag( def_PP_SBS_EnableAtk );
+
+				local player = BMvCore.GetMainCharaData();
+				
+				if( player.push() )
+				{
+					if( very_slow_recast ) // 実質一方通行だけの処理
+					{
+						local recasttime = 4; // 人権は無くなる
+						if( enableBuff && mvparam.buffHosei ) recasttime = recasttime * mvparam.buffHosei / 100; // 少し早くなるよ
+						tDDC.Support_SetPowerupRecastMax( 12 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					else
+					{
+						local recasttime = ( changeExtendRecast )? mvparam.exrecast : mvparam.recast;
+						if( enableBuff && mvparam.buffHosei ) recasttime = recasttime * mvparam.buffHosei / 100; // 少し早くなるよ
+						if( Def_IGNS_RecastSpeedUpLv2 && Battle_Std.CheckDoubleIgnition(Def_IGNT_SupportCharacter) )
+						{
+							_dp("\n リキャスト+LV2:"+recasttime );
+							recasttime = recasttime * Def_IGNS_RecastSpeedUpLv2 / 100;
+							_dp("-> "+recasttime );
+						}
+						else if( Def_IGNS_RecastSpeedUp && Battle_Std.CheckIgnition(Def_IGNT_SupportCharacter) )
+						{
+							_dp("\n リキャスト+LV1:"+recasttime );
+							recasttime = recasttime * Def_IGNS_RecastSpeedUp / 100;
+							_dp("-> "+recasttime );
+						}
+						
+						tDDC.Support_SetPowerupRecastMax( 60 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					player.pop();
+				}
+				
+				BMvTbl.SetNextMoveTable( mvparam.end );
+			}
+			
+			return ret_tmpl;
+		}
+		
+		_mvtbl[ mvlist[i].atk_dmg ] <- makeTmpl_Dmg( { recast=support_DamageRecastPower, exrecast=support_DamageRecastPowerEx, end=mvname_end, buffHosei=support_BuffRecastHosei } );
+		_mvtbl[ mvlist[i].atk_dmg_ex ] <- makeTmpl_Dmg( { recast=support_DamageRecastPowerEx, exrecast=support_DamageRecastPowerEx, end=mvname_end, buffHosei=support_BuffRecastHoseiEx } );
+
+		local param = chrparam.GetArrayParam( "コンボ中リキャスト有効", _ChrNo, i );
+		local support_ComboRecastEnable = param.Normal;
+		local support_ComboRecastEnableEx = param.Extend;
+		
+		local makeTmpl_Fin = function( mvparam = {} )
+		{
+			local ret_tmpl = {};
+			
+			ret_tmpl.Init_Std <- function()
+			{
+				// ベクトルとめておかないとずっとうごき続けて着地したり色々おこる
+				Battle_Std.InitVector();
+				BMvTbl.SetPattern(0); // 透明な何かに
+				BMvTbl.SetFinalizeCode( 0 ); // 初期化
+				
+				Battle_Std.SupSt_DelFlag( def_PP_ActiveAtkMove ); // 攻撃Mvが終わった
+			}
+			
+			ret_tmpl.Update_Std <- function() : (mvparam)
+			{
+				if( Battle_Std.CheckEnemyisBound() )
+				{
+					// 相手がやられorガード中なので終了へ進めない
+					// これで勝つるで出した時はリキャ開始させない
+					if( mvparam.comboRecast && !Battle_Std.SupSt_CheckFlag( def_PP_FromSkillSup ) )
+					{
+						// コンボ中何回目のリキャストかどうか
+						if( Battle_Std.EnemyDamageFlag_Check( def_DF_ComboRecasted ) == 0 )
+						{
+							Battle_Std.EnemyDamageFlag_Add( def_DF_ComboRecasted ); // 「コンボ中リキャストされた」を相手に記憶
+
+							BMvTbl.SetFinalize(256);
+						}
+						else
+						{
+							// _dp("\n ２回目以降っす");
+						}
+					}
+				}
+				else if( Battle_Std.SupSt_CheckFlag( def_PP_DrawingCrashMv ) )
+				{
+					// 相手がやられ中じゃなくて回復していいけどクラッシュ行動表示中なので進めない
+					// _dp("\n クラッシュ行動中！");
+				}
+				else
+				{
+					local isKirinoKirifuda = 0;
+					local player = BMvCore.GetMainCharaData();
+					if( player.push() )
+					{
+						local mvs = BMvTbl.GetMvStatus();
+						local mvname = BMvTbl.GetMvName();
+						player.pop();
+						
+						// _dp("\n ここにくる:"+mvname+" mvcount:"+mvs.MvCount );
+						if( mvs.CharaNo == Def_ChrNo_Krn && mvname == "Mv_Skill_Kirifuda_Hit" && mvs.MvCount <= 1 )
+						{
+							isKirinoKirifuda = 1;
+						}
+					}
+					
+					if( isKirinoKirifuda )
+					{
+						_dp("\n 2P側の桐乃の切り札用処理");
+					}
+					else
+					{
+						BMvTbl.SetFinalize(0);
+					}
+				}
+			}			
+
+			ret_tmpl.Finalize_Std <- function() : (mvparam)
+			{
+				local fincode = BMvTbl.GetFinalizeCode();
+				
+				if( fincode != 256 )
+				{
+					// _dp("\n ★コンボ中リキャスト回数リセット");
+				}
+				else
+				{
+					_dp("\n ★コンボ中リキャスト回数継続");
+					BMvEff.CreateObject( { mvname="Mv_SupportComboChargeMessageWait", datatype=2 } );
+				}
+				
+				local very_slow_recast = Battle_Std.SupSt_CheckFlag( def_PP_VerySlowRecast ); // 回復を超遅くする
+				local changeExtendRecast = Battle_Std.SupSt_CheckFlag( def_PP_SetExtendRecast ); // エクステンド時のリキャストに切り替えるか？
+				local player = BMvCore.GetMainCharaData();
+				local atk_success = Battle_Std.SupSt_CheckFlag( def_PP_Success );
+				
+				local finCnt = BMvTbl.AddPP( def_PP_SupFinCount, 1 ); // Finまで進んだ回数を加算していく
+				_dp("\n サポートFin回数:"+finCnt );
+				
+				local enableBuff = Battle_Std.SupBuffSt_CheckFlag( def_PP_SBS_EnableAtk );
+				
+				if( player.push() )
+				{
+					if( BMvTbl.GetCharaNo() == Def_ChrNo_Oni && tDDC.Support_GetCharaNo() + 100 == Def_ChrNo_Smy_s ) // Def_ChrNoとの比較は100足さないとダメ
+					{
+						_dp("\n ★お兄様のサポ深雪がFinまで進んだ:"+finCnt ); // finCnt は多分あってる
+						tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_ChraFlag1 ); // キャラ別の固有カウンタ
+					}
+					
+					if( very_slow_recast ) // 実質一方通行だけの処理
+					{
+						local recasttime = 4; // 人権は無くなる
+						if( enableBuff && mvparam.buffHosei ) recasttime = recasttime * mvparam.buffHosei / 100; // 少し早くなるよ
+						tDDC.Support_SetPowerupRecastMax( 12 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					else
+					{
+						local recasttime = ( changeExtendRecast )? mvparam.exrecast : mvparam.recast;
+						if( enableBuff && mvparam.buffHosei ) recasttime = recasttime * mvparam.buffHosei / 100; // 少し早くなるよ
+						if( atk_success && mvparam.successRecat != -1 )
+						{
+							_dp("\n 成功扱い:"+mvparam.recast+" -> "+mvparam.successRecat );
+							recasttime = mvparam.successRecat;
+						}
+						
+						if( Def_IGNS_RecastSpeedUpLv2 && Battle_Std.CheckDoubleIgnition(Def_IGNT_SupportCharacter) )
+						{
+							_dp("\n リキャスト+LV2:"+recasttime );
+							recasttime = recasttime * Def_IGNS_RecastSpeedUpLv2 / 100;
+							_dp("-> "+recasttime );
+						}
+						else if( Def_IGNS_RecastSpeedUp && Battle_Std.CheckIgnition(Def_IGNT_SupportCharacter) )
+						{
+							_dp("\n リキャスト+LV1:"+recasttime );
+							recasttime = recasttime * Def_IGNS_RecastSpeedUp / 100;
+							_dp("-> "+recasttime );
+						}
+						
+						tDDC.Support_SetPowerupRecastMax( 90 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					player.pop();
+				}
+
+				BMvTbl.SetNextMoveTable( mvparam.end );
+			}
+			
+			return ret_tmpl;
+		}		
+
+		_mvtbl[ mvlist[i].atk_fin ] <- makeTmpl_Fin( { recast=support_RecastPower, exrecast=support_RecastPowerEx, successRecat=support_SuccessRecastPower, comboRecast=support_ComboRecastEnable, end=mvname_end, buffHosei=support_BuffRecastHosei } );
+		_mvtbl[ mvlist[i].atk_fin_ex ] <- makeTmpl_Fin( { recast=support_RecastPowerEx, exrecast=support_RecastPowerEx, successRecat=support_SuccessRecastPowerEx, comboRecast=support_ComboRecastEnableEx, end=mvname_end, buffHosei=support_BuffRecastHoseiEx } );
+
+		_mvtbl[ mvlist[i].end ] <-
+		{
+			function Init_Std()
+			{
+				BMvTbl.SetFinalize(0);
+				Battle_Std.SupSt_DelFlag( def_PP_ActiveAtkMove ); // 攻撃Mvが終わった（念のため）
+			}
+			function Finalize_Std()
+			{
+				BMvTbl.SetDeleteMoveTable();	
+			}
+		}
+
+		// エスケープサポートＭｖ
+		// このMvはMv_CallEscapeSupportCharaと連動してるので
+		// Ｍｖの全体フレームもある程度あわせる必要があるよ
+		local support_ReversalAttackRecastPower = chrparam.Get( { type="回避リキャスト回復速度", chrnum=_ChrNo } );
+
+		_mvtbl.Mv_EscapeSupportChara <-
+		{
+			function Init_Std() : (support_ReversalAttackRecastPower, support_HealRecastHosei)
+			{
+				BMvTbl.SetPrio( _CharaPrio_Far_Layer_5 ); // サポートキャラは後ろの方におく
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 地面の影を表示する
+				
+				BMvTbl.SetFinalizeCode( 0 ); // 初期化
+				
+				// 必要な気がする
+				// Battle_Std.SupSt_AddFlag( def_PP_ActiveAtkMove ); // 攻撃Mvでてくる
+				
+				BMvTbl.SetPP(def_PP_SupRecastPower,support_ReversalAttackRecastPower[0]);
+				BMvTbl.SetPP( def_PP_SupHealRecastHosei, support_HealRecastHosei );
+			}
+			function Init_After()
+			{
+				// これを定義しておけば間違ってでてもバグらないはず？
+				BMvTbl.SetFinalize(0); // 即終わり
+			}
+			function Finalize_Std() : (support_ReversalAttackRecastPower)
+			{
+				local very_slow_recast = Battle_Std.SupSt_CheckFlag( def_PP_VerySlowRecast ); // 回復を超遅くする
+				local enableBuff = Battle_Std.SupBuffSt_CheckFlag( def_PP_SBS_EnableAtk );
+				
+				local player = BMvCore.GetMainCharaData();
+				
+				if( player.push() )
+				{
+					if( very_slow_recast ) // 実質一方通行だけの処理
+					{
+						local recasttime = 4; // 人権は無くなる
+						local buffHosei = support_ReversalAttackRecastPower[1];
+						if( enableBuff && buffHosei ) recasttime = recasttime * buffHosei / 100; // 少し早くなるよ
+						tDDC.Support_SetPowerupRecastMax( 12 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					else
+					{
+						local recasttime = support_ReversalAttackRecastPower[0];
+						local buffHosei = support_ReversalAttackRecastPower[1];
+						if( enableBuff && buffHosei ) recasttime = recasttime * buffHosei / 100; // 少し早くなるよ
+						tDDC.Support_SetPowerupRecastMax( 90 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					player.pop();
+				}
+
+				// 必要な気がする
+				// Battle_Std.SupSt_DelFlag( def_PP_ActiveAtkMove ); // 攻撃Mvが終わった
+				BMvTbl.SetDeleteMoveTable();
+			}
+		}		
+		
+		
+		
+		// MissType1に切り替える飛び道具オブジェクト？
+		// これが出ている間サポート呼べたら変だよ
+		_mvtbl.Mv_SupportCharaCrashType1 <-
+		{
+			function Init_Std()
+			{
+				BMvTbl.SetPrio( _CharaPrio_Far_Layer_5 ); // サポートキャラは後ろの方におく
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 地面の影を表示する
+				
+				BMvTbl.SetFinalizeCode( 0 ); // 初期化
+				
+				BMvTbl.SetPattern( "SupCrashType1" );
+				
+				local main = BMvCore.GetMainCharaData();
+				if( main.push() )
+				{
+					tDDC.Support_SetFailed( 1 ); // 0 使える状態 1 使用不可状態
+					
+					main.pop();
+				}
+				
+				// このオブジェクトが出ている間はリキャストを開始しないようにする
+				// ビタフレームだと回復しちゃう？かもなので生成時にpushでやってある
+			}
+			function Init_After()
+			{
+				// これを定義しておけば間違ってでてもバグらないはず？
+				BMvTbl.SetFinalize(0); // 即終わり
+			}
+			function FrameUpdate_Std()
+			{
+				local mvs = BMvTbl.GetMvStatus();
+				if( mvs.CallCount != 0 ) return;
+				
+				if( mvs.MvCount == 8 )
+				{
+					_dp("\n ヒット！"); // のはず
+					BMvTbl.SetHitStop( 20, _ValSet );
+					BMvEff.SetCamera_Quake( { time=20, type=0 } ); // 揺らし
+				}
+			}
+			function Finalize_Std()
+			{
+				BMvTbl.SetDeleteMoveTable();
+			}
+			function LastUpdate_Std()
+			{
+				local main = BMvCore.GetMainCharaData();
+				if( main.push() )
+				{
+					tDDC.Support_SetFailed( 0 ); // 0 使える状態 1 使用不可状態
+					
+					main.pop();
+				}
+
+				Battle_Std.SupSt_DelFlag( def_PP_DrawingCrashMv );
+				Battle_Std.SupSt_AddFlag( def_PP_FinishCrashMv );
+			}
+		}
+
+		local support_MissType1RecastPower = chrparam.Get( { type="失敗行動１リキャスト回復速度", chrnum=_ChrNo } );
+
+		// 呼び出されるが撤退して長時間回復しない（時間固定）
+		_mvtbl.Mv_SupportCharaMissType1 <-
+		{
+			function Init_Std() : (support_MissType1RecastPower, support_HealRecastHosei)
+			{
+				BMvTbl.SetPrio( _CharaPrio_Far_Layer_5 ); // サポートキャラは後ろの方におく
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 地面の影を表示する
+				
+				BMvTbl.SetFinalizeCode( 0 ); // 初期化
+				
+				local main = BMvCore.GetMainCharaData();
+				if( main.push() )
+				{
+					Battle_Std.GS_DelFlag( def_PP_GS_TransferSupportMv_MissType1 );
+					_dp("\n サポート呼び出し書き換えられ終了");
+					main.pop();
+				}
+				
+				Battle_Std.SupSt_AddFlag( def_PP_ActiveMissMove ); // エンジュ失敗やられ表示中or予約中
+				
+				BMvTbl.SetPattern( 0 ); // 透明
+				
+				
+				BMvTbl.SetPosition( { y=0 } ); // 地面出現固定
+				BMvTbl.SetPosition( { x=200<<7, flags=_Position_Add|_Position_ChangeMuki } );
+				
+				BMvTbl.SetLP(0,0); // 撤退まで進んだかどうか
+				
+				BMvTbl.SetPP(def_PP_SupRecastPower,support_MissType1RecastPower);
+				BMvTbl.SetPP( def_PP_SupHealRecastHosei, support_HealRecastHosei );
+			}
+			function FrameUpdate_Std() : (pat_num_SupDmgEff)
+			{
+				// 10Ｆ後に撤退する
+				local mvs = BMvTbl.GetMvStatus();
+				if( mvs.CallCount != 0 ) return;
+
+				local crash_callerror = 0;
+				if( mvs.MvCount == 1 )
+				{
+					// 相手サポートのつぶし行動を呼び出す
+					local pos = BMvTbl.GetPosition( 0 );
+					
+					local enemy_sup = BMvCore.GetEnemySupportData();
+					if( enemy_sup.push() )
+					{
+						
+						if( Battle_Std.SupSt_CheckFlag( def_PP_EnableCrashType1 ) ) // もしかしたらクラッシュＭｖ出せない状態かもなのでチェック
+						{
+							local eff = BMvEff.CreateObject( { mvname="Mv_SupportCharaCrashType1", datatype=2, id=25 } );
+							if( eff.push() )
+							{
+								Battle_Std.SupSt_AddFlag( def_PP_DrawingCrashMv );
+								Battle_Std.SupSt_DelFlag( def_PP_FinishCrashMv );
+								
+								BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } );
+								BMvTbl.SetPosition( { x=pos.x, y=pos.y } ); // 相手サポートの位置基準で生成させる？
+								
+								_dp("\n クラッシュＭｖ呼び出し");
+								// Battle_Std.DrawDebugRectPos( pos ); // デバッグ
+								
+								eff.pop();
+							}
+							Battle_Std.SupSt_DelFlag( def_PP_EnableCrashType1 );
+						}
+						else
+						{
+							crash_callerror = 1; // クラッシュＭｖ呼べなかった
+						}
+						enemy_sup.pop();
+					}
+				}
+				if( BMvTbl.GetLP(0) == 0 && (mvs.MvCount == 8 || crash_callerror == 1 ) )
+				{
+					BMvTbl.SetPattern( "SupMissType1" );
+					BMvTbl.SetLP(0,1); // 撤退まで進んだ
+					
+					// 相手サポートのつぶし行動があたったはず
+					// 自分はやられの絵になって撤退する
+					// ヒットエフェクトとかヒットスロウとかゆらしとか
+					if( crash_callerror == 0 )
+					{
+						BMvEff.CreateObject( { datatype=1, start_pat=pat_num_SupDmgEff, x=0, y=-200<<7 } );
+						BMvTbl.SetHitStop( 20, _ValSet ); // Mv_SupportCharaCrashType1でも決めうち
+					}
+				}
+			}
+			function Finalize_Std() : (support_MissType1RecastPower)
+			{
+				local very_slow_recast = Battle_Std.SupSt_CheckFlag( def_PP_VerySlowRecast ); // 回復を超遅くする
+				// ※失敗行動にはバフは有効ではない
+				
+				local player = BMvCore.GetMainCharaData();
+				
+				if( player.push() )
+				{
+					if( very_slow_recast ) // 実質一方通行だけの処理
+					{
+						local recasttime = 4; // 人権は無くなる
+						tDDC.Support_SetPowerupRecastMax( 12 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					else
+					{
+						local recasttime = support_MissType1RecastPower;
+						tDDC.Support_SetPowerupRecastMax( 30 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					player.pop();
+				}				
+
+				BMvTbl.SetDeleteMoveTable();
+			}
+			function LastUpdate_Std()
+			{
+				Battle_Std.SupSt_DelFlag( def_PP_ActiveMissMove ); // エンジュ失敗やられ表示中or予約中
+			}
+		}
+			
+			
+		local support_CABoostRecastPower = chrparam.Get( { type="ＣＡブーストリキャスト回復速度", chrnum=_ChrNo } );
+		
+		_mvtbl.Mv_SupportCABoost <-
+		{
+			function Init_Std() : (support_CABoostRecastPower, support_HealRecastHosei)
+			{
+				BMvTbl.SetPrio( _CharaPrio_Far_Layer_5 ); // サポートキャラは後ろの方におく
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 地面の影を表示する
+				
+				BMvTbl.SetFinalize( 0 ); // すぐ終わる？
+				BMvTbl.SetPattern( 0 ); // 透明
+				BMvTbl.SetPosition( { y=0 } ); // 地面出現固定
+				BMvTbl.SetPosition( { x=200<<7, flags=_Position_Add|_Position_ChangeMuki } );
+				
+				// バフがのっていたらフラグをたてる？
+				local supBuffLv = BMvTbl.GetPP(def_PP_SupBuffLv);
+				_dp("\n supBuffLv"+supBuffLv );
+				if( supBuffLv )
+				{
+					Battle_Std.SupBuffSt_AddFlag( def_PP_SBS_EnableAtk );
+				}
+				else
+				{
+					Battle_Std.SupBuffSt_DelFlag( def_PP_SBS_EnableAtk );
+				}
+				//EXバフの効果は最初で消される…？
+				Battle_Std.SupBuffSt_DelFlag( def_PP_SBS_ExBuff );
+				
+				BMvTbl.SetPP(def_PP_SupRecastPower,support_CABoostRecastPower[0]);
+				BMvTbl.SetPP( def_PP_SupHealRecastHosei, support_HealRecastHosei );
+			}
+			function Finalize_Std() : (support_CABoostRecastPower)
+			{
+				local very_slow_recast = Battle_Std.SupSt_CheckFlag( def_PP_VerySlowRecast ); // 回復を超遅くする
+				local enableBuff = Battle_Std.SupBuffSt_CheckFlag( def_PP_SBS_EnableAtk );
+				// ※サポートデンにはバフは有効
+				
+				local player = BMvCore.GetMainCharaData();
+				
+				if( player.push() )
+				{
+					if( very_slow_recast ) // 実質一方通行だけの処理
+					{
+						local recasttime = 4; // 人権は無くなる
+						local buffHosei = support_CABoostRecastPower[1];
+						if( enableBuff && buffHosei ) recasttime = recasttime * buffHosei / 100; // 少し早くなるよ
+						tDDC.Support_SetPowerupRecastMax( 12 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					else
+					{
+						local recasttime = support_CABoostRecastPower[0];
+						local buffHosei = support_CABoostRecastPower[1];
+						if( enableBuff && buffHosei ) recasttime = recasttime * buffHosei / 100; // 少し早くなるよ
+						tDDC.Support_SetPowerupRecastMax( 90 ); // パワーアップ時の最大値を決める
+						tDDC.Support_StartRecast( recasttime );
+					}
+					player.pop();
+				}				
+
+				BMvTbl.SetDeleteMoveTable();
+			}
+		}
+		
+		local support_ROKYUBU1_PosAr = chrparam.Get( { type="RO-KYU-BU(1)座標", chrnum=_ChrNo } );
+		local support_ROKYUBU1_Pos = { isdone=support_ROKYUBU1_PosAr[0], mukiRev=support_ROKYUBU1_PosAr[1], x=support_ROKYUBU1_PosAr[2]<<7, y=support_ROKYUBU1_PosAr[3]<<7 };
+
+		local support_ROKYUBU2_PosAr = chrparam.Get( { type="RO-KYU-BU(2)座標", chrnum=_ChrNo } );
+		local support_ROKYUBU2_Pos = { isdone=support_ROKYUBU2_PosAr[0], mukiRev=support_ROKYUBU2_PosAr[1], x=support_ROKYUBU2_PosAr[2]<<7, y=support_ROKYUBU2_PosAr[3]<<7 };
+		
+		local check_RKB_End = function()
+		{
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				local mvname = BMvTbl.GetMvName();
+				local supActive = tDDC.Support_IsUse();
+				main.pop();
+				
+				if( mvname!="Mv_Skill_63214SP_Hit2" ) // RO-KYU-BUの時だけ
+				{
+					return 1;
+				}
+				if( supActive ) // 呼び出し可能になったら消える
+				{
+					return 1;
+				}
+				if( Battle_Std.SupSt_CheckFlag( def_PP_ActiveAtkMove ) )
+				{
+					return 1;
+				}
+			}
+			return 0;
+		}
+		_mvtbl.Mv_SupportROKYUBU1 <-
+		{
+			function Init_Std() : (support_ROKYUBU1_Pos)
+			{
+				if( !support_ROKYUBU1_Pos.isdone )
+				{
+					BMvTbl.SetFinalize( 0 );
+					return;
+				}
+
+				BMvTbl.SetPrio( _CharaPrio_Far_Layer_5 ); // サポートキャラは後ろの方におく
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 地面の影を表示する
+				
+				BMvTbl.SetPattern( 50 );
+				BMvTbl.SetPosition( { x=support_ROKYUBU1_Pos.x, y=support_ROKYUBU1_Pos.y, flags=_Position_Add } );
+				if( support_ROKYUBU1_Pos.mukiRev )
+				{
+					BMvTbl.SetMuki( _Direction_Reverse );
+				}
+			}
+			function FrameUpdate_Std() : (check_RKB_End)
+			{
+				if( check_RKB_End() )
+				{
+					BMvTbl.SetFinalize( 0 );
+				}
+			}
+			function Finalize_Std()
+			{
+				BMvTbl.SetDeleteMoveTable();
+			}
+		}
+		
+		_mvtbl.Mv_SupportROKYUBU2 <-
+		{
+			function Init_Std() : (support_ROKYUBU2_Pos)
+			{
+				if( !support_ROKYUBU2_Pos.isdone )
+				{
+					BMvTbl.SetFinalize( 0 );
+					return;
+				}
+
+				BMvTbl.SetPrio( _CharaPrio_Far_Layer_5 ); // サポートキャラは後ろの方におく
+				BMvEff.SetObjectFlags( { flags=_ObjFlags_RenderShadow } ); // 地面の影を表示する
+				
+				BMvTbl.SetPattern( 50 );
+				BMvTbl.SetPosition( { x=support_ROKYUBU2_Pos.x, y=support_ROKYUBU2_Pos.y, flags=_Position_Add } );
+				if( support_ROKYUBU2_Pos.mukiRev )
+				{
+					BMvTbl.SetMuki( _Direction_Reverse );
+				}
+			}
+			function FrameUpdate_Std() : (check_RKB_End)
+			{
+				if( check_RKB_End() )
+				{
+					BMvTbl.SetFinalize( 0 );
+				}
+			}
+			function Finalize_Std()
+			{
+				BMvTbl.SetDeleteMoveTable();
+			}
+		}		
+	}
+		
+	return _mvtbl; // 意味無いけど
+}
+
+
+addtmpl_SupportChara( ret_tbl ); // サポートキャラのMvを突っ込む
+
+
+
+
+
+
+//-----------------------------------------------------------------------------
+	return ret_tbl;
+}

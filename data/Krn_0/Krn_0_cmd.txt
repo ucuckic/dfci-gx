@@ -1,0 +1,455 @@
+//コマンドテーブル skillは格ゲーコマンド表記
+btl_debPrint2("\n[cmd.txt]");
+
+local t =
+{
+	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJump_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+
+	Skill_236A = {},
+	Skill_236B = {},
+	Skill_236C = {},
+	Skill_236EX = {},
+	
+	// 停止
+	Skill_236_AddA =
+	{
+		num = def_CN_Skill_AddCommand1, command = 
+		[
+		"@H,A@"
+		],
+		function CmdBeforeFunc()
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			if( mvs.FrameID != 300 ) return 0; // 300じゃないと失敗
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddA", },
+	},
+	
+	Skill_236Hit_AddA =
+	{
+		num = def_CN_Skill_AddCommand12, command = 
+		[
+		"@H,A@"
+		],
+		function CmdBeforeFunc()
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			if( mvs.FrameID != 200 && mvs.FrameID != 300 ) return 0; // 200か300じゃないと失敗			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A"] },
+			HitStatus = "Hit",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddA", },
+	},	
+	
+	// エイヤー
+	Skill_236_AddC =
+	{
+		num = def_CN_Skill_AddCommand2, command = 
+		[
+		"@H,C@"
+		],
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A"] },
+			FrameIDCheck = { Only = 300 },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddC", },
+	},		
+	Skill_236Hit_AddC =
+	{
+		num = def_CN_Skill_AddCommand3, command = 
+		[
+		"@H,C@"
+		],
+		function CmdBeforeFunc()
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			if( mvs.FrameID != 200 && mvs.FrameID != 300 ) return 0; // 200か300じゃないと失敗			
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A"] },
+			HitStatus = "Hit",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddC", },
+	},	
+	
+	// スラ
+	Skill_236_AddB =
+	{
+		num = def_CN_Skill_AddCommand4, command = 
+		[
+		"@H,B@"
+//		"@H,vA@","@H,vB@","@H,vC@"
+		],
+		function CmdBeforeFunc()
+		{
+			//_dp("\n スラ希望")
+			local mvs = BMvTbl.GetMvStatus();
+			if( mvs.FrameID != 200 && mvs.FrameID != 300 ) return 0; // 200か300じゃないと失敗
+			//_dp("\n スラ希望２")
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B"] },
+			FrameIDCheck = { Only = 300 },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddB", },
+	},
+	Skill_236Hit_AddB =
+	{
+		num = def_CN_Skill_AddCommand5, command = 
+		[
+		"@H,B@"
+//		"@H,vA@","@H,vB@","@H,vC@"
+		],
+		function CmdBeforeFunc()
+		{
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B"] },
+			HitStatus = "Hit",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddB", },
+	},	
+	
+	// エイヤー派生エイヤー
+	Skill_236AddC_AddC =
+	{
+		num = def_CN_Skill_AddCommand6, command = 
+		[
+		"@H,C@"
+//		"@H,6A@","@H,6B@","@H,6C@"
+		],
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState = "Always",
+			MvCheck = { Only = ["Mv_Skill_236_AddC"] },
+			FrameIDCheck = { Only = 300 },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236AddC_AddC", },
+	},		
+	Skill_236AddCHit_AddC =
+	{
+		num = def_CN_Skill_AddCommand7, command = 
+		[
+		"@H,C@"
+//		"@H,6A@","@H,6B@","@H,6C@"
+		],
+		function CmdBeforeFunc()
+		{
+			local mvs = BMvTbl.GetMvStatus();
+			if( !(mvs.Param3 & 32) ) return 0;
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState = "Always",
+			MvCheck = { Only = ["Mv_Skill_236_AddC"] },
+			// FrameIDCheck = { Only = 200 },
+			HitStatus = "Hit",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236AddC_AddC", },
+	},		
+	
+	// エイヤー派生スラ
+	Skill_236AddC_AddB =
+	{
+		num = def_CN_Skill_AddCommand8, command = 
+		[
+		"@H,B@"
+//		"@H,vA@","@H,vB@","@H,vC@"
+		],
+		function CmdBeforeFunc()
+		{
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState = "Always",
+			MvCheck = { Only = ["Mv_Skill_236_AddC"] },
+			FrameIDCheck = { Only = 300 },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236AddC_AddB", },
+	},	
+	
+	
+	Skill_236AddC_AddC_AddB =
+	{
+		num = def_CN_Skill_AddCommand8, command = 
+		[
+		"@H,B@"
+//		"@H,vA@","@H,vB@","@H,vC@"
+		],
+		function CmdBeforeFunc()
+		{
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState = "Always",
+			MvCheck = { Only = ["Mv_Skill_236AddC_AddC"] },
+			FrameIDCheck = { Only = 200 },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236AddC_AddC_AddB", },
+	},	
+	
+	Skill_236AddCHit_AddB =
+	{
+		num = def_CN_Skill_AddCommand9, command = 
+		[
+		"@H,B@"
+//		"@H,vA@","@H,vB@","@H,vC@"
+		],
+		function CmdBeforeFunc()
+		{
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState = "Always",
+			MvCheck = { Only = ["Mv_Skill_236_AddC"] },
+			FrameIDCheck = { Only = 200 },
+			HitStatus = "Hit",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236AddC_AddB", },
+	},	
+	
+	// エイヤー派生ジャンプ
+	Skill_236AddC_AddJump =
+	{
+		num = def_CN_Skill_AddCommand10, command = 
+		[
+		"^",
+		],
+		function CmdBeforeFunc()
+		{
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState = "Always",
+			MvCheck = { Only = ["Mv_Skill_236_AddC"] },
+			FrameIDCheck = { Only = 300 },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236AddC_AddJump", },
+	},	
+	Skill_236AddCHit_AddJump =
+	{
+		num = def_CN_Skill_AddCommand11, command = 
+		[
+		"^",
+		],
+		function CmdBeforeFunc()
+		{
+			return 1;
+		},
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			PosState = "Always",
+			MvCheck = { Only = ["Mv_Skill_236_AddC"] },
+			FrameIDCheck = { Only = 200 },
+			HitStatus = "Hit",
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_Skill_236AddC_AddJump", },
+	},	
+	
+	Skill_J236A = {},
+	Skill_J236B = {},
+	Skill_J236C = {},
+	Skill_J236EX = {},
+
+	Skill_214A = {},
+	Skill_214B = {},
+	Skill_214C = {},
+	Skill_214EX = {},
+
+	Skill_Sousai = {},
+	Skill_Sousai2 = {},
+	Skill_Sousai4 = {},
+	Skill_Sousai4_JAdd = {},
+	
+	Skill_Kirifuda = {},
+	
+	AirDash_F = {
+		CmdCheck = 
+		{
+			SkillType = "Special"
+		},
+	},
+	
+	Skill_41236SP = {},
+	Skill_63214SP = {},	
+	
+	Atk_Air2C = {},
+	Atk_Std3C = {},
+	
+}
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_StdA",
+		UpdateMoveName="Mv_Atk_StdB",
+	},
+	{
+		CheckMoveName="Mv_Atk_StdB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_StdB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_236C",
+		ResetTmplName="Std_Atk_StdC",
+	},
+	{
+		CheckMoveName="Mv_Skill_236_AddC",
+		UpdateMoveName="Mv_Skill_236AddC_AddC",
+		ResetTmplName="Skill_236C",
+		SrcCmdTmpl="Skill_236AddCHit_AddC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+		CmdCheck = 
+		{
+			PosState="Air",
+		}
+	},	
+	{
+		CheckMoveName="Mv_Skill_236AddC_AddC",
+		UpdateMoveName="Mv_Skill_J236EX",
+		ResetTmplName="Skill_236AddCHit_AddC",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			PosState="Air",
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 0 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_CroA",
+		UpdateMoveName="Mv_Atk_CroB",
+	},
+	{
+		CheckMoveName="Mv_Atk_CroB",
+		UpdateMoveName="Mv_Atk_StdC",
+		ResetTmplName="Std_Atk_CroB"
+	},
+	{
+		CheckMoveName="Mv_Atk_StdC",
+		UpdateMoveName="Mv_Skill_236C",
+		ResetTmplName="Std_Atk_StdC",
+	},
+	{
+		CheckMoveName="Mv_Skill_236_AddC",
+		UpdateMoveName="Mv_Skill_236AddC_AddC",
+		ResetTmplName="Skill_236C",
+		SrcCmdTmpl="Skill_236AddCHit_AddC",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+		CmdCheck = 
+		{
+			PosState="Air",
+		}
+	},	
+	{
+		CheckMoveName="Mv_Skill_236AddC_AddC",
+		UpdateMoveName="Mv_Skill_J236EX",
+		ResetTmplName="Skill_236AddCHit_AddC",
+		CmdCheck = 
+		{
+			SkillType = "ExSpecial",
+			HitStatus="Damage",
+			PosState="Air",
+			Cost = { ComboGauge = 10000 },
+		}
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 1 );
+
+local ar =
+[
+	{
+		CheckMoveName="Mv_Atk_AirA",
+		UpdateMoveName="Mv_Atk_AirB",
+	},
+	{
+		CheckMoveName="Mv_Atk_AirB",
+		UpdateMoveName="Mv_Atk_AirC",
+		ResetTmplName="Std_Atk_AirB",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerAir, //スマートステアアナウンスの追加
+	},
+]
+Battle_Std.MakeStdCombo( t, ar, 2 );
+
+// 本来のコマンドで出したらA連の変数をリセットする
+// A連のcmdを作った後、直接追加する
+// 今更だけどこんな風な処理に分けるべきだった
+t.Skill_236AddC_AddC.CmdLastFunc <- function()
+{
+	if( Def_Dbg_SmartSteerLog ) _dp1p("[特殊SMリセット1]");
+	BMvTbl.SetPP(def_PP_StdComboChain,0);
+}
+
+t.Skill_236_AddC.CmdLastFunc <- function()
+{
+	if( Def_Dbg_SmartSteerLog ) _dp1p("[特殊SMリセット2]");
+	BMvTbl.SetPP(def_PP_StdComboChain,0);
+}
+
+t.Skill_236Hit_AddC.CmdLastFunc <- function()
+{
+	if( Def_Dbg_SmartSteerLog ) _dp1p("[特殊SMリセット3]");
+	BMvTbl.SetPP(def_PP_StdComboChain,0);
+}
+
+KRN_CommandTable <- Battle_Std.MakeCommandTable( t );
+
+_dp(" -> Load OK");

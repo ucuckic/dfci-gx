@@ -1,0 +1,87 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Ren_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="Baraniumu", type=0, category=4, }; // 銃発射音
+
+// イグニッション選択
+st[80] = { path=1, file="Ren00_4901", type=0, category=1}; // よしっ！突撃するねっ！
+// クライマックスブースト発動
+st[81] = { path=1, file="Ren00_7103_b", type=0, category=1}; // 任せなさいっ！
+// ブラストＯＫ
+st[82] = { path=1, file="Ren00_4900", type=0, category=1}; // よしっ！目一杯暴れるかっ！
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Ren00_2100", type=0, category=1}; // やったああああ！
+st[101] = { path=1, file="Ren00_2101", type=0, category=1}; // ピーちゃん撃てるのたのしいな！
+
+// ラウンド敗北	
+st[110] = { path=1, file="Ren00_2200", type=0, category=1}; // "ラッキー・ガール"返上かな、こりゃ……
+st[111] = { path=1, file="Ren00_2201", type=0, category=1}; // おまえらぜんいんぶっころす
+
+// 通常攻撃	
+// st[120] = { path=1, file="Ren00_2500", type=0, category=1}; // やっ
+// st[121] = { path=1, file="Ren00_2501", type=0, category=1}; // ふっ
+// st[122] = { path=1, file="Ren00_2502", type=0, category=1}; // たあっ
+
+// 撤退	
+st[130] = { path=1, file="Ren00_4000_b", type=0, category=1}; // くそーっ！
+st[131] = { path=1, file="Ren00_4001", type=0, category=1}; // ちくしょー……
+
+// ダメージ	
+// st[140] = { path=1, file="Ren00_4500", type=0, category=1}; // ぎゃっ！
+st[141] = { path=1, file="Ren00_4501", type=0, category=1}; // ぐひゃ！
+st[142] = { path=1, file="Ren00_4502", type=0, category=1}; // げふっ！
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Ren00_4600", type=0, category=1}; // どうすればいいどうすればいい――
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Ren00_4900", type=0, category=1}; // よしっ！目一杯暴れるかっ！
+st[161] = { path=1, file="Ren00_4901", type=0, category=1}; // よしっ！突撃するねっ！
+
+// 必殺技１	
+// st[170] = { path=1, file="Ren00_7000_b_s0", type=0, category=1}; // うわーっ！
+st[171] = { path=1, file="Ren00_7000_b_s1", type=0, category=1}; // やってやらあ！　
+// st[172] = { path=1, file="Ren00_7000_s2", type=0, category=1}; // たっ！
+st[173] = { path=1, file="Ren00_7001_s0", type=0, category=1}; // かかった！　
+st[174] = { path=1, file="Ren00_7001_b_s1", type=0, category=1}; // 御免！
+st[175] = { path=1, file="Ren00_7001_s2", type=0, category=1}; // とうっ！
+st[176] = { path=1, file="Ren00_7002_b_s0", type=0, category=1}; // やったる！　
+st[177] = { path=1, file="Ren00_7002_b_s1", type=0, category=1}; // 邪魔だあ！
+// st[178] = { path=1, file="Ren00_7002_s2", type=0, category=1}; // はっ！
+// st[179] = { path=1, file="Ren00_7003_b_s0", type=0, category=1}; // あはは！
+st[180] = { path=1, file="Ren00_7003_b_s1", type=0, category=1}; // やっちまえー！
+// st[181] = { path=1, file="Ren00_7003_b_s2", type=0, category=1}; // やっ！
+
+// 必殺技２
+st[190] = { path=1, file="Ren00_7100_b", type=0, category=1}; // とーっ！
+// st[191] = { path=1, file="Ren00_7101_b", type=0, category=1}; // やー！
+st[192] = { path=1, file="Ren00_7102_b", type=0, category=1}; // よっしゃ！
+st[193] = { path=1, file="Ren00_7103_b", type=0, category=1}; // 撃ちまくれ！
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	初めまして。私は、レンです。
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	何でもやるよ！作戦を教えて！
+
+// キャラセレクト画面キャラクター決定
+// 1130	よしっ！行くよっ！ピーちゃん！

@@ -1,0 +1,16 @@
+//go edit mvcommon
+
+local t = {};
+local chrFunc = {};
+
+local file = "./data/Naoto_0/Naoto_0_mvcommon.txt";
+if( BtlMvStd.IsFileAlive( file ) )
+{
+	__dofile__( file ) //we want to derive our shadow movetable from the original character to maximize overlap
+	
+	t = build_mvtable();
+	chrFunc = build_chrFunctable();
+}
+
+NAOTO_MoveTable <- Battle_Std.MakeMoveTable( t, NAOTO_CommandTable, Def_ChrNo_Naoto );
+__dofile__("./data/Naoto_0/Naoto_0_selist.txt"); //‚r‚d’è‹`

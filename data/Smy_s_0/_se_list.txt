@@ -1,0 +1,85 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Smy_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(200); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+// イグニッション選択
+st[80] = { path=1, file="Smy00_4901", type=0, category=1}; // 私にお任せください
+// クライマックスブースト発動
+st[81] = { path=1, file="Smy00_7103", type=0, category=1}; // お逝きなさい
+// ブラストＯＫ
+st[82] = { path=1, file="Smy00_4900", type=0, category=1}; // 準備が整いました
+
+
+// プレイヤー勝利	
+st[100] = { path=1, file="Smy00_2100", type=0, category=1}; // とても立派ですわ
+st[101] = { path=1, file="Smy00_2101", type=0, category=1}; // 惚れ惚れしてしまいます
+
+// ラウンド敗北	
+st[110] = { path=1, file="Smy00_2200", type=0, category=1}; // あの…大丈夫ですか？
+st[111] = { path=1, file="Smy00_2201", type=0, category=1}; // こんな事もあるのですね…
+
+
+// 通常攻撃	
+// st[120] = { path=1, file="Smy00_2500", type=0, category=1}; // 
+// st[121] = { path=1, file="Smy00_2501", type=0, category=1}; // 
+// st[122] = { path=1, file="Smy00_2502", type=0, category=1}; // 
+
+// 撤退	
+st[130] = { path=1, file="Smy00_4000", type=0, category=1}; // ここは下がりましょう
+st[131] = { path=1, file="Smy00_4001", type=0, category=1}; // 後退します…！
+
+// ダメージ	
+st[140] = { path=1, file="Smy00_4500", type=0, category=1}; // やられ１
+st[141] = { path=1, file="Smy00_4501", type=0, category=1}; // やられ２
+st[142] = { path=1, file="Smy00_4502", type=0, category=1}; // やられ３
+
+// ダウン（1～2秒程度）	
+// st[150] = { path=1, file="Smy00_4600", type=0, category=1}; // 無礼者！
+
+
+// 戦闘準備完了	
+st[160] = { path=1, file="Smy00_4900", type=0, category=1}; // 準備が整いました
+st[161] = { path=1, file="Smy00_4901", type=0, category=1}; // 私にお任せください
+
+
+// 必殺技１	
+// st[170] = { path=1, file="Smy00_7000", type=0, category=1}; // 広域振動減速魔法
+//st[171] = { path=1, file="Smy00_7001", type=0, category=1}; // ニブルヘイム
+st[172] = { path=1, file="Smy00_7002", type=0, category=1}; // 安心しておやすみなさい…
+st[173] = { path=1, file="Smy00_7003", type=0, category=1}; // さぁ、今のうちに！
+st[174] = { path=1, file="Smy00_8000", type=0, category=1}; // フローラル・ロック
+
+// 必殺技2	
+st[180] = { path=1, file="Smy00_7102", type=0, category=1}; // もう逃げられませんよ
+st[181] = { path=1, file="Smy00_7103", type=0, category=1}; // お逝きなさい
+st[182] = { path=1, file="Smy00_8001", type=0, category=1}; // フリージング・ゾーン
+
+// 必殺技3
+st[190] = { path=1, file="Smy00_7100", type=0, category=1}; // グングニル
+st[191] = { path=1, file="Smy00_7101", type=0, category=1}; // 刺し貫け！
+// st[182] = { path=1, file="Smy00_8002", type=0, category=1}; // フェンリル
+// st[183] = { path=1, file="Smy00_8003", type=0, category=1}; // ファントム・ダンス
+
+// 必殺技3	
+// st[190] = { path=1, file="Smy00_8100", type=0, category=1}; // お兄様に楯突く事は私が許しません
+// st[190] = { path=1, file="Smy00_8101", type=0, category=1}; // はい、お兄様　（呼ばれて返事する）
+// st[190] = { path=1, file="Smy00_8102", type=0, category=1}; // まぁ、お兄様ったら…
+// st[190] = { path=1, file="Smy00_8103", type=0, category=1}; // 流石ですわ、お兄様！
+

@@ -1,0 +1,85 @@
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/cli/"; // ファイルパス、登録しやすいように
+local btlpath = "./se/battle_se/";
+local chrpath = btlpath + "Akj_s/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(210); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[50] = { path=2, file="Regurusu", type=0, category=2, }; // レグルス咆哮
+st[52] = { path=2, file="Arunasuru", type=0, category=2, }; // アルナスル咆哮
+
+// イグニッション選択
+st[80] = { path=1, file="Akj00_4901", type=0, category=1}; // 戦争（ケンカ）を始めようぜ！
+// クライマックスブースト発動
+st[81] = { path=1, file="Akj00_2000", type=0, category=1}; // さぁ、始めようか。第四真祖（オレ）の戦争（ケンカ）だ！
+// ブラストＯＫ
+st[82] = { path=1, file="Akj00_4900", type=0, category=1}; // ここからが本番だ！
+
+// プレイヤー勝利
+st[100] = { path=1, file="Akj00_2100", type=0, category=1}; // よっし、やったぜ！
+st[101] = { path=1, file="Akj00_2101", type=0, category=1}; // 一件落着、だな。
+
+// ラウンド敗北
+st[110] = { path=1, file="Akj00_2200", type=0, category=1}; // 結局こうなるのかよ……
+st[111] = { path=1, file="Akj00_2201", type=0, category=1}; // くっ、これでも駄目なのかよ…！
+
+// 通常攻撃
+// st[120] = { path=1, file="Akj00_2500", type=0, category=1}; // は
+// st[121] = { path=1, file="Akj00_2501", type=0, category=1}; // オラ
+// st[122] = { path=1, file="Akj00_2502", type=0, category=1}; // くらえ
+
+// 撤退
+st[130] = { path=1, file="Akj00_4000", type=0, category=1}; // まずい鼻血が…
+st[131] = { path=1, file="Akj00_4001", type=0, category=1}; // これは洒落にならん…
+
+// ダメージ
+st[140] = { path=1, file="Akj00_4500", type=0, category=1}; // くそっ
+st[141] = { path=1, file="Akj00_4501", type=0, category=1}; // ぐぁっ
+st[142] = { path=1, file="Akj00_4502", type=0, category=1}; // マジかよ
+
+// ダウン（1～2秒程度）
+// st[150] = { path=1, file="Akj00_4600", type=0, category=1}; // ぐあああ！
+
+// 戦闘準備完了
+st[160] = { path=1, file="Akj00_4900", type=0, category=1}; // ここからが本番だ！
+st[161] = { path=1, file="Akj00_4901", type=0, category=1}; // 戦争（ケンカ）を始めようぜ！
+
+// 必殺技１
+st[170] = { path=1, file="Akj00_7000", type=0, category=1}; // 疾く在れ（きやがれ）！
+st[171] = { path=1, file="Akj00_7001", type=0, category=1}; // 五番目の眷獣！
+st[172] = { path=1, file="Akj00_7002", type=0, category=1}; // 獅子の黄金（レグルス・アウルム）！
+// st[173] = { path=1, file="Akj00_7003", type=0, category=1}; // そ～っとだぞ、そ～っと…！
+
+// 必殺技2
+st[180] = { path=1, file="Akj00_7100", type=0, category=1}; // 九番目の眷獣！
+st[181] = { path=1, file="Akj00_7101", type=0, category=1}; // 双角の深緋（アルナスル・ミニウム）！
+st[182] = { path=1, file="Akj00_7102", type=0, category=1}; // これならどうだ！
+// st[183] = { path=1, file="Akj00_7103", type=0, category=1}; // 文句だったらコイツに言ってくれ！
+
+// 戦闘開始（雪菜とのコンビ　専用ボイス）
+st[200] = { path=1, file="Akj00_2000", type=0, category=1}; // さぁ、始めようか。第四真祖（オレ）の戦争（ケンカ）だ！
+
+
+
+// キャラセレクト画面セレクト待機5秒
+// 1100	はぁ…勘弁してくれ……
+
+// キャラセレクト画面セレクト待機15秒
+// 1120	しょうがねぇ…決着をつけようか！
+
+// キャラセレクト画面キャラクター決定
+// 1130	ここから先は、第四真祖（オレ）の戦争（ケンカ）だ！

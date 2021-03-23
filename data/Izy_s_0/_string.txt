@@ -1,0 +1,25 @@
+[data]
+// win
+100 = いやぁ、おめでとー君の勝利だ。
+101 = あらー、もうゲームセット？
+
+// lose
+110 = おやおや……。
+111 = まったく情けないねえ……。
+
+// charge
+120 = いやぁ、待たせたね。
+121 = さてと……。
+
+
+// withIzy00_s
+200 = Come on! Let's take 'em down!
+
+// withIzy00_s
+201 = Shizu-chan, need some help?
+
+// withIzy00_s
+202 = They look pretty tough, Shizu-chan.
+
+// withIzy00_s
+203 = Shizu-chan, sure you can handle this?

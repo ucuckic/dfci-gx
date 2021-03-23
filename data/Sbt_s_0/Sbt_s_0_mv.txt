@@ -1,0 +1,420 @@
+_dp("\n[_mv.txt]");
+// 行動リストテーブル
+
+
+local t = {};
+
+t.Mv_WinMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C100", 200, 100 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C101", 200, 101 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_LoseMotionMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C110", 200, 110 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C111", 200, 111 ); // 
+			break;
+		}
+	}
+}
+
+t.Mv_SupportChargeMessage <-
+{
+	function Init_After()
+	{
+		local rnd = BMvEff.Random_Limit(2);
+		switch( rnd )
+		{
+		case 0:
+			tDDC.Support_SetMessage( "@C120", 200, 160 ); // 
+			break;
+		case 1:
+			tDDC.Support_SetMessage( "@C121", 200, 161 ); // 
+			break;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+// サポートキャラ 演出用 local関数
+//-----------------------------------------------------------------------------
+
+// メインキャラが深雪だと1を返す
+local func_MainChara_is_Sbm = function()
+{
+	local main = BMvCore.GetMainCharaData();
+	if( main.push() )
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		main.pop();
+		
+		if( mvs.CharaNo == Def_ChrNo_Sbm ) return 1;
+	}
+	return 0;
+}
+
+
+
+//-----------------------------------------------------------------------------
+// サポートキャラ
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+// 攻撃１
+//-----------------------------------------------------------------------------
+local pat_num_Sup00 = BMvEff.GetPatternNum( { datatype=0, pat="Sup00" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup00_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup00_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+local set_Jamming = function( _set = 1 )
+{
+	local enemy = BMvCore.GetEnemyCharaData();
+	if( enemy.push() )
+	{	
+		if( _set == 1 ) // 設定
+		{
+			Battle_Std.GS_AddFlag( def_PP_GS_NoAct_Atk ); // 攻撃全て使用不可
+			Battle_Std.GS_AddFlag( def_PP_GS_NoAct_SPAtk ); // ＳＰ攻撃全て使用不可
+			Battle_Std.GS_AddFlag( def_PP_GS_NoAct_Blast ); // ブラスト使用不可能
+			Battle_Std.GS_AddFlag( def_PP_GS_Act_ExEscBlast ); // 特殊なエスブラ使用可能
+			Battle_Std.GS_AddFlag( def_PP_GS_NoAct_Move ); // 移動全て使用不可
+		}
+		else // 削除
+		{
+			Battle_Std.GS_DelFlag( def_PP_GS_NoAct_Atk ); // 攻撃全て使用不可
+			Battle_Std.GS_DelFlag( def_PP_GS_NoAct_SPAtk ); // ＳＰ攻撃全て使用不可
+			Battle_Std.GS_DelFlag( def_PP_GS_NoAct_Blast ); // ブラスト使用不可能
+			Battle_Std.GS_DelFlag( def_PP_GS_Act_ExEscBlast ); // 特殊なエスブラ使用可能
+			Battle_Std.GS_DelFlag( def_PP_GS_NoAct_Move ); // 移動全て使用不可
+		}
+		
+		enemy.pop();
+	}
+}
+
+t.Mv_SupportChara <- // サポートキャラの行動
+{
+	function Init_After() : (pat_num_Sup00)
+	{
+		BMvTbl.SetPattern(pat_num_Sup00); // 表示するパターンを設定
+
+		Battle_Std.AddXPos_CheckFrontStage( 0, 400 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		
+		BMvTbl.SetLP(0,0); // 1:当身成功した
+	}
+	function FrameUpdate_After() : (set_Jamming, func_MainChara_is_Sbm)
+	{
+		// 誰かがＫＯ状態になったら終わる
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.FrameID != 900 && Battle_Std.CharaisKO() ) // 自分取得できてる？
+		{
+			BMvTbl.JumpFrameID( 900 );
+		}
+		
+		if( BMvTbl.GetLP(0) == 1 ) // 当身成功した
+		{
+			// 撤収条件
+			// メインキャラがゲージ消費行動に移ったら居なくなる
+			// 切り札orクライマックスアーツ
+			if( 0 ) // IGからこの処理自体廃止して強化
+			{
+				local main = BMvCore.GetMainCharaData();
+				if( main.push() )
+				{
+					local clamove = Battle_Std.MoveCode.CheckFlag( def_MC_Skill ) && Battle_Std.MvAction.CheckFlag( def_MC_SPAction );
+					local kirifuda = (Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Kirifuda ) && tDDC.Kirifuda_CheckStatus() != 1);
+					
+					main.pop();
+					
+					local enemy = BMvCore.GetEnemyCharaData();
+					if( enemy.push() )
+					{
+						local e_clamove = Battle_Std.MoveCode.CheckFlag( def_MC_Skill ) && Battle_Std.MvAction.CheckFlag( def_MC_SPAction );
+						local e_kirifuda = (Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Kirifuda ) && tDDC.Kirifuda_CheckStatus() != 1);
+						
+						enemy.pop();
+
+						if( mvs.FrameID != 900 && ( clamove || kirifuda || e_clamove || e_kirifuda ) )
+						{
+							BMvTbl.JumpFrameID( 900 );
+							set_Jamming( 0 ); // 敵のジャミング効果を削除
+						}
+					}
+				}
+			}
+			
+			// 相手がやられ中、自分が切り札やクライマックスアーツを出したら終わる
+			local enemyIsDamage = Battle_Std.CheckEnemyisDamage();
+			
+			local main = BMvCore.GetMainCharaData();
+			if( main.push() )
+			{
+				local clamove = Battle_Std.MoveCode.CheckFlag( def_MC_Skill ) && Battle_Std.MvAction.CheckFlag( def_MC_SPAction );
+				local kirifuda = (Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_Kirifuda ) && tDDC.Kirifuda_CheckStatus() != 1);
+				
+				main.pop();
+				
+				local enemyIsEscBlast = 0;
+				local enemy = BMvCore.GetEnemyCharaData();
+				if( enemy.push() )
+				{
+					local e_mvname = BMvTbl.GetMvName();
+					enemy.pop();
+					
+					if( e_mvname == "Mv_BoundBlastWait" ) enemyIsEscBlast = 1;
+				}
+				
+				if( mvs.FrameID != 900 && ( (enemyIsDamage && (clamove || kirifuda) ) || enemyIsEscBlast ) )
+				{
+					BMvTbl.JumpFrameID( 900 );
+					set_Jamming( 0 ); // 敵のジャミング効果を削除
+				}
+			}
+		}
+		
+		Battle_Std.Sousai.FrameUpdate_NoHitFlag();
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 20:
+			if( func_MainChara_is_Sbm() )
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[171,172,173,191,191,190,190] } );
+			}
+			else
+			{
+				BSound.SE_Play( { type=_SeType_Player, num=[171,172,173] } );
+			}
+			break;
+		}
+	}
+	function HitInterrupt_After() : (set_Jamming)
+	{
+		local mvhs = Battle_Std.Sousai.HitInterrupt( { noeffect=1, hitstop=8 } );
+		if( mvhs ) // 有効なら0以外
+		{
+			if( mvhs.isFirstUpdate )
+			{
+				Battle_Std.SupSt_AddFlag( def_PP_Success ); // 成功扱い
+			
+				// 相手を攻撃する
+				BMvTbl.JumpFrameID( 200 );
+			}
+			BMvTbl.SetFinalizeCode(0); // 同フレームに殴られていると撤退するので行動上書き
+		}
+		
+		if( Battle_Std.CheckDamageTiming_ExceptDownFrameID( 300 ) )
+		{
+			set_Jamming( 1 ); // 敵にジャミング効果をセット
+			BMvTbl.JumpFrameID( 400 ); // ループへ
+			
+			BMvTbl.SetLP(0,1); // 当身成功ループ中
+			
+			BMvEff.CreateObject( { mvname="Mv_JammingEffect" } );
+		}
+	}
+	function LastUpdate_After() : (set_Jamming)
+	{
+		set_Jamming( 0 ); // 敵のジャミング効果を削除
+	}
+}
+
+t.Mv_JammingEffect <-
+{
+	function Init()
+	{
+		BMvTbl.SetPattern( 81 );
+		// BMvEff.SetObjectFlags( { flags = _ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_NoRenderBlackOut } );
+		BMvEff.SetObjectFlags( { flags = _ObjFlags_NoGround|_ObjFlags_EraseParentPatChange } ); // 暗転中も出すようにした
+	}
+	function FrameUpdate()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.CallCount == 0 )
+		{
+			local enemy = BMvCore.GetEnemyCharaData();
+			
+			if( enemy.push() )
+			{
+				if( mvs.MvCount%120 == 1 )
+				{
+					BMvEff.SetCharaFlash( { color = 0xD00030, type = 3, time = 120, intime=60 } );
+				}
+
+				enemy.pop();
+
+				Battle_Std.SetPos_MarkingTarget( enemy, 8, -250 ); // 相手の重なりに座標セット
+			}	
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); // 落下ベクトルあるので念のため
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape <-
+{
+	function Init_After() : (pat_num_Sup00_Esc)
+	{
+		BMvTbl.SetPattern( pat_num_Sup00_Esc );
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); // 落下ベクトルあるので念のため
+	}
+}
+
+//-----------------------------------------------------------------------------
+// 攻撃２
+//-----------------------------------------------------------------------------
+local pat_num_Sup10 = BMvEff.GetPatternNum( { datatype=0, pat="Sup10" } ); // パターン文字列のパターン番号を事前取得
+local pat_num_Sup10_Esc = BMvEff.GetPatternNum( { datatype=0, pat="Sup10_Esc" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_SupportChara2 <-
+{
+	function Init_After() : (pat_num_Sup10)
+	{
+		BMvTbl.SetPattern(pat_num_Sup10);
+
+		Battle_Std.AddXPos_CheckFrontStage( 200, 150 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		
+		Battle_Std.AddXPos_NearEnemy( 0, 250 ); // X移動距離, 相手とこれ以上近づかない距離
+		
+		BMvTbl.SetLP(0,0); // キンフラグ
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			// 音声再生タイミング
+			// こっちは攻撃なので通常ボイスのみ
+			BSound.SE_Play( { type=_SeType_Player, num=[180,181,183] } );
+			break;
+		}
+	}
+	function HitInterrupt_After()
+	{
+		// ヒットガード問わない処理
+		if( Battle_Std.CheckHitTiming_FrameID( 100 ) )
+		{
+			_dp("\n 次のCAで自動でキンする");
+			Battle_Std.SupSt_AddFlag( def_PP_NextCABoostOn );
+			
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				BMvEff.SetCharaFlash( { color = 0xFFFFFF, type = 0, time = 20 } );
+				
+				enemy.pop();
+			}
+		}
+		
+		// ヒットしたら相手の色調を変更
+		if( Battle_Std.CheckDamageTiming_FrameID( 100 ) )
+		{
+			local player = BMvCore.GetMainCharaData();
+			if( player.push() )
+			{
+				_dp("\n 強制コンボレート加算");
+				BMvTbl.AddComboRate(); // コンボレート加算
+				// 雲散霧消始動で次の技にコンボレートがかかるのがしょぼいので
+				// コンボレートかけたあとに補正を書き換えるようにする
+				
+				player.pop();
+			}
+			
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				// 白に光らせる
+				BMvEff.SetCharaFlash( { color = 0xFFFFFF, type = 0, time = 100 } );
+				
+				// つかみ中を無視する処理をなくした
+
+				enemy.pop();
+				
+				// ■相手の補正を上書きで修正する
+				// 最大コン（似非空刃とか）から狙えるので９割近く減って厳しい
+				// BMvEff.ComboView_Set( { val=1000, type=1 } );
+				// BMvEff.ComboView_Set( { val=80, type=0 } );
+
+				// ■減算補正で修正する
+				// 55%まで削ってたつやで70%→横コンボブラストで84%(+2940）
+				// BMvEff.ComboView_Set( { val=-25, type=2 } ); // 減算
+				// BMvEff.ComboView_Set( { val=70, type=0 } );
+
+				// ■乗算補正で修正する
+				// 減算に比べて補正値が大きいときにやった方が効果が高くなる
+				// 80+36 70+31 60+27 50+22 40+18
+				// 50%まで削って72%からが最大になる
+				local hosei = BMvEff.ComboView_Set();
+				local hosei_max = 76;
+				if( hosei < hosei_max )
+				{
+					BMvEff.ComboView_Set( { val=152, type=1 } ); // 1.10pre 144
+					BMvEff.ComboView_Set( { val=hosei_max, type=0 } ); // 1.10pre 72
+				}
+			}
+			
+			// 
+		}
+	}
+}
+
+//サポートキャラがダメージを受けると入る行動
+t.Mv_SupportCharaDamage2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern(pat_num_Sup10_Esc);
+		BSound.SE_Play( { type=_SeType_Player, num=[140,141,142] } ); // やられ音声
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); // 落下ベクトルあるので念のため
+	}
+}
+
+//出現途中で親が殴られると入る行動
+t.Mv_SupportCharaEscape2 <-
+{
+	function Init_After() : (pat_num_Sup10_Esc)
+	{
+		BMvTbl.SetPattern(pat_num_Sup10_Esc);
+		BSound.SE_Play( { type=_SeType_Player, num=[130,131] } ); // 撤退音声
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); // 落下ベクトルあるので念のため
+	}
+}
+
+SBT_S_MoveTable <- Battle_Std.SupportChara.MakeMoveTable( t, Def_ChrNo_Sbt_s );
+
+_dp(" -> Load OK");
