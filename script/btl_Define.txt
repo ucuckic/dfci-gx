@@ -161,7 +161,7 @@ const Def_Rule_AdvanceGuard_AddTime = 0; // ƒAƒhƒo‚·‚é‚ÆƒK[ƒhd’¼‚ª‘‰Á‚·‚é 0:‚
 
 const Def_Rule_DownBoundSlideKeep = 0; // ’n–ÊƒoƒEƒ“ƒh‚Ì”²‚¯‚ÉDivKeep‚Åc‚·Šµ«‚ÌÅ‘å’l(PAT350‚Ì‚İ) 0‚¾‚Æ–³Œø
 const Def_Rule_OkiagariFree_Crouch = 1; // ‹N‚«ã‚ª‚è‚Ìƒtƒ@ƒCƒiƒ‰ƒCƒY‚ğƒtƒŠ[‚ğ‹²‚Ü‚¸‚µ‚á‚ª‚İ‚É‚·‚é‚©‚Ç‚¤‚©
-const Def_Rule_AirRecover_NoMoveFrame = 45; // ‹ó’†ó‚¯g‚Ìd—l(254:’…’n‚Ü‚Å“®‚¯‚È‚¢ 0`:ƒtƒŒ[ƒ€Œãs“®‰Â”\A‹Z‚ğo‚·‚Æ‚©‚·‚é‚Æ–³“GÁ¸)
+const Def_Rule_AirRecover_NoMoveFrame = 25; // ‹ó’†ó‚¯g‚Ìd—l(254:’…’n‚Ü‚Å“®‚¯‚È‚¢ 0`:ƒtƒŒ[ƒ€Œãs“®‰Â”\A‹Z‚ğo‚·‚Æ‚©‚·‚é‚Æ–³“GÁ¸)
 const Def_Rule_CallSupportWaitFrame = 0; // ’ÊíƒTƒ|[ƒgŒÄ‚Ño‚µ‰½ƒtƒŒ[ƒ€–Ú‚©‚çÀÛ‚ÉƒTƒ|[ƒg‚ğŒÄ‚Ño‚·‚©
 const Def_Rule_AutoRecovery = 0; // ƒWƒƒƒ“ƒvUŒ‚‚Ì‚â‚ç‚ê‚ğƒI[ƒgƒŠƒJƒoƒŠ[‚É‚·‚é‚©
 const Def_Rule_NoChickenGuardFrame = 6; // ƒWƒƒƒ“ƒv—£—¤‚©‚ç‰½ƒtƒŒ[ƒ€ƒ`ƒLƒK‚Å‚«‚È‚¢‚©

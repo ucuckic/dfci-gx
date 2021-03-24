@@ -456,6 +456,26 @@ function Battle_Std::CmdCheck( t ) : (check_DoujiButton)
 		}
 	}
 	
+	//Paramとのビットフラグチェック
+	//ParamFlagCheck = { Only = { [2]=16 } } とかかくとParam2&16 で成功になる
+	//ParamFlagCheck = { Only = { [2]=16, [3]=8 } } とかかくとParam2&16 || Param3&8 で成功になる(orなので注意)
+	if( "ParamFlagCheck" in t )
+	{
+		if( "Only" in t.ParamFlagCheck )
+		{
+			local isFlagFind = 0;
+			foreach( slot, val in t.ParamFlagCheck.Only )
+			{
+				if( Battle_Std.CheckParamFlags( slot, val ) )
+				{
+					isFlagFind = 1;
+					break;
+				}
+			}
+			if( !isFlagFind ) return 0;
+		}
+	}
+	
 	// 特殊な弾き
 	if( Def_Rule_EnableReverceBeat != 1 )
 	{

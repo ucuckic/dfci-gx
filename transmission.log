@@ -28893,3 +28893,95 @@ B4895B4F 2B94435E 9A4E276B 6F99B974 27A11D45 66D2E82B C1592C1A 091E3039 95CC7F58
 [00:53:28.359] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:86: Match start hook hit
 [00:53:28.359] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:113: Round start hook hit
 [02:19:17.242] [MAIN 5ACA5E55] src/main/ui.c:710: Wait for process 308 returned 0
+[08:54:23.802] [MAIN 5ACA5E55] src/universal/sendsock.c:38: Created socket 128
+[08:54:23.802] [MAIN 5ACA5E55] src/universal/sendsock.c:73: Socket 128 bound to port 61921
+[08:54:23.802] [MAIN 5ACA5E55] src/universal/sendsock.c:162: Set process send socket to socket 128
+[08:54:23.802] [MAIN 5ACA5E55] src/main/launch_jconfig.c:133: Launching game
+[08:54:23.807] [MAIN 5ACA5E55] src/main/launch_jconfig.c:152: Process launched
+[08:54:23.940] [MAIN 5ACA5E55] src/universal/mmap.c:83: Initializing mmap sid_rendezvous (4)
+[08:54:23.940] [MAIN 5ACA5E55] src/main/ui.c:49: Sent session ID "5ACA5E55" to rendezvous
+[08:54:23.940] [DLL] src/dll/dll.c:40: --------- Log initialized ---------
+[08:54:23.940] [DLL] src/universal/mmap.c:83: Initializing mmap sid_rendezvous (4)
+[08:54:23.940] [DLL] src/dll/dll.c:59: Read session ID "5ACA5E55" from rendezvous
+[08:54:23.940] [DLL] src/universal/mmap.c:83: Initializing mmap 5ACA5E55 (4)
+[08:54:23.940] [DLL 5ACA5E55] src/dll/dll.c:51: Initializing events
+[08:54:23.940] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-event (F8)
+[08:54:23.940] [DLL 5ACA5E55] src/dll/dll.c:80: Initializing mmaps
+[08:54:23.940] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-conns (BE0)
+[08:54:23.940] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-modeconf (88)
+[08:54:23.940] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-rngseed (2C)
+[08:54:23.940] [DLL 5ACA5E55] src/dll/dll.c:194: Initializing winsock
+[08:54:23.941] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-ss_protinfo (174)
+[08:54:23.941] [MAIN 5ACA5E55] src/universal/sendsock.c:138: Wrote WSAPROTOCOL_INFO to duplicate send socket 128 for process 4E90
+[08:54:23.941] [DLL 5ACA5E55] src/universal/sendsock.c:162: Set process send socket to socket 188
+[08:54:23.941] [DLL 5ACA5E55] src/universal/sendsock.c:100: Socket duplicated; process send socket is 392
+[08:54:23.942] [DLL 5ACA5E55] src/dll/ctethread.c:37: ctethread created: ID 13636
+[08:54:23.942] [DLL 5ACA5E55] src/dll/dll.c:185: Initializing input
+[08:54:23.942] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-iptstate (1A)
+[08:54:23.942] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-iptlog (493E30)
+[08:54:23.942] [DLL 5ACA5E55] src/dll/dll.c:89: Initializing game hacks
+[08:54:23.942] [DLL 5ACA5E55] src/dll/dll.c:137: Initializing hooks
+[08:54:23.942] [DLL 5ACA5E55] src/universal/mmaps/iptlog.c:115: Zeroing input log; P1 delay 0, P2 delay 0
+[08:54:23.942] [DLL 5ACA5E55] src/dll/ctethread.c:17: Beginning ctemain wait
+[08:54:23.961] [MAIN 5ACA5E55] src/main/launch_jconfig.c:73: DLL loaded
+[08:54:23.961] [MAIN 5ACA5E55] src/main/launch_jconfig.c:196: Resuming game
+[08:54:24.256] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:261: Hooking CreateSoundBuffer: 65F01F6F to 6DD04C36
+[08:54:24.256] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:266: Hooking DuplicateSoundBuffer: 65F0F126 to 6DD04CAF
+[08:54:24.679] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:284: Hooking IDirectSoundBuffer::GetStatus: 65F0316F to 6DD04D15
+[08:54:24.679] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:288: Hooking IDirectSoundBuffer::Play: 65F053EA to 6DD04D5E
+[08:54:24.679] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:292: Hooking IDirectSoundBuffer::SetCurrentPosition: 65ED4DB0 to 6DD04DFE
+[08:54:24.679] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:296: Hooking IDirectSoundBuffer::Stop: 65ED501B to 6DD04DC3
+[08:54:56.942] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:58: Character select start hook hit
+[08:55:14.626] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:72: Character select end hook hit
+[08:55:17.276] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:86: Match start hook hit
+[08:55:17.276] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:113: Round start hook hit
+[09:17:24.891] [MAIN 5ACA5E55] src/main/ui.c:710: Wait for process 332 returned 0
+[09:17:26.103] [MAIN 5ACA5E55] src/universal/sendsock.c:38: Created socket 128
+[09:17:26.103] [MAIN 5ACA5E55] src/universal/sendsock.c:73: Socket 128 bound to port 57925
+[09:17:26.103] [MAIN 5ACA5E55] src/universal/sendsock.c:162: Set process send socket to socket 128
+[09:17:26.103] [MAIN 5ACA5E55] src/main/launch_jconfig.c:133: Launching game
+[09:17:26.109] [MAIN 5ACA5E55] src/main/launch_jconfig.c:152: Process launched
+[09:17:26.130] [MAIN 5ACA5E55] src/universal/mmap.c:83: Initializing mmap sid_rendezvous (4)
+[09:17:26.131] [MAIN 5ACA5E55] src/main/ui.c:49: Sent session ID "5ACA5E55" to rendezvous
+[09:17:26.131] [DLL] src/dll/dll.c:40: --------- Log initialized ---------
+[09:17:26.131] [DLL] src/universal/mmap.c:83: Initializing mmap sid_rendezvous (4)
+[09:17:26.131] [DLL] src/dll/dll.c:59: Read session ID "5ACA5E55" from rendezvous
+[09:17:26.131] [DLL] src/universal/mmap.c:83: Initializing mmap 5ACA5E55 (4)
+[09:17:26.131] [DLL 5ACA5E55] src/dll/dll.c:51: Initializing events
+[09:17:26.131] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-event (F8)
+[09:17:26.131] [DLL 5ACA5E55] src/dll/dll.c:80: Initializing mmaps
+[09:17:26.131] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-conns (BE0)
+[09:17:26.131] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-modeconf (88)
+[09:17:26.131] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-rngseed (2C)
+[09:17:26.131] [DLL 5ACA5E55] src/dll/dll.c:194: Initializing winsock
+[09:17:26.131] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-ss_protinfo (174)
+[09:17:26.131] [MAIN 5ACA5E55] src/universal/sendsock.c:138: Wrote WSAPROTOCOL_INFO to duplicate send socket 128 for process 230C
+[09:17:26.132] [DLL 5ACA5E55] src/universal/sendsock.c:162: Set process send socket to socket 188
+[09:17:26.132] [DLL 5ACA5E55] src/universal/sendsock.c:100: Socket duplicated; process send socket is 392
+[09:17:26.132] [DLL 5ACA5E55] src/dll/ctethread.c:37: ctethread created: ID 25008
+[09:17:26.132] [DLL 5ACA5E55] src/dll/dll.c:185: Initializing input
+[09:17:26.132] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-iptstate (1A)
+[09:17:26.132] [DLL 5ACA5E55] src/universal/mmap.c:83: Initializing mmap 5ACA5E55-iptlog (493E30)
+[09:17:26.132] [DLL 5ACA5E55] src/dll/dll.c:89: Initializing game hacks
+[09:17:26.132] [DLL 5ACA5E55] src/dll/dll.c:137: Initializing hooks
+[09:17:26.132] [DLL 5ACA5E55] src/universal/mmaps/iptlog.c:115: Zeroing input log; P1 delay 0, P2 delay 0
+[09:17:26.133] [DLL 5ACA5E55] src/dll/ctethread.c:17: Beginning ctemain wait
+[09:17:26.151] [MAIN 5ACA5E55] src/main/launch_jconfig.c:73: DLL loaded
+[09:17:26.151] [MAIN 5ACA5E55] src/main/launch_jconfig.c:196: Resuming game
+[09:17:26.489] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:261: Hooking CreateSoundBuffer: 65F01F6F to 6DD04C36
+[09:17:26.490] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:266: Hooking DuplicateSoundBuffer: 65F0F126 to 6DD04CAF
+[09:17:26.908] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:284: Hooking IDirectSoundBuffer::GetStatus: 65F0316F to 6DD04D15
+[09:17:26.909] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:288: Hooking IDirectSoundBuffer::Play: 65F053EA to 6DD04D5E
+[09:17:26.909] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:292: Hooking IDirectSoundBuffer::SetCurrentPosition: 65ED4DB0 to 6DD04DFE
+[09:17:26.909] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:296: Hooking IDirectSoundBuffer::Stop: 65ED501B to 6DD04DC3
+[09:17:28.027] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:58: Character select start hook hit
+[09:17:32.328] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:72: Character select end hook hit
+[09:17:34.662] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:86: Match start hook hit
+[09:17:34.662] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:113: Round start hook hit
+[12:26:19.328] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:58: Character select start hook hit
+[12:26:23.013] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:72: Character select end hook hit
+[12:26:38.053] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:58: Character select start hook hit
+[12:26:49.904] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:72: Character select end hook hit
+[12:29:34.908] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:58: Character select start hook hit
+[12:29:39.824] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:72: Character select end hook hit
+[13:46:31.054] [MAIN 5ACA5E55] src/main/ui.c:710: Wait for process 340 returned 0

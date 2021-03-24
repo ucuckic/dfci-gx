@@ -8898,7 +8898,31 @@ Battle_Std.CheckMainisBound <- function()
 
 /////////////////////////////// my shit
 
-
+Battle_Std.CheckParamFlags <- function( paramNum, checkFlag )
+{
+	local mvs = BMvTbl.GetMvStatus();
+	local useParam = 0;
+	switch( paramNum )
+	{
+	case 0:
+		useParam = mvs.Param0;
+		break;
+	case 1:
+		useParam = mvs.Param1;
+		break;
+	case 2:
+		useParam = mvs.Param2;
+		break;
+	case 3:
+		useParam = mvs.Param3;
+		break;
+	default:
+		return 0;
+		break;
+	}
+	if( useParam&checkFlag ) return 1;
+	return 0;
+}
 
 
 Battle_Std.DrawHitboxChecker <- function()

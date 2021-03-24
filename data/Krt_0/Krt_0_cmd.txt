@@ -47,7 +47,7 @@ local t =
 	
 	Skill_236_AddFirst =
 	{
-		num = def_CN_Skill_AddCommand1_BSS, command = [">+A"],
+		num = def_CN_Skill_AddCommand2_BSS, command = [">+A",">+B",">+C"],
 		function CmdBeforeFunc()
 		{
 			// ïKéEÇbÇ™ÇgÇhÇséûÇÃéûÇÃÇ›èoÇπÇÈ
@@ -59,7 +59,7 @@ local t =
 		{
 			SkillType = "AddCommand"
 			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C"] },
-			FrameIDCheck = { Only = 5 },
+			ParamFlagCheck = { Only = { [3]=1 } },
 			//HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_236_Add", },
@@ -67,7 +67,7 @@ local t =
 	
 	Skill_236_AddSecond =
 	{
-		num = def_CN_Skill_AddCommand1_BSS, command = [">+A",">+B",">+C"],
+		num = def_CN_Skill_AddCommand2_BSS, command = [">+A",">+B",">+C"],
 		function CmdBeforeFunc()
 		{
 			// ïKéEÇbÇ™ÇgÇhÇséûÇÃéûÇÃÇ›èoÇπÇÈ
@@ -79,7 +79,7 @@ local t =
 		{
 			SkillType = "AddCommand"
 			MvCheck = { Only = ["Mv_Skill_236_Add"] },
-			FrameIDCheck = { Only = 5 },
+			ParamFlagCheck = { Only = { [3]=1 } },
 			//HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_236_Add_Add", },
@@ -104,11 +104,37 @@ local t =
 		CmdCheck = 
 		{
 			SkillType = "AddCommand"
-			// MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236","Mv_Atk_StdA"] },
+			// MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add","Mv_Atk_StdA"] },
 			HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_236_AddA", },
 	},
+	
+	Skill_236_AddA_Alt =
+	{
+		num = def_CN_Skill_AddCommand1_BSS, command = 
+		[
+		// "0404A@N,255@",
+		"<+A",
+		// "46A",
+		// "64A",
+		],
+		function CmdBeforeFunc()
+		{
+			// ïKéEÇbÇ™ÇgÇhÇséûÇÃéûÇÃÇ›èoÇπÇÈ
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			if( !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_CharaFlag3 ) ) return 0;
+			return 1;
+		},		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddA", },
+	},
+	
 	Skill_236_AddB =
 	{
 		num = def_CN_Skill_AddCommand2_BSS, command = 
@@ -128,11 +154,37 @@ local t =
 		CmdCheck = 
 		{
 			SkillType = "AddCommand"
-			// MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236"] },
+			// MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
 			HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_236_AddB", },
 	},
+	
+	Skill_236_AddB_Alt =
+	{
+		num = def_CN_Skill_AddCommand1_BSS, command = 
+		[
+		// "0404A@N,255@",
+		"<+B",
+		// "46A",
+		// "64A",
+		],
+		function CmdBeforeFunc()
+		{
+			// ïKéEÇbÇ™ÇgÇhÇséûÇÃéûÇÃÇ›èoÇπÇÈ
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			if( !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_CharaFlag3 ) ) return 0;
+			return 1;
+		},		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddB", },
+	},
+	
 	Skill_236_AddC =
 	{
 		num = def_CN_Skill_AddCommand3_BSS, command = 
@@ -152,11 +204,36 @@ local t =
 		CmdCheck = 
 		{
 			SkillType = "AddCommand"
-			// MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236"] },
+			// MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
 			HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_236_AddC", },
 	},	
+	
+	Skill_236_AddC_Alt =
+	{
+		num = def_CN_Skill_AddCommand1_BSS, command = 
+		[
+		// "0404A@N,255@",
+		"<+C",
+		// "46A",
+		// "64A",
+		],
+		function CmdBeforeFunc()
+		{
+			// ïKéEÇbÇ™ÇgÇhÇséûÇÃéûÇÃÇ›èoÇπÇÈ
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+			if( !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_CharaFlag3 ) ) return 0;
+			return 1;
+		},		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_Add236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
+			HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_236_AddC", },
+	},
 	
 	// í«â¡ÉRÉ}ÉìÉhÇ∆ÇµÇƒêFÅXÉLÉÉÉìÉZÉãÇí«â¡Ç∑ÇÈ
 	// ìÒìÅÇÃéûÇÕêFÅXÇ≈Ç´ÇøÇ·Ç§ÇÒÇæ
@@ -174,7 +251,7 @@ local t =
 		CmdCheck = 
 		{
 			SkillType = "AddCommand"
-			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add214","Mv_Skill_AddJ236"] },
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add214","Mv_Skill_AddJ236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
 			HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_Add236", },
@@ -193,7 +270,7 @@ local t =
 		CmdCheck = 
 		{
 			SkillType = "AddCommand"
-			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add236","Mv_Skill_AddJ236"] },
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_AddJ236","Mv_Skill_Add236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
 			HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_Add214", },
@@ -212,7 +289,7 @@ local t =
 		CmdCheck = 
 		{
 			SkillType = "AddCommand"
-			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_Add236","Mv_Skill_Add214"] },
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_Add214","Mv_Skill_Add236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
 			HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_AddJ236", },
@@ -234,7 +311,7 @@ local t =
 		CmdCheck = 
 		{
 			SkillType = "AddCommand"
-			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add214","Mv_Skill_AddJ236"] },
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add214","Mv_Skill_AddJ236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
 			HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_Add236", },
@@ -255,7 +332,7 @@ local t =
 		CmdCheck = 
 		{
 			SkillType = "AddCommand"
-			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add236","Mv_Skill_AddJ236"] },
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add214","Mv_Skill_AddJ236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
 			HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_Add214", },
@@ -277,7 +354,7 @@ local t =
 		CmdCheck = 
 		{
 			SkillType = "AddCommand"
-			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_Add236","Mv_Skill_Add214"] },
+			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C","Mv_Skill_Add214","Mv_Skill_AddJ236","Mv_Skill_236_Add","Mv_Skill_236_Add_Add"] },
 			HitStatus = "Hit",
 		},
 		UpdateTable = { name = "Mv_Skill_AddJ236", },
