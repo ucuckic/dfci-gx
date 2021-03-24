@@ -28892,3 +28892,4 @@ B4895B4F 2B94435E 9A4E276B 6F99B974 27A11D45 66D2E82B C1592C1A 091E3039 95CC7F58
 [00:53:25.875] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:72: Character select end hook hit
 [00:53:28.359] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:86: Match start hook hit
 [00:53:28.359] [DLL 5ACA5E55] src/dll/hooks/hooksetup.c:113: Round start hook hit
+[02:19:17.242] [MAIN 5ACA5E55] src/main/ui.c:710: Wait for process 308 returned 0
