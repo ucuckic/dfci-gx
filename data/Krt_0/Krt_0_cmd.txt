@@ -45,6 +45,46 @@ local t =
 	Skill_236C = {},
 	Skill_236EX = {},
 	
+	Skill_236_AddFirst =
+	{
+		num = def_CN_Skill_AddCommand1_BSS, command = [">+A"],
+		function CmdBeforeFunc()
+		{
+			// •KE‚b‚ª‚g‚h‚s‚Ì‚Ì‚İo‚¹‚é
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+
+			return 1;
+		},		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236A","Mv_Skill_236B","Mv_Skill_236C"] },
+			FrameIDCheck = { Only = 5 },
+			//HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_236_Add", },
+	},
+	
+	Skill_236_AddSecond =
+	{
+		num = def_CN_Skill_AddCommand1_BSS, command = [">+A",">+B",">+C"],
+		function CmdBeforeFunc()
+		{
+			// •KE‚b‚ª‚g‚h‚s‚Ì‚Ì‚İo‚¹‚é
+			if( BCMDTbl.CheckCancelFlag( 1 ) != _CancelFlag_Hit ) return 0;
+
+			return 1;
+		},		
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			MvCheck = { Only = ["Mv_Skill_236_Add"] },
+			FrameIDCheck = { Only = 5 },
+			//HitStatus = "Hit",
+		},
+		UpdateTable = { name = "Mv_Skill_236_Add_Add", },
+	},
+	
 	Skill_236_AddA =
 	{
 		num = def_CN_Skill_AddCommand1_BSS, command = 

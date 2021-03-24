@@ -646,6 +646,22 @@ local call_KrtDummy = function( _pat, _masktype=0 ) : (func_Mask_KKE, func_Mask_
 	}
 }
 
+t.Mv_Skill_236_Add <-
+{
+	function Init_After()
+	{
+		
+	}
+}
+
+t.Mv_Skill_236_Add_Add <-
+{
+	function Init_After()
+	{
+		
+	}
+}
+
 t.Mv_Skill_236_AddA <- {
 	function HitInterrupt_After()
 	{
