@@ -646,6 +646,138 @@ local call_KrtDummy = function( _pat, _masktype=0 ) : (func_Mask_KKE, func_Mask_
 	}
 }
 
+local maketmpl_Skill236Rekka = function( param={} ) : (func_SetDEPattern_and_NoMask, set_AddSkill)
+{
+	local ret_tmpl = {};
+	
+	// ret_tmpl.usepat <- "Add236";
+
+	local usepat_de = "236ADE";
+	local meteo_flag = 0;
+	
+	switch( param.type )
+	{
+	case "A":
+		// ret_tmpl.usepat <- "Add236DE";
+		usepat_de = BMvEff.GetPatternNum( { datatype=0, pat="236ADE" } );
+		meteo_flag = 1;
+		break;
+	case "B":
+		usepat_de = BMvEff.GetPatternNum( { datatype=0, pat="236BDE" } );
+		meteo_flag = 1;
+		break;
+	case "C":
+		usepat_de = BMvEff.GetPatternNum( { datatype=0, pat="236CDE" } );
+		meteo_flag = 1;
+		break;
+	case "EX":
+		usepat_de = BMvEff.GetPatternNum( { datatype=0, pat="236EXDE" } );
+		meteo_flag = 0;
+		break;
+	case "Add":
+		usepat_de = BMvEff.GetPatternNum( { datatype=0, pat="Add236DE" } );
+		meteo_flag = 1;
+		break;
+	}
+	
+	local isAddSkill = ( param.type =="Add" )? 1 : 0;
+	
+	ret_tmpl.Init_After <- function() : (func_SetDEPattern_and_NoMask, usepat_de, isAddSkill, set_AddSkill, meteo_flag)
+	{
+		local mode = func_SetDEPattern_and_NoMask( usepat_de ); // 二刀ならパターンジャンプ
+		BMvTbl.SetLP( 0, mode ); // 二刀かどうか記憶 0:通常 1:二刀
+		
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );	
+
+		if( isAddSkill )
+		{
+			set_AddSkill( 0 );
+		}
+		if( meteo_flag)
+		{
+			Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_CharaFlag3 ); // メテオブレイクでキャンセル可能な技
+		}
+	}	
+	
+	ret_tmpl.FrameUpdate_After <- function()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.isFrameUpdate )
+		{
+			switch( mvs.FrameID )
+			{
+			case 100:
+				break;
+			case 200:
+				break;
+			case 300:
+				break;
+			case 400: // 一閃
+				Battle_Std.CreateObject.CommonEffect.SupecialGroundDash( { x=100, y=-200 } );
+				Battle_Std.CreateObject.CommonEffect.SupecialMoveRing( { x=100, y=-200 } );
+				break;
+			case 500: // 停止
+				Battle_Std.CreateObject.CommonEffect.SupecialGroundDashBrake( { x=-50, y=0 } );
+				break;
+			}
+		}
+	}
+	
+	local pat_num_Eff_HolSqHit = BMvEff.GetPatternNum( { datatype=0, pat="Eff_HolSqHit" } ); // パターン文字列のパターン番号を事前取得
+	
+	ret_tmpl.HitInterrupt_After <- function() : (pat_num_Eff_HolSqHit)
+	{
+		// 通常時のみホリゾンタルスクエアなので
+		// □があがっていくエフェクトは通常時の最終段ヒット時のみ出す
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			if( BMvTbl.GetLP(0) == 0 )
+			{
+				local mvs = BMvTbl.GetMvStatus();
+				switch( mvs.FrameID )
+				{
+				case 100:
+					break;
+				case 200:
+					break;
+				case 300:
+					break;
+				case 400:
+					local epos = Battle_Std.GetEnemyPosition();
+					Battle_Std.CreateObjectEX( { pat=pat_num_Eff_HolSqHit, setx=epos.x, sety=epos.y-(200<<7) } );
+					break;
+				}
+			}
+			else // 二刀の時ヒット数を１増やして２にする
+			{
+				local mvs = BMvTbl.GetMvStatus();
+				switch( mvs.FrameID )
+				{
+				case 100:
+					BMvTbl.AddComboCount( 1 );
+					break;
+				case 200:
+					BMvTbl.AddComboCount( 1 );
+					break;
+				case 300:
+					BMvTbl.AddComboCount( 1 );
+					break;
+				case 400:
+					BMvTbl.AddComboCount( 1 );
+					break;
+				}
+			
+			}
+		}
+
+	
+	}
+	
+	return ret_tmpl;
+
+}
+
 t.Mv_Skill_236_Add <-
 {
 	function Init_After()
@@ -658,7 +790,11 @@ t.Mv_Skill_236_Add_Add <-
 {
 	function Init_After()
 	{
-		
+	}
+	function HitInterrupt_After()
+	{
+		local epos = Battle_Std.GetEnemyPosition();
+		if( Battle_Std.CheckDamageTiming() ) Battle_Std.CreateObjectEX( { pat="Eff_HolSqHit", setx=epos.x, sety=epos.y-(200<<7) } );
 	}
 }
 
