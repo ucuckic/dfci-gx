@@ -232,8 +232,32 @@ local maketmpl_GroundTrust = function( param={} )
 	{
 	}
 	
-	ret_tmpl.HitInterrupt_After <- function()
+	ret_tmpl.HitInterrupt_After <- function() : (param)
 	{
+		if( param.type == "EX" )
+		{
+			local s = BMvTbl.GetMvStatus();
+			local hs = BMvTbl.GetMvHitStatus();
+			//ヒット中何となく寄せる
+			//やられＸベクトルは無効になっているので注意
+			if( s.FrameID==200 && hs.Type & _HitType_Damage && hs.isCatchFlag == 0 ) //当身とられた時は除外
+			{
+				local enemy = BMvCore.GetNearEnemyCharaData();
+				if( enemy.isdone() )
+				{
+					local posst = BMvEff.GetPointStatus( { target=enemy } ); // 位置情報取得
+					local vx = posst.distance_x/20;
+					
+					if( enemy.push() )
+					{
+						local vec = BMvTbl.GetVector( { flags=_Vector_Bound } );
+						BMvTbl.SetVector( { x=vx, addx=0, flags=_Vector_Normal  } );
+						
+						enemy.pop();
+					}
+				}
+			}
+		}
 	}
 	
 	return ret_tmpl;
@@ -768,7 +792,7 @@ t.Mv_Skill_Sousai2 <-
 		// 始動補正適用をＭｖ変化後に
 		BMvEff.ChangeStartCorrectTiming();		
 		
-		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_EnableCansel_SkilltoSkill );
+		//Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_EnableCansel_SkilltoSkill );
 	}
 	function FrameUpdate_After()
 	{
