@@ -115,7 +115,7 @@ local t =
 		num = def_CN_Skill_AddCommand1_BSS, command = 
 		[
 		// "0404A@N,255@",
-		"<+A",
+		"0606A@N,255@",
 		// "46A",
 		// "64A",
 		],
@@ -165,7 +165,7 @@ local t =
 		num = def_CN_Skill_AddCommand1_BSS, command = 
 		[
 		// "0404A@N,255@",
-		"<+B",
+		"0404B@N,255@",
 		// "46A",
 		// "64A",
 		],
@@ -215,7 +215,7 @@ local t =
 		num = def_CN_Skill_AddCommand1_BSS, command = 
 		[
 		// "0404A@N,255@",
-		"<+C",
+		"0404C@N,255@",
 		// "46A",
 		// "64A",
 		],
