@@ -175,6 +175,82 @@ t.Mv_Throw_F_Hit <-
 	}
 }
 
+local ThrowParam_WithMvParam = function(pat=320, frame=0)
+{
+	local mvs = BMvTbl.GetMvStatus();
+	
+	BMvEff.ThrowParam( { pattern=pat, x=mvs.Param0, y=mvs.Param1, frame=frame } );
+	
+	local enemy = BMvCore.GetNearEnemyCharaData(); // “Gî•ñ‚ð“¾‚é
+	if( enemy.push() )
+	{
+		if( mvs.Param3 ) BMvTbl.SetAngle({ angle=mvs.Param3*1000 });
+		enemy.pop();
+	}
+}
+
+local SetEnemyAngle = function(_angle)
+{
+	local enemy = BMvCore.GetNearEnemyCharaData(); // “Gî•ñ‚ð“¾‚é
+	if( enemy.push() )
+	{
+		BMvTbl.SetAngle({ angle=_angle });
+		enemy.pop();
+	}
+}
+
+t.Mv_Throw_A_Hit <- 
+{
+	function Init_After()
+	{
+		Battle_Std.InitVector();
+		
+		BMvTbl.SetMuki( _Direction_Reverse );
+		
+		// –³“G‚Å‘ŠŽè‚ð‚Â‚©‚ÝŠJ•ú‚Ì‰ŠúÝ’è
+		Battle_Std.MutekiThrowRelease_Init();
+		
+		local eff = BMvEff.CreateObject( { x=-83, y=-243, datatype=1, start_pat=55, flags=_Position_ToolShift } );
+		if( eff.push() )
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround } );
+			eff.pop();
+		}
+		
+		BMvTbl.SetPrio( _CharaPrio_Far );
+		BMvEff.ThrowParam( { pattern=320, x=-120, y=0, frame=0 } );
+		
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_EnableCansel_SkilltoSkill );
+		
+	}
+	function FrameUpdate_After() : (SetEnemyAngle)
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 1: // ˆê‘M
+			BMvTbl.SetPrio( _CharaPrio_Near );
+			
+			BMvEff.ThrowParam( { pattern=320, x=200, y=-340, frame=0 } );
+			SetEnemyAngle(3000);
+			break;
+		case 2: // ˆê‘M
+			BMvEff.ThrowParam( { pattern=320, x=240, y=-240, frame=0 } );
+			SetEnemyAngle(2400);
+			break;
+		case 3: // ˆê‘M
+			BMvEff.ThrowParam( { pattern=320, x=250, y=-230, frame=0 } );
+			SetEnemyAngle(2300);
+			break;
+		case 4:		
+			BMvTbl.SetMuki( _Direction_Reverse );
+			break;
+		}
+		
+		// –³“G‚Å‘ŠŽè‚ð’Í‚ÝŠJ•ú
+		Battle_Std.MutekiThrowRelease( { FrameID=4, x=80, y=20, type=124 } );
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // ƒCƒxƒ“ƒg
@@ -468,6 +544,8 @@ t.Mv_Atk_AirC <-
 		
 		// ŠeŽí•â³‚ÍÅ‰‚Ì‚Pƒqƒbƒg‚Ì‚Ý
 		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+		
+		//BMvTbl.SetMuki( _Direction_Reverse );
 	}
 	function FrameUpdate_After()
 	{
@@ -557,6 +635,9 @@ local maketmpl_Skill236 = function( param={} ) : (func_SetDEPattern_and_NoMask, 
 		{
 			switch( mvs.FrameID )
 			{
+			case 2:
+				BMvTbl.SetCommandLongDelay(4);
+				break;
 			case 100:
 				break;
 			case 200:
