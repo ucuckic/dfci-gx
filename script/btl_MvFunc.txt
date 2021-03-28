@@ -9263,6 +9263,21 @@ Battle_Std.SetEnemyBoundSt <- function( boundst_param )
 	}
 }
 
+Battle_Std.GetEnemyBoundStatus <- function()
+{
+	local enemy = BMvCore.GetNearEnemyCharaData();
+	if( enemy.isdone() )
+	{
+		if( enemy.push() )
+		{
+			local bs = BtlMvStd.GetBoundStatus(); 
+			enemy.pop();
+			
+			return bs;
+		}
+	}
+}
+
 Battle_Std.AddToolShift_NoSurinuke_FU <- function( param=0, flag=0 )
 {
 	local mvs = BMvTbl.GetMvStatus();
