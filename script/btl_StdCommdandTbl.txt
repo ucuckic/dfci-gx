@@ -1830,14 +1830,14 @@ if( Def_Rule_GameSystem == Def_RGS_CLI )
 	}
 }
 
-local AirJumpCount = chrparam.Get( { type="AirJumpCount", chrnum=_ChrNo } );
+local _AirJumpCount = chrparam.Get( { type="AirJumpCount", chrnum=_ChrNo } );
 
 t.MultiJump_F <- 
 { //-------------------------------
 	num = def_CN_MultiJump_F, name = "Cmd_MultiJump_F", command = "9",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump, // 振り向き予定の方向に対してコマンドチェック
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpCount = 1, },
+	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpLimit = _AirJumpCount, },
 	UpdateTable = { name = "Mv_MultiJump_F", }
 }
 
@@ -1846,7 +1846,7 @@ t.MultiJump_N <-
 	num = def_CN_MultiJump_N, name = "Cmd_MultiJump_N", command = "8",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpCount = 1, },
+	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpLimit = _AirJumpCount, },
 	UpdateTable = { name = "Mv_MultiJump_N", }
 }
 
@@ -1855,7 +1855,7 @@ t.MultiJump_B <-
 	num = def_CN_MultiJump_B, name = "Cmd_MultiJump_B", command = "7",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpCount = 1, },
+	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpLimit = _AirJumpCount, },
 	UpdateTable = { name = "Mv_MultiJump_B", }
 }
 
@@ -1864,7 +1864,7 @@ t.MultiJumpCancel_F <-
 	num = def_CN_MultiJumpCancel_F, name = "Cmd_MultiJump_F", command = "9",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpCount = 1, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
+	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpLimit = _AirJumpCount, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
 	UpdateTable = { name = "Mv_MultiJump_F", }
 }
 
@@ -1873,7 +1873,7 @@ t.MultiJumpCancel_N <-
 	num = def_CN_MultiJumpCancel_N, name = "Cmd_MultiJump_N", command = "8",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpCount = 1, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
+	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpLimit = _AirJumpCount, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
 	UpdateTable = { name = "Mv_MultiJump_N", }
 }
 
@@ -1882,7 +1882,7 @@ t.MultiJumpCancel_B <-
 	num = def_CN_MultiJumpCancel_B, name = "Cmd_MultiJump_B", command = "7",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpCount = 1, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
+	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpLimit = _AirJumpCount, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
 	UpdateTable = { name = "Mv_MultiJump_B", }
 }
 

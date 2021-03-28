@@ -3,12 +3,12 @@ btl_debPrint2("\n[cmd.txt]");
 
 local t =
 {
-	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 }	},
-	MultiJump_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 }	},
-	MultiJump_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 }	},
-	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 } },
-	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 } },
-	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 } },
+	MultiJump_F = {},
+	MultiJump_N = {},
+	MultiJump_B = {},
+	MultiJumpCancel_F = {},
+	MultiJumpCancel_N = {},
+	MultiJumpCancel_B = {},
 	
 	AirDash_F =
 	{
