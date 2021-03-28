@@ -40,7 +40,7 @@ chrparam.Get <- function( tbl={} ) //chrparam.Param‚©‚çì¬’†‚ÌƒLƒƒƒ‰”Ô†‚Ì’l‚ğ
 
 {	
 	local type = "AirDashCount";
-	chrparam.Param[type] <- array(CHRMAX, 1);
+	chrparam.Param[type] <- array(CHRMAX, 0);
 	chrparam.Param[type][Def_ChrNo_Ykn] = 2;
 }
 

@@ -405,194 +405,6 @@ t.Mv_Atk_Air4B <-
 local pat_num_ParEff_Honoo = BMvEff.GetPatternNum( { datatype=0, pat="ParEff_Honoo" } ); // パターン文字列のパターン番号を事前取得
 local pat_num_BladeEff_AirDash = BMvEff.GetPatternNum( { datatype=0, pat="BladeEff_AirDash" } ); // パターン文字列のパターン番号を事前取得
 
-local set_JumpCtrlVector = function()
-{
-	local vec = BMvTbl.GetVector();
-	
-	if( (vec.y + vec.addy ) >= 0 )
-	{
-		//print("\n .");//23F
-		return; // 下降中は失敗
-	}
-	
-	local x = 0; //BMvTbl.GetLP(0); //今のXベクトル取得
-	local plus_x = 96; //1F毎に変化させる値
-	//commandだと相手方向基準か？
-	if( ( BMvTbl.CheckStickHold( (1<<4) | (1<<7) | (1<<1) ) ) && vec.x > -1000 ) x -= plus_x;
-	if( ( BMvTbl.CheckStickHold( (1<<6) | (1<<9) | (1<<3) ) ) && vec.x <  1000 ) x += plus_x;
-	
-	if( x )
-	{
-		vec.x += x;
-		BMvTbl.SetVector( { x=vec.x, flags=_Vector_Normal } );	
-	}
-}
-
-t.Mv_JumpKanseiCheckObject <- //ジャンプ中の慣性（収束ベクトルじゃなくする）
-{
-	function Init_Std()
-	{
-		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_NoRender } );	
-		BMvEff.SetExist( { level = _Exist_NoHantei } )
-		BMvTbl.SetPosition( { y=1024, flags=_Position_CaptureShift } );
-		
-		local player = BMvCore.GetPlayerCharaData(); // プレイヤー情報取得
-		if( player.push() )
-		{
-			local v = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-			BMvTbl.SetVector( { x=v.x/1, addx=0, flags=_Vector_DivKeep } );
-			
-			v = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-			
-			Battle_Std.DrawDebugAttackInfo("divkeep vecset "+v.x );
-
-			player.pop();
-		}
-	}
-	function Update_Std() // 
-	{
-		local player = BMvCore.GetPlayerCharaData(); // プレイヤー情報取得
-		if( player.push() )
-		{
-			local playerisground = ( (BMvTbl.CheckPosState( _PosState_Ground ))==1 );
-			if( playerisground )	
-			{
-				BMvTbl.SetVector( { x=0, addx=0, flags=_Vector_DivKeep } ); //メルブラジャンプ終了
-			}
-			player.pop();
-		
-			if ( playerisground )	
-			{
-				BMvTbl.SetFinalize(0);
-				BMvTbl.SetPP(def_PP_JumpStatus,0); //ジャンプステータスを初期化
-			}
-		}
-	}
-	function Finalize_Std()
-	{
-		BMvTbl.SetDeleteMoveTable();
-	}
-}
-
-local func_JumpWaitInit = function()
-{
-	BMvTbl.SetMuki(_Direction_Auto);
-	local vec = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-	Battle_Std.InitVector();
-	
-	//Battle_Std.InitCharaVector(); //慣性を残したベクトル初期化
-	//_dp("\n vec.x:"+vec.x);
-	BMvTbl.SetVector( { x=vec.x, addx=-vec.x/20, flags=_Vector_DivKeep } ); //メルブラジャンプ
-	BMvEff.SetPlayerTimer( { muteki_nage=def_FL_JumpWaitNageMuteki, muteki_nageX=def_FL_JumpWaitNageMuteki } ); //ジャンプ移行は投げ無敵に設定
-}
-
-t.Mv_JumpWait_N <- 
-{
-	function Init_Std() : (func_JumpWaitInit)
-	{
-		func_JumpWaitInit();
-		BMvTbl.SetPattern(def_PAT_JumpWait_N);		
-	}
-	function LastUpdate_Std()
-	{
-		BMvEff.SetPlayerTimer( { muteki_nage=0, muteki_nageX=0 } ); //抜けるときに初期化
-		
-		// ダッシュジャンプでかかり必殺技でスーっと滑るのが強いので補正
-		if( BMvTbl.FromFinalize() )
-		{
-			local vec = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-			BMvTbl.SetVector( { x=vec.x/2, addx=-vec.x/10,flags=_Vector_DivKeep } ); // 収束ダッシュ慣性を減少
-		}
-	}
-	function Finalize_Std() // 
-	{
-		local s = BMvTbl.GetMvStatus();
-		if( s.MvCount<3 ) _dem("【警告】ジャンプ移行フレームが["+(s.MvCount)+"F]しかありません")
-		
-		BMvEff.CreateObject( { mvname="", datatype=1, start_pat=256, flags=_Position_ToolShift } );		
-		BMvEff.CreateObject( { x=0, y=0, mvname="Mv_JumpKanseiCheckObject", flags=_Position_ToolShift } );		
-		BMvTbl.SetNextMoveTable( "Mv_Jump_N" ); //
-	}
-}	
-
-t.Mv_JumpWait_F <- 
-{
-	function Init_Std() : (func_JumpWaitInit)
-	{
-		func_JumpWaitInit();
-		BMvTbl.SetPattern(def_PAT_JumpWait_F);
-	}
-	function LastUpdate_Std()
-	{
-		BMvEff.SetPlayerTimer( { muteki_nage=0, muteki_nageX=0 } ); //抜けるときに初期化
-		
-		// ダッシュジャンプでかかり必殺技でスーっと滑るのが強いので補正
-		if( BMvTbl.FromFinalize() )
-		{
-			local vec = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-			BMvTbl.SetVector( { x=vec.x/2, addx=-vec.x/10,flags=_Vector_DivKeep } ); // 収束ダッシュ慣性を減少
-		}
-	}
-	function Finalize_Std() // 
-	{
-		local s = BMvTbl.GetMvStatus();
-		if( s.MvCount<3 ) _dem("【警告】ジャンプ移行フレームが["+(s.MvCount)+"F]しかありません")
-
-		BMvEff.CreateObject( { mvname="", datatype=1, start_pat=255, flags=_Position_ToolShift } );		
-		BMvEff.CreateObject( { x=0, y=0, mvname="Mv_JumpKanseiCheckObject", flags=_Position_ToolShift } );		
-		BMvTbl.SetNextMoveTable( "Mv_Jump_F" ); //						
-	}	
-}
-
-t.Mv_Jump_F <- 
-{
-
-}
-
-t.Mv_MultiJump_F <-
-{
-	function Init_Std()
-	{
-		BMvTbl.SetPattern(def_PAT_Jump_F);
-
-		//BMvEff.CreateObject( { x=0, y=0, mvname="Mv_JumpKanseiCheckObject", flags=_Position_ToolShift } );
-		
-		BMvTbl.SetMuki(_Direction_Auto); //振り向いてからベクトルを入れる
-		
-		BMvTbl.SetMoveableFlag( { move=1, time=254, flag=_ClearFlag_ChangeMv } ); // Mv中行動可能にする
-		
-		//[-3600, 250, 1300, 0, -1000]
-		
-		local vec = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-		BMvTbl.SetVector( { x=1100, y=-3600, addx=0, addy=250 } );
-		
-		local angle = Battle_Std.CCharaVector_GetToolAngle();
-		local e = BMvEff.CreateObject( { x=0, y=0, mvname="", datatype=1, start_pat=233, flags=_Position_ToolShift } );
-		BMvCore.PushCharaData( e ); //
-			BMvTbl.SetAngle({ angle=angle });
-		BMvCore.PopCharaData(); //
-		
-		BMvEff.CreateObject( { x=0, y=0, mvname="Mv_JumpKanseiCheckObject", flags=_Position_ToolShift } );
-		BMvTbl.SetAirJumpOK(0);  //再度ジャンプできないようにする
-		BMvTbl.AddAirJumpCount(1);  //回数を加算
-		
-		Battle_Std.JumpStatus.Add( def_PP_JS_MultiJumpF ); //ジャンプフラグを立てる
-		Battle_Std.MoveCode.AddFlag( def_MC_PositiveAction ); // 行動コード(ポジティブ)を設定
-
-		Battle_Std.SetPP_JumpStartHeight(); // ジャンプしたときの高さを記憶
-	}
-	function FrameUpdate_Std() : (set_JumpCtrlVector)
-	{
-		local s = BMvTbl.GetMvStatus();
-		if( Def_Rule_JumpSideMoveCtrl==1 ) set_JumpCtrlVector();
-		if( s.isLanding ) BMvTbl.SetFinalize(256); //着地
-	}
-	function Finalize_Std() // 
-	{
-		Battle_Std.SwitchNextMoveTable("Mv_Neutral", [256,"Mv_Jump_Land"] ); //デフォ,[code,mv]...
-	}
-}	
-
 t.Mv_AirDash_F <-
 {
 	function Init_After()
@@ -1195,7 +1007,7 @@ local maketmpl_SkillJ236 = function( param={} ) : (pat_num_BallEff_J236, pat_num
 	case "A":
 		ball_pat = pat_num_BallEff_J236;
 		ball_angle = 3200;
-		ball_speed = 6500;
+		ball_speed = 10000;
 		
 		eff_angle = 700;
 		
@@ -1203,7 +1015,7 @@ local maketmpl_SkillJ236 = function( param={} ) : (pat_num_BallEff_J236, pat_num
 	case "B":
 		ball_pat = pat_num_BallEff_J236;
 		ball_angle = 2800;
-		ball_speed = 8000;
+		ball_speed = 10000;
 		
 		eff_angle = 300;
 		eff_y = -80;
@@ -1212,7 +1024,7 @@ local maketmpl_SkillJ236 = function( param={} ) : (pat_num_BallEff_J236, pat_num
 	case "C":
 		ball_pat = pat_num_BallEff_J236;
 		ball_angle = 2500;
-		ball_speed = 9500;
+		ball_speed = 10000;
 		
 		eff_x = -100;
 		eff_y = -30;
@@ -1518,14 +1330,19 @@ local maketmpl_Skill214 = function( tbl={} ) : (pat_num_BladeJ214EX, pat_num_Bla
 	
 		BMvTbl.SetLP(0,0); // パーティクルだすかどうか
 		BMvTbl.SetLP(1,0);
+		
+		BMvTbl.SetLP(2,0);
 	}
 	
 	ret_tmpl.HitInterrupt_After <- function()
 	{
 		if( Battle_Std.CheckDamageTiming() )
 		{
-			Battle_Std.SetPosition_DamageHanteiRect({ power=50, });
+			BMvTbl.SetLP(2,1);
+			//Battle_Std.SetPosition_DamageHanteiRect({ power=50 });
 		}
+		
+		if( BMvTbl.GetLP(2) ) Battle_Std.SetPosition_DamageHanteiRect({ power=30 });
 	}
 	
 	ret_tmpl.FrameUpdate_After <- function() : (air_skill, air_bladepat, pat_num_ParEff_Honoo, pat_num_BladeEff_RollingOnce, add_blade_eff )
@@ -1637,13 +1454,17 @@ local maketmpl_Skill214 = function( tbl={} ) : (pat_num_BladeJ214EX, pat_num_Bla
 		local mypos = BMvTbl.GetPosition();
 		local vec = BMvTbl.GetVector( { flags=_Vector_Normal } );
 		
+		local max_y_vec = 9000;
+		
 		local attack_height = -400*128;
-		local attack_vec = 2500;
+		local attack_vec = 500;
+		
+		if( vec.y > max_y_vec ) BMvTbl.SetVector( { y=max_y_vec, addy=0, flags=_Vector_Normal } );
 		
 		
-		if( mypos.y > attack_height && BMvTbl.GetLP(1)==0 && vec.y > attack_vec )
+		if( mypos.y + vec.y + vec.addy >= attack_height && BMvTbl.GetLP(1)==0 && vec.y > attack_vec )
 		{
-			//Battle_Std.DrawDebugAttackInfo("emk "+mypos.y/128 );
+			//Battle_Std.DrawDebugAttackInfo("emk "+mypos.y/128+" vec "+vec.y/128+" combo "+(mypos.y + vec.y + vec.addy )/128 );
 			
 			BMvTbl.JumpFrameID(1000);
 			
