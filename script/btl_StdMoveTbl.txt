@@ -201,15 +201,15 @@ _dp1p("\n[btl_ChrParamFunc] -> end");
 
 {	// ２段ジャンプベクトル値定義
 	local type = "２段ジャンプベクトル";
-	chrparam.Param[type] <- array(CHRMAX, [-3600, 250, 1300, 0, -1000] );// y, addy, 前X, 垂直X, 後X
-	chrparam.Param[type][Def_ChrNo_Ykn] = [-3300, 250, 1300, 0, -1000];
+	chrparam.Param[type] <- array(CHRMAX, [-3600, 250, 1100, 0, -1000] );// y, addy, 前X, 垂直X, 後X
+	chrparam.Param[type][Def_ChrNo_Ykn] = [-3300, 250, 1100, 0, -1000]; //all 1100s previously 1300
 }
 
 {	// ３段ジャンプベクトル値定義
 	local type = "３段ジャンプベクトル";
-	chrparam.Param[type] <- array(CHRMAX, [-3000, 250, 1300, 0, -1000] );// y, addy, 前X, 垂直X, 後X
-	chrparam.Param[type][Def_ChrNo_Ykn] = [-3000, 250, 1300, 0, -1000];
-	chrparam.Param[type][Def_ChrNo_Yuk] = [-3000, 250, 1300, 0, -1000];
+	chrparam.Param[type] <- array(CHRMAX, [-3000, 250, 1100, 0, -1000] );// y, addy, 前X, 垂直X, 後X
+	chrparam.Param[type][Def_ChrNo_Ykn] = [-3000, 250, 1100, 0, -1000];
+	chrparam.Param[type][Def_ChrNo_Yuk] = [-3000, 250, 1100, 0, -1000];
 }
 
 {	// ハイジャンプベクトル値定義
@@ -240,10 +240,25 @@ _dp1p("\n[btl_ChrParamFunc] -> end");
 	chrparam.Param[type][Def_ChrNo_Yuk] = 200;
 }
 
+{	// 空中ダッシュでかかり硬直定義
+	local type = "frame_AirDash_B_NoCancel";
+	chrparam.Param[type] <- array(CHRMAX, 15 );// y, addy, 前X, 垂直X, 後X
+}
+
+{	// 空中ダッシュ抜け重力定義
+	local type = "vecYAdd_AirDash_B_LastUpdate";
+	chrparam.Param[type] <- array(CHRMAX, 250 );// addy
+}
+
+{	// エリアルジャンプベクトル値定義
+	local type = "AirDash_B_UseVector";
+	chrparam.Param[type] <- array(CHRMAX, { x=-1500, y=-3000, addx=0, addy=250 } );// x, y, addx, addy,
+}
+
 {	// 空中ダッシュでの２段ジャンプ消費
 	// 0にすると２段ジャンプしたことにならないので、空ダ→二段ジャンプが可能になる
 	local type = "空中ダッシュでの２段ジャンプ消費";
-	chrparam.Param[type] <- array(CHRMAX, 1 );// y, addy, 前X, 垂直X, 後X
+	chrparam.Param[type] <- array(CHRMAX, 0 );// y, addy, 前X, 垂直X, 後X
 	chrparam.Param[type][Def_ChrNo_Sbm] = 0;
 	chrparam.Param[type][Def_ChrNo_Ykn] = 0;
 	chrparam.Param[type][Def_ChrNo_Yuk] = 1; // 三段ジャンプあるので2つ消費しておこう
@@ -4666,6 +4681,7 @@ Std_MoveTable.Mv_CutinObject <- //カットイン スクロールの影響を受けない
 	}			
 }
 
+
 //地上ジャンプの離陸から着地まで持続するオブジェクト
 Std_MoveTable.Mv_JumpKanseiCheckObject <- //ジャンプ中の慣性（収束ベクトルじゃなくする）
 {
@@ -4679,7 +4695,9 @@ Std_MoveTable.Mv_JumpKanseiCheckObject <- //ジャンプ中の慣性（収束ベクトルじゃな
 		if( player.push() )
 		{
 			local v = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-			BMvTbl.SetVector( { x=v.x/6, addx=0, flags=_Vector_DivKeep } ); //メルブラジャンプ
+			//BMvTbl.SetVector( { x=v.x/6, addx=0, flags=_Vector_DivKeep } ); //メルブラジャンプ
+			
+			BMvTbl.SetVector( { x=v.x, addx=0, flags=_Vector_DivKeep } ); //メルブラジャンプ
 
 			player.pop();
 		}
@@ -4708,6 +4726,7 @@ Std_MoveTable.Mv_JumpKanseiCheckObject <- //ジャンプ中の慣性（収束ベクトルじゃな
 		BMvTbl.SetDeleteMoveTable();
 	}
 }
+
 
 local jump_vectorar = chrparam.Get( { type="ジャンプベクトル", chrnum=_ChrNo } );
 local jump_vector = { y=jump_vectorar[0], addy=jump_vectorar[1] ,fx=jump_vectorar[2], nx=jump_vectorar[3], bx=jump_vectorar[4] };
@@ -4790,10 +4809,11 @@ Std_MoveTable.Mv_JumpWait_F <-
 		BMvEff.SetPlayerTimer( { muteki_nage=0, muteki_nageX=0 } ); //抜けるときに初期化
 		
 		// ダッシュジャンプでかかり必殺技でスーっと滑るのが強いので補正
-		if( !BMvTbl.FromFinalize() )
+		//if( !BMvTbl.FromFinalize() )
+		if( BMvTbl.FromFinalize() )
 		{
 			local vec = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-			BMvTbl.SetVector( { x=vec.x*100/150, addx=-vec.x/10,flags=_Vector_DivKeep } ); // 収束ダッシュ慣性を減少
+			BMvTbl.SetVector( { x=vec.x/2, addx=-vec.x/10,flags=_Vector_DivKeep } ); // 収束ダッシュ慣性を減少
 		}
 	}
 	function Finalize_Std() // 
@@ -5002,10 +5022,11 @@ Std_MoveTable.Mv_JumpWait_B <-
 		BMvEff.SetPlayerTimer( { muteki_nage=0, muteki_nageX=0 } ); //抜けるときに初期化
 		
 		// ダッシュジャンプでかかり必殺技でスーっと滑るのが強いので補正
-		if( !BMvTbl.FromFinalize() )
+		//if( !BMvTbl.FromFinalize() )
+		if( BMvTbl.FromFinalize() )
 		{
 			local vec = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-			BMvTbl.SetVector( { x=vec.x*100/150, addx=-vec.x/10,flags=_Vector_DivKeep } ); // 収束ダッシュ慣性を減少
+			BMvTbl.SetVector( { x=vec.x/2, addx=-vec.x/10,flags=_Vector_DivKeep } ); // 収束ダッシュ慣性を減少
 		}
 	}
 	function Finalize_Std() // 
@@ -5077,10 +5098,11 @@ Std_MoveTable.Mv_JumpWait_N <-
 		BMvEff.SetPlayerTimer( { muteki_nage=0, muteki_nageX=0 } ); //抜けるときに初期化
 		
 		// ダッシュジャンプでかかり必殺技でスーっと滑るのが強いので補正
-		if( !BMvTbl.FromFinalize() )
+		//if( !BMvTbl.FromFinalize() )
+		if( BMvTbl.FromFinalize() )
 		{
 			local vec = BMvTbl.GetVector( { flags=_Vector_DivKeep } );
-			BMvTbl.SetVector( { x=vec.x*100/150, addx=-vec.x/10,flags=_Vector_DivKeep } ); // 収束ダッシュ慣性を減少
+			BMvTbl.SetVector( { x=vec.x/2, addx=-vec.x/10,flags=_Vector_DivKeep } ); // 収束ダッシュ慣性を減少
 		}
 	}
 	function Finalize_Std() // 
@@ -5130,6 +5152,8 @@ Std_MoveTable.Mv_MultiJump_F <-
 	{
 		BMvTbl.SetPattern(def_PAT_Jump_F);
 
+		//BMvEff.CreateObject( { x=0, y=0, mvname="Mv_JumpKanseiCheckObject", flags=_Position_ToolShift } );
+		
 		BMvTbl.SetMuki(_Direction_Auto); //振り向いてからベクトルを入れる
 		
 		// 二段ジャンプや３段ジャンプでベクトルを調整する
@@ -5151,7 +5175,7 @@ Std_MoveTable.Mv_MultiJump_F <-
 			BMvTbl.SetAngle({ angle=angle });
 		BMvCore.PopCharaData(); //
 		
-		BMvEff.CreateObject( { x=0, y=0, mvname="Mv_JumpKanseiCheckObject", flags=_Position_ToolShift } );
+		//BMvEff.CreateObject( { x=0, y=0, mvname="Mv_JumpKanseiCheckObject", flags=_Position_ToolShift } );
 		BMvTbl.SetAirJumpOK(0);  //再度ジャンプできないようにする
 		BMvTbl.AddAirJumpCount(1);  //回数を加算
 		
@@ -6495,7 +6519,7 @@ Std_MoveTable.Mv_Dash_F <- // 前ダッシュ移動部分
 {
 	function Init_Std() : (dash_effectmv)
 	{
-		Battle_Std.InitCharaVector() //慣性を残したベクトル初期化
+		Battle_Std.InitCharaVector(); //慣性を残したベクトル初期化
 		BMvTbl.SetMuki(_Direction_Auto);
 	
 		BMvTbl.SetPattern(43); //"DashFLoop"
@@ -6564,8 +6588,10 @@ Std_MoveTable.Mv_Dash_F <- // 前ダッシュ移動部分
 	}
 	function LastUpdate_Std() //ダッシュから抜けるときに呼ぶ
 	{
-		local vec = BMvTbl.GetVector( { flags=_Vector_Normal } ); //vec に現在のベクトルを格納
 		//Battle_Std.InitCharaVector();
+		
+		local vec = BMvTbl.GetVector( { flags=_Vector_Normal } ); //vec に現在のベクトルを格納
+
 		BMvTbl.SetVector( { x=vec.x, addx=-(vec.x/10),flags=_Vector_DivKeep } ); // 収束でダッシュ慣性を登録
 	}
 	function Finalize_Std() // 
@@ -9987,11 +10013,13 @@ Std_MoveTable.Mv_Bound_0900 <-
 		BMvTbl.SetLP(1,0); //force anim
 		BMvTbl.SetLP(2,0); //slide
 		
+		//AirUkemi
+		
 		local bs = BtlMvStd.GetBoundStatus();
 		if( bs.VecCount==0 )
 		{			
 			BMvTbl.SetPattern( "WallStuck" );
-			BMvEff.CreateObject( { mvname="Mv_Obj_BigWall", datatype=1, start_pat="big_wall" } );
+			BMvEff.CreateObject( { mvname="Mv_Obj_BigWall", datatype=1, start_pat="big_wall" } ); // BIG WALL stop a nigga from running up
 		}
 		
 		//Battle_Std.DrawDebugAttackInfo("char bound ow "+bs.VecCount );
@@ -13255,12 +13283,19 @@ _dp1p("\n btl_UkemiFunc.....OK");
 local frame_AirDash_F_NoCancel = chrparam.Get( { type="空中ダッシュでかかり硬直", chrnum=_ChrNo } );
 local vecYAdd_AirDash_F_LastUpdate = chrparam.Get( { type="空中ダッシュ抜け重力", chrnum=_ChrNo } );
 
+local frame_AirDash_B_NoCancel = chrparam.Get( { type="frame_AirDash_B_NoCancel", chrnum=_ChrNo } );
+local vecYAdd_AirDash_B_LastUpdate = chrparam.Get( { type="vecYAdd_AirDash_B_LastUpdate", chrnum=_ChrNo } );
+
+local AirDash_B_UseVector = chrparam.Get( { type="AirDash_B_UseVector", chrnum=_ChrNo } );
+
 local val_AirDash_F_AddAirJumpCount = chrparam.Get( { type="空中ダッシュでの２段ジャンプ消費", chrnum=_ChrNo } );
 
 Std_MoveTable.Mv_AirDash_F <-
 {
 	function Init_Std() : (val_AirDash_F_AddAirJumpCount)
 	{
+		BMvTbl.SetVector( { x=0, addx=0, flags=_Vector_DivKeep } );
+		
 		BMvTbl.SetPattern( def_PAT_Mv_AirDash );
 		Battle_Std.TypeSE_Play({ type="アサルト" });
 
@@ -13303,12 +13338,96 @@ Std_MoveTable.Mv_AirDash_F <-
 			if( vec.addy <= vecYAdd_AirDash_F_LastUpdate )
 			{
 				BMvTbl.SetVector( { addy=vecYAdd_AirDash_F_LastUpdate, flags=_Vector_Normal } );
+				
+				
 			}
 		}
+		
+		BMvTbl.SetVector( { x=0, addx=0, flags=_Vector_DivKeep } ); //clear divkeep to avoid interfering with jumps
 	}
 }
 
 Std_MoveTable.Mv_AirDashLand_F <-
+{
+	function Init_Std()
+	{
+		Battle_Std.InitCharaVector();
+		// 着地硬直を設定（8F硬直→以降行動可能）
+		BMvTbl.SetMoveableFlagEx( { move=0, timeA=8, timeB=64, flag=_ClearFlag_ChangeMv } );
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetNextMoveTable( "Mv_Neutral" );
+	}	
+}
+
+Std_MoveTable.Mv_AirDash_B <-
+{
+	function Init_Std() : (AirDash_B_UseVector)
+	{
+		BMvTbl.SetVector( { x=0, addx=0, flags=_Vector_DivKeep } );
+		
+		local dash_pat = BMvEff.GetPatternNum( { datatype=0, pat="AirDash_B" } );
+		if( dash_pat != -1 )
+		{
+			BMvTbl.SetPattern( dash_pat );
+		}
+		else
+		{
+			BMvTbl.SetPattern( def_PAT_Jump_B );
+		}
+		
+		//BMvTbl.SetPattern( def_PAT_Mv_AirDash );
+		Battle_Std.TypeSE_Play({ type="アサルト" });
+
+		//Battle_Std.MoveCode.AddFlag( def_MC_PositiveAction ); // 行動コード(ポジティブ)を設定
+		
+		BMvTbl.AddAirCount( def_ACS_AirDash, 1 ); // 空中ダッシュを使った加算
+		
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AirAtkKirikaeTyudanCheckStart ); // ここから出したジャンプ攻撃は切り替え中段チェックする
+		
+		BMvTbl.SetVector( AirDash_B_UseVector );
+		
+		BSound.SE_Play( { type=_SeType_Normal, num=39 } ); // fuck
+		Battle_Std.CreateObject.CommonEffect.SupecialMoveRing( { x=0, y=-200 } );
+	}
+	function FrameUpdate_Std() : (frame_AirDash_B_NoCancel)
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.isLanding )
+		{
+			BMvTbl.SetFinalize(0);
+			return 0;
+		}
+		
+		if( mvs.MvCount >= frame_AirDash_B_NoCancel && BCMDTbl.CheckCancel(_SkillType_None )==0 )
+		{
+			_dp1p("\n 行動可能にしてコマンドディレイ追加");
+			BMvTbl.SetMoveableFlag( { move=1, time=254, flag=_ClearFlag_ChangeMv } ); // Mv中行動可能にする
+			BMvTbl.SetAsFlag( { as_flags=_AsFlag_GuardRev, time=254, flag=_ClearFlag_ChangeMv } ); // ガード不可に
+			BMvTbl.SetCommandLongDelay(1); //受付時間増加（先行入力用）
+		}
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetNextMoveTable( "Mv_AirDashLand_B" );
+	}
+	function LastUpdate_Std() : (vecYAdd_AirDash_B_LastUpdate)
+	{
+		if( !BMvTbl.FromFinalize() )
+		{
+			local vec = BMvTbl.GetVector( { flags=_Vector_Normal } );
+			if( vec.addy <= vecYAdd_AirDash_B_LastUpdate )
+			{
+				BMvTbl.SetVector( { addy=vecYAdd_AirDash_B_LastUpdate, flags=_Vector_Normal } );
+			}
+		}
+		
+		BMvTbl.SetVector( { x=0, addx=0, flags=_Vector_DivKeep } ); //clear divkeep to avoid interfering with jumps
+	}
+}
+
+Std_MoveTable.Mv_AirDashLand_B <-
 {
 	function Init_Std()
 	{

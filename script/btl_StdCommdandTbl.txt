@@ -2,10 +2,47 @@ btl_debPrint2( "\n>>> [btl_StdCommdandTbl]" );
 
 //Std_CommandTable <- {};
 //浅いコピーにうんざりしたのでこうした
-function Battle_Std::GetStdCommandTable()
+function Battle_Std::GetStdCommandTable( _ChrNo = 0 )
 {
 
+_ChrNo = BMvTbl.GetCharaNo();
 local t = {};
+
+local chrparam = {};
+local CHRMAX = 100;
+
+chrparam.Param <- {}; //キャラ別の細かいフレームとかのテーブル
+chrparam.Get <- function( tbl={} ) //chrparam.Paramから作成中のキャラ番号の値を取ってくる
+{
+	
+	
+	local checktype = tbl.type;
+	local checkchrnum = tbl.chrnum;
+	
+	if( checktype in Param )
+	{
+		local ret = Param[checktype][checkchrnum];
+		btl_debPrint_CharacterMake("【定義】chrparam:"+checktype+" chr:"+checkchrnum+" -> "+ret);
+		return ret;
+	}
+	else
+	{
+		btl_debError_CharacterMake("【警告】chrparamで未定義:"+checktype+" chr:"+checkchrnum);
+		return 0;
+	}
+}
+	
+{	
+	local type = "AirJumpCount";
+	chrparam.Param[type] <- array(CHRMAX, 1);
+	chrparam.Param[type][Def_ChrNo_Ykn] = 2;
+}
+
+{	
+	local type = "AirDashCount";
+	chrparam.Param[type] <- array(CHRMAX, 1);
+	chrparam.Param[type][Def_ChrNo_Ykn] = 2;
+}
 
 //標準（Std_***）
 //スロット名がStd_で始まるやつは強制的にコマンドに登録される
@@ -1756,30 +1793,51 @@ t.Std_Walk_B <-
 //スキル
 if( Def_Rule_GameSystem == Def_RGS_CLI )
 {
+	local AirDashCount = chrparam.Get( { type="AirDashCount", chrnum=_ChrNo } );
+	
 	t.AirDash_F <-
 	{ //-------------------------------
 		num = def_CN_Assault_Air, name = "Cmd_AirDash_F", command = [ "0606@N,255@@D,12@@L,4@" ], // 0606@N,255@@L,10@@D,12@
-		CmdBeforeStdFunc = function()
+		CmdBeforeStdFunc = function() : (AirDashCount)
 		{
-			if( BMvTbl.AddAirCount( def_ACS_AirDash, 0 ) > 0 ) return 0; // 空中ダッシュを使ってた
+			if( BMvTbl.AddAirCount( def_ACS_AirDash, 0 ) > AirDashCount ) return 0; // 空中ダッシュを使ってた
 			if( Battle_Std.GS_CheckFlag( def_PP_GS_NoAct_Move ) ) return 0;
 			return 1;
 		},
 		CmdCheck =
 		{
-			HeightLimit = def_POS_AirDashLimitHeight, SkillType = "None", PosState = "Air",
+			HeightLimit = def_POS_AirDashLimitHeight, SkillType = "Special", PosState = "Air",
 			MvCheck = { Fail = ["Mv_AirDash_F"] }	
 		},
 		UpdateTable = { name = "Mv_AirDash_F", }
 	}
+	
+	t.Std_AirDash_B <-
+	{ //-------------------------------
+		num = def_CN_Assault_Air, name = "Cmd_AirDash_F", command = [ "0404@N,255@@D,12@@L,4@" ], // 0606@N,255@@L,10@@D,12@
+		CmdBeforeStdFunc = function(): (AirDashCount)
+		{
+			if( BMvTbl.AddAirCount( def_ACS_AirDash, 0 ) > AirDashCount ) return 0; // 空中ダッシュを使ってた
+			if( Battle_Std.GS_CheckFlag( def_PP_GS_NoAct_Move ) ) return 0;
+			return 1;
+		},
+		CmdCheck =
+		{
+			HeightLimit = def_POS_AirDashLimitHeight, SkillType = "Special", PosState = "Air",
+			MvCheck = { Fail = ["Mv_AirDash_B"] }	
+		},
+		UpdateTable = { name = "Mv_AirDash_B", }
+	}
 }
+
+local AirJumpCount = chrparam.Get( { type="AirJumpCount", chrnum=_ChrNo } );
 
 t.MultiJump_F <- 
 { //-------------------------------
 	num = def_CN_MultiJump_F, name = "Cmd_MultiJump_F", command = "9",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump, // 振り向き予定の方向に対してコマンドチェック
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpLimit = 1, },
+	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpCount = 1, },
 	UpdateTable = { name = "Mv_MultiJump_F", }
 }
 
@@ -1788,7 +1846,7 @@ t.MultiJump_N <-
 	num = def_CN_MultiJump_N, name = "Cmd_MultiJump_N", command = "8",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpLimit = 1, },
+	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpCount = 1, },
 	UpdateTable = { name = "Mv_MultiJump_N", }
 }
 
@@ -1797,7 +1855,7 @@ t.MultiJump_B <-
 	num = def_CN_MultiJump_B, name = "Cmd_MultiJump_B", command = "7",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpLimit = 1, },
+	CmdCheck = { SkillType = "None", PosState = "Air", AirJumpCount = 1, },
 	UpdateTable = { name = "Mv_MultiJump_B", }
 }
 
@@ -1806,7 +1864,7 @@ t.MultiJumpCancel_F <-
 	num = def_CN_MultiJumpCancel_F, name = "Cmd_MultiJump_F", command = "9",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpLimit = 1, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
+	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpCount = 1, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
 	UpdateTable = { name = "Mv_MultiJump_F", }
 }
 
@@ -1815,7 +1873,7 @@ t.MultiJumpCancel_N <-
 	num = def_CN_MultiJumpCancel_N, name = "Cmd_MultiJump_N", command = "8",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpLimit = 1, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
+	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpCount = 1, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
 	UpdateTable = { name = "Mv_MultiJump_N", }
 }
 
@@ -1824,7 +1882,7 @@ t.MultiJumpCancel_B <-
 	num = def_CN_MultiJumpCancel_B, name = "Cmd_MultiJump_B", command = "7",
 	commandcheckmuki = Def_Rule_CmdCheckMuki_MultiJump,
 //	flags = [ "roundstart" ],
-	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpLimit = 1, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
+	CmdCheck = { SkillType = "Normal", PosState = "Air", AirJumpCount = 1, HitStatus=Def_Rule_CmdHitStatus_JumpCancel },
 	UpdateTable = { name = "Mv_MultiJump_B", }
 }
 
