@@ -459,6 +459,13 @@ local maketmpl_Skill214 = function( param={} )
 
 }
 
+t.Mv_Jump_N <- 
+{
+	function Init_After()
+	{
+		//BMvTbl.SetCommandLongDelay(5);
+	}
+}
 
 t.Mv_Skill_214A <- maketmpl_Skill214( { type="A" } );
 t.Mv_Skill_214B <- maketmpl_Skill214( { type="B" } );
@@ -484,17 +491,24 @@ t.Mv_Skill_214A_Hit <-
 		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
-		case 50:
+		case -50:
 			local jumpID = ( BMvTbl.GetLP(0)==1 )? 200 : 100;
 			BMvTbl.JumpFrameID( jumpID );
 			break;		
 		case 100:
 			// 離すタイミングで簡単に
 			BMvTbl.SetCommandLongDelay(2); //受付時間増加（先行入力用）
+			
+			BMvEff.ThrowParam( { pattern=304, x=180, y=0, } );
+			BMvEff.ThrowRelease( { type="特大のけぞり頭", airrecover=0, flags=0 } );
+			break;
+		case 200:
+			BMvEff.ThrowParam( { pattern=304, x=180, y=0, } );
+			BMvEff.ThrowRelease( { type="特大のけぞり頭", airrecover=0, flags=0 } );
 			break;
 		case 300:
 			// 離すタイミングで簡単に
-			BMvTbl.SetCommandLongDelay(10); //受付時間増加（先行入力用）
+			//BMvTbl.SetCommandLongDelay(1); //受付時間増加（先行入力用）
 			break;
 		}
 	}
@@ -517,17 +531,23 @@ t.Mv_Skill_214B_Hit <-
 	{
 		// MEMO
 		// Param3==1の時相手を無敵にする（サポートとかでダメージが入り過ぎないようにする）
-		
+		local mvs = BMvTbl.GetMvStatus();
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
-		case 50:
+		case -50:
 			local jumpID = ( BMvTbl.GetLP(0)==1 )? 200 : 100;
 			BMvTbl.JumpFrameID( jumpID );
 			break;
 		case 100:
+			BMvEff.ThrowParam( { pattern=304, x=180, y=0, } );
+			BMvEff.ThrowRelease( { type="特大のけぞり頭", airrecover=0, flags=0 } );
 		case 200:
+			BMvEff.ThrowParam( { pattern=304, x=180, y=0, } );
+			BMvEff.ThrowRelease( { type=770, airrecover=0, flags=0 } );
+			break;
+		case 300:
 			// 離すタイミングで簡単に
-			BMvTbl.SetCommandLongDelay(2); //受付時間増加（先行入力用）
+			//BMvTbl.SetCommandLongDelay(1); //受付時間増加（先行入力用）
 			break;
 		}
 	}
@@ -593,6 +613,8 @@ t.Mv_Skill_214EX_Hit <-
 	}
 }
 
+
+
 //-----------------------------------------------------------------------------
 // J214攻
 //-----------------------------------------------------------------------------
@@ -600,6 +622,145 @@ t.Mv_Skill_214EX_Hit <-
 //-----------------------------------------------------------------------------
 // 22攻
 //-----------------------------------------------------------------------------
+
+local maketmpl_Skill0202 = function( param={} )
+{
+	local ret_tmpl = {};
+	
+	// tbl.type A,B,EX
+	
+	local mvparam =
+	{
+		hit_mv = "Mv_Skill_0202A_Hit",
+	}
+	
+	switch( param.type )
+	{
+	case "A":
+		break;
+	case "B":
+		mvparam.hit_mv = "Mv_Skill_0202B_Hit";
+		break;
+	case "C":
+		hit_mvname = "Mv_Skill_214C_Hit";
+		break;
+	case "EX":
+		break;
+	}	
+	
+	ret_tmpl.Init_After <- function()
+	{
+
+	}
+	
+	ret_tmpl.FrameUpdate_After <- function() : (mvparam)
+	{
+		Battle_Std.AddToolShift_NoSurinuke_FU( 3, (1<<1) );
+	}
+	
+	ret_tmpl.HitInterrupt_After <- function()
+	{
+		Battle_Std.SetThrowHitFinalize(256);
+	}
+
+	ret_tmpl.Finalize <- function() : (mvparam)
+	{
+		Battle_Std.SwitchNextMoveTable("Mv_Neutral", [256,mvparam.hit_mv]); //デフォ,[code,mv]...
+	}
+	
+	return ret_tmpl;
+
+}
+
+t.Mv_Skill_0202A <- maketmpl_Skill0202( { type="A" } );
+t.Mv_Skill_0202B <- maketmpl_Skill0202( { type="B" } );
+
+local SetEnemyAngle = function(_angle)
+{
+	local enemy = BMvCore.GetNearEnemyCharaData(); // 敵情報を得る
+	if( enemy.push() )
+	{
+		BMvTbl.SetAngle({ angle=_angle });
+		enemy.pop();
+	}
+}
+
+t.Mv_Skill_0202A_Hit <-
+{
+	function Init_After()
+	{
+		local eff = BMvEff.CreateObject( { x=145, y=-60, datatype=1, start_pat=55, flags=_Position_ToolShift } );
+		if( eff.push() )
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround } );
+			eff.pop();
+		}
+	}
+	function FrameUpdate_After()
+	{
+		Battle_Std.AddToolShift_NoSurinuke_FU( 3, (1<<1) );
+		
+		Battle_Std.MutekiThrowRelease( { FrameID=100, x=80, y=20, type=115 } );
+	}
+}
+
+t.Mv_Skill_0202B_Hit <-
+{
+	function Init_After()
+	{
+		local eff = BMvEff.CreateObject( { x=145, y=-60, datatype=1, start_pat=55, flags=_Position_ToolShift } );
+		if( eff.push() )
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround } );
+			eff.pop();
+		}
+	}
+	function FrameUpdate_After() : (SetEnemyAngle)
+	{
+		Battle_Std.AddToolShift_NoSurinuke_FU( 3, (1<<1) );
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 1: // 一閃
+			BMvTbl.SetPrio( _CharaPrio_Near );
+			
+			BMvEff.ThrowParam( { pattern=320, x=140, y=120, frame=3 } );
+			//SetEnemyAngle(3000);
+			break;
+		case 2: // 一閃
+			BMvEff.ThrowParam( { pattern=320, x=145, y=120, frame=3 } );
+			SetEnemyAngle(200);
+			break;
+		case 3: // 一閃
+			//BMvTbl.SetPrio( _CharaPrio_Far );
+			
+			BMvEff.ThrowParam( { pattern=320, x=140, y=-100, frame=0 } );
+			SetEnemyAngle(0);
+			break;
+		case 4:
+			BMvEff.ThrowParam( { pattern=320, x=130, y=-60, frame=0 } );
+			break;
+		case 5:
+			BMvEff.ThrowParam( { pattern=320, x=128, y=-55, frame=0 } );
+			break;
+		case 100:
+			//BMvTbl.SetPrio( _CharaPrio_Near );
+			break;
+		}
+		
+		//Battle_Std.MutekiThrowRelease( { FrameID=100, x=128, y=20, type=2 } );
+		Battle_Std.ThrowRelease( { id=100, x=128, y=20, type=2 } );
+	}
+	function HitInterrupt_After()
+	{
+		Battle_Std.SetEnemyBoundSt( { settime = 7 } );
+	}
+	function LastUpdate_After()
+	{
+		//Battle_Std.NoCansel_NoAttackHit();
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // 相殺攻

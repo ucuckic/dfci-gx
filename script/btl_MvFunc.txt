@@ -9250,6 +9250,19 @@ Battle_Std.DrawHitBoxes_Outlined <- function()
 
 //////////not boxes
 
+Battle_Std.SetEnemyBoundSt <- function( boundst_param )
+{
+	local enemy = BMvCore.GetNearEnemyCharaData();
+	if( enemy.isdone() )
+	{
+		if( enemy.push() )
+		{
+			BMvEff.SetBoundSt( boundst_param );
+			enemy.pop();
+		}
+	}
+}
+
 Battle_Std.AddToolShift_NoSurinuke_FU <- function( param=0, flag=0 )
 {
 	local mvs = BMvTbl.GetMvStatus();

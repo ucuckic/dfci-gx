@@ -9,6 +9,9 @@ local t =
 	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
 	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
 	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
+	
+	Skill_0202A = {},
+	Skill_0202B = {},
 
 	Skill_236A = {},
 	Skill_236B = {},
@@ -24,6 +27,110 @@ local t =
 	Skill_214B = {},
 	Skill_214C = {},
 	Skill_214EX = {},
+	
+	/*
+	Skill_214_AddJumpF =
+	{
+		num = def_CN_Skill_AddCommand1, command = "9",
+		function CmdBeforeFunc()
+		{
+			if( Battle_Std.CancelCheck_SpecialSkill()==0 ) return 0;
+			
+			if( Def_Rule_Kirifuda_FreeJumpCancel && tDDC.Kirifuda_CheckTime() )
+			{
+				// 切り札効果中はジャンプキャンセル制限を無くす　＋　切り札効果中
+			}
+			else if( Def_IGNM_JumpCancel && Battle_Std.CheckDoubleIgnition( Def_IGNT_MainCharacter ) )
+			{
+				// プレイヤーのダブルイグニッション時は制限を無くす
+			}
+			else
+			{
+				if( Battle_Std.EnemyDamageFlag_Check( def_DF_JumpCanseled ) ) return 0; // 「ＪＣされた」があったら失敗
+				//if( Battle_Std.MoveCode.CheckFlag(def_MC_NoJumpCansel) ) return 0; //通常ＣでもＪＣ不可
+				//if( Battle_Std.CheckDownOiuti() ) return 0; // ダウン追い討ち時は不可
+			}
+			if( Battle_Std.GS_CheckFlag( def_PP_GS_NoAct_Move ) ) return 0;		
+			return 1;
+		}
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			HitStatus="Hit",
+			MvCheck = { Only = ["Mv_Skill_214A_Hit","Mv_Skill_214B_Hit","Mv_Skill_214C_Hit"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_JumpCanselWait_F", },
+	}
+	
+	Skill_214_AddJumpN =
+	{
+		num = def_CN_Skill_AddCommand1, command = "8",
+		function CmdBeforeFunc()
+		{
+			if( Battle_Std.CancelCheck_SpecialSkill()==0 ) return 0;
+		
+			if( Def_Rule_Kirifuda_FreeJumpCancel && tDDC.Kirifuda_CheckTime() )
+			{
+				// 切り札効果中はジャンプキャンセル制限を無くす　＋　切り札効果中
+			}
+			else if( Def_IGNM_JumpCancel && Battle_Std.CheckDoubleIgnition( Def_IGNT_MainCharacter ) )
+			{
+				// プレイヤーのダブルイグニッション時は制限を無くす
+			}
+			else
+			{
+				if( Battle_Std.EnemyDamageFlag_Check( def_DF_JumpCanseled ) ) return 0; // 「ＪＣされた」があったら失敗
+				//if( Battle_Std.MoveCode.CheckFlag(def_MC_NoJumpCansel) ) return 0; //通常ＣでもＪＣ不可
+				//if( Battle_Std.CheckDownOiuti() ) return 0; // ダウン追い討ち時は不可
+			}
+			if( Battle_Std.GS_CheckFlag( def_PP_GS_NoAct_Move ) ) return 0;		
+			return 1;
+		}
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			HitStatus="Hit",
+			MvCheck = { Only = ["Mv_Skill_214A_Hit","Mv_Skill_214B_Hit","Mv_Skill_214C_Hit"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_JumpCanselWait_N", },
+	}
+	
+	Skill_214_AddJumpB =
+	{
+		num = def_CN_Skill_AddCommand1, command = "7",
+		function CmdBeforeFunc()
+		{
+			if( Battle_Std.CancelCheck_SpecialSkill()==0 ) return 0;
+			
+			if( Def_Rule_Kirifuda_FreeJumpCancel && tDDC.Kirifuda_CheckTime() )
+			{
+				// 切り札効果中はジャンプキャンセル制限を無くす　＋　切り札効果中
+			}
+			else if( Def_IGNM_JumpCancel && Battle_Std.CheckDoubleIgnition( Def_IGNT_MainCharacter ) )
+			{
+				// プレイヤーのダブルイグニッション時は制限を無くす
+			}
+			else
+			{
+				if( Battle_Std.EnemyDamageFlag_Check( def_DF_JumpCanseled ) ) return 0; // 「ＪＣされた」があったら失敗
+				//if( Battle_Std.MoveCode.CheckFlag(def_MC_NoJumpCansel) ) return 0; //通常ＣでもＪＣ不可
+				//if( Battle_Std.CheckDownOiuti() ) return 0; // ダウン追い討ち時は不可
+			}
+			if( Battle_Std.GS_CheckFlag( def_PP_GS_NoAct_Move ) ) return 0;		
+			return 1;
+		}
+		CmdCheck = 
+		{
+			SkillType = "AddCommand"
+			HitStatus="Hit",
+			MvCheck = { Only = ["Mv_Skill_214A_Hit","Mv_Skill_214B_Hit","Mv_Skill_214C_Hit"] },
+			SpGaugePlus = 0, //発動時のゲージ増加量割合(100で1.0)
+		},
+		UpdateTable = { name = "Mv_JumpCanselWait_B", },
+	}
+	*/
 	
 	Skill_Sousai = {},
 	Skill_Sousai2 = {},

@@ -1057,7 +1057,8 @@ function Battle_Std::MakeMoveTmpl( t, mvlist )
 					if( Def_Rule_SkillKezuriType ) Battle_Std.SetKezuriDamageMode(); // Mvに削り指定を追加
 				}
 			}
-
+			
+			/*
 			if( "FrameUpdate_Std" in t[mvname] )
 			{
 				mv_tmpl.FrameUpdate_Std <- function() : (Voice)
@@ -1079,7 +1080,13 @@ function Battle_Std::MakeMoveTmpl( t, mvlist )
 					//_dm("?"+Voice.FU);
 				}
 			}
-
+			*/
+			
+			mv_tmpl.FrameUpdate_Std <- function() : (Voice)
+			{
+				Battle_Std.TypeSE_Play({ type=Voice.FU }); //発動ボイス
+				//_dm("?"+Voice.FU);
+			}
 			
 			//Finalize_Std
 			mv_tmpl.Finalize_Std <- function() : (isSP,isEX)
