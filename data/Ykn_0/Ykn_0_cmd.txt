@@ -10,21 +10,20 @@ local t =
 	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 } },
 	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, AirJumpLimit=2 } },
 	
-	AirDash_F_Alt =
-	{ //-------------------------------
-		num = def_CN_Assault_Air, name = "Cmd_AirDash_F", command = [ "0606@N,255@@D,12@@L,4@" ], // 0606@N,255@@L,10@@D,12@
-		CmdBeforeStdFunc = function()
-		{
-			if( BMvTbl.AddAirCount( def_ACS_AirDash, 0 ) > 2 ) return 0; // 空中ダッシュを使ってた
-			if( Battle_Std.GS_CheckFlag( def_PP_GS_NoAct_Move ) ) return 0;
-			return 1;
-		},
+	AirDash_F =
+	{
 		CmdCheck =
 		{
-			HeightLimit = def_POS_AirDashLimitHeight, SkillType = "Special", PosState = "Air",
-			//MvCheck = { Fail = ["Mv_AirDash_F"] }	
+			MvCheck = { Fail = 0 }	
 		},
-		UpdateTable = { name = "Mv_AirDash_F", }
+	}
+	
+	Std_AirDash_B =
+	{
+		CmdCheck =
+		{
+			MvCheck = { Fail = 0 }	
+		},
 	}
 
 	Skill_236A = {},
