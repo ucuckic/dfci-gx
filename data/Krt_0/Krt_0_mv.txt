@@ -1284,7 +1284,7 @@ local set_Kirifuda = function()
 		local time =25*60;
 		tDDC.Kirifuda_TimeAdd( 0, time ); // 最大値になる
 		tDDC.Kirifuda_TimeDamageMinus( 30 ); // 減少値
-		tDDC.Kirifuda_SetTimeValue( _TimeEffect_Attack, 110 ); // 攻撃力アップ
+		//tDDC.Kirifuda_SetTimeValue( _TimeEffect_Attack, 110 ); // 攻撃力アップ
 		// tDDC.Kirifuda_SetTimeValue( _TimeEffect_Defense,110 ); // 防御力ダウン
 	}
 }

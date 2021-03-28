@@ -12,6 +12,7 @@ local t =
 	
 	Skill_0202A = {},
 	Skill_0202B = {},
+	//Skill_0202C = {},
 
 	Skill_236A = {},
 	Skill_236B = {},
