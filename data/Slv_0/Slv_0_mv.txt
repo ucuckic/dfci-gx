@@ -197,6 +197,7 @@ t.Mv_Atk_StdA <-
 {
 	function Init_After()
 	{
+		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=255, muteki_nageX=255 } );
 	}
 	function FrameUpdate_After()
 	{
@@ -264,6 +265,14 @@ t.Mv_Atk_CroC <-
 
 t.Mv_Atk_AirA <-
 {
+	function Init_After()
+	{
+		//BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=255, muteki_nageX=255 } );
+		
+		//tDDC.Blast_SetParam( { blasttime=0 } );
+		
+		//tDDC.Blast_Use( 0 );
+	}
 	function FrameUpdate_After() 
 	{
 	}

@@ -24,6 +24,15 @@ Battle_Std.DebugFunc.CallAtkInitScript <- function()
 			BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentStop|_ObjFlags_FromParentStop|_ObjFlags_ToParentHitBack|_ObjFlags_ToParentHitStatus } );
 		BMvCore.PopCharaData(); //
 	}
+	
+	if( Def_Dbg_CheckInvuln==1 )
+	{
+		local b = BMvEff.CreateObject( { mvname="Mv_Obj_CheckInvuln_Debug", datatype=1, start_pat=999 } );
+		BMvCore.PushCharaData( b ); //	
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentStop|_ObjFlags_FromParentStop|_ObjFlags_ToParentHitBack|_ObjFlags_ToParentHitStatus } );
+		BMvCore.PopCharaData(); //
+	}	
+	
 	/*
 	if( Def_Dbg_CancelChecker==1 )
 	{

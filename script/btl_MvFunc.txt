@@ -6579,6 +6579,9 @@ Battle_Std.Sousai.Set <- function( _etcHantei=0 )
 	// ‘½’i‚Ì‚P”­–Ú`‚Ìˆ—‚ªŒ´ˆö‚ç‚µ‚¢
 	// ƒLƒƒƒ‰‚ÌUŒ‚oŒ»‚ğ0‚É‚µ‚Ä‚¨‚¯‚Î‘åä•v‚¾‚¯‚ÇAƒŠ[ƒv‚ªƒ_ƒiŒ³X‚±‚ê‚ğ’¼‚·‚½‚ß‚É-1‚µ‚È‚¢‚æ‚¤‚É‚µ‚½‚Ì‚ÅAŒ»ó‚Í~j
 	// UŒ‚”»’è‚ªo‚Ä‚¢‚é‚Ì‘ŠE”»’è‚ğÁ‚µ‚½‚Ì‚Å”­¶‚µ‚È‚­‚È‚Á‚½‚Ì‚Å‰ğŒˆ
+	
+	
+	
 	BMvTbl.SetAtkCatchFlag( { hantei=_etcHantei, catch_flags=_CatchFlag_AtkAllGuard, success_flags=_CatchSuccess_HitSub|_CatchSuccess_HitSub_Enemy|_CatchSuccess_FlagHit_Enemy, time=64, flag=_ClearFlag_ChangeMv } );
 	
 	BMvTbl.SetLP(9,0); // 0:‘ŠE‚Å‚«‚é 1:‘ŠE‚Å‚«‚È‚¢ ¦HitInterrupt‚Å1‚É‚È‚é

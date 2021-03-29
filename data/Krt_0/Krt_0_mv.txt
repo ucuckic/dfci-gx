@@ -1306,6 +1306,8 @@ t.Mv_Skill_Sousai2 <-
 	function FrameUpdate_After()
 	{
 		Battle_Std.ImpactSkill_FrameUpdate(); // LP9Žg—p
+		
+		Battle_Std.SetHitMuteki2_Param1( { [8]=_HitCheckFlag_Head } );
 	}
 	function HitInterrupt_After()
 	{

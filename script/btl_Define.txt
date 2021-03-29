@@ -28,6 +28,9 @@
 // CDef_Wil_s_sample
 // CDef_で始まる定数をうっかり定義しないように注意
 
+//hitcheck def
+const Def_HitCheckFlag_LightLegs = 64; // 下段の弱い攻撃（弱）につく
+
 // Battle_Std.Val_CheckFlag
 const Def_CAB_Trump = 1;
 const Def_CAB_Support = 2;

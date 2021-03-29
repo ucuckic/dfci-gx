@@ -252,7 +252,7 @@ _dp1p("\n[btl_ChrParamFunc] -> end");
 
 {	// エリアルジャンプベクトル値定義
 	local type = "AirDash_B_UseVector";
-	chrparam.Param[type] <- array(CHRMAX, { x=-1500, y=-3000, addx=0, addy=250 } );// x, y, addx, addy,
+	chrparam.Param[type] <- array(CHRMAX, { x=-1850, y=-2600, addx=0, addy=250 } );// x, y, addx, addy,
 }
 
 {	// 空中ダッシュでの２段ジャンプ消費
@@ -973,6 +973,8 @@ debug_HitMutekiArray[0] = "none";
 debug_HitMutekiArray[_HitCheckFlag_Head] = "head";
 debug_HitMutekiArray[_HitCheckFlag_Legs] = "legs";
 debug_HitMutekiArray[_HitCheckFlag_FireBall] = "fireball";
+//debug_HitMutekiArray[Def_HitCheckFlag_AirDive] = "dive";
+debug_HitMutekiArray[Def_HitCheckFlag_LightLegs] = "l_legs";
 debug_HitMutekiArray[_HitCheckFlag_Throw] = "throw";
 debug_HitMutekiArray[_HitCheckFlag_Body] = "body";
 debug_HitMutekiArray[Def_HitCheckFlag_Ptimer] = "ptimer";
@@ -12801,7 +12803,7 @@ Std_MoveTable.Mv_BlastWait <-	// パワーアップブラスト
 			eff.pop();
 		}
 		
-		BMvEff.SetPlayerTimer( { muteki_dage=254, muteki_dageX=254, muteki_nage=254, muteki_nageX=254 } );
+		BMvEff.SetPlayerTimer( { muteki_dage=254, muteki_dageX=254, muteki_nage=0, muteki_nageX=0 } );
 		Battle_Std.Reversal.CheckTime_DrawInfo(); // リバーサルなら文字表示
 		Battle_Std.TypeSE_Play({ type="パワーアップブラスト" });
 		
@@ -12825,6 +12827,13 @@ Std_MoveTable.Mv_BlastWait <-	// パワーアップブラスト
 	function LastUpdate_Std()
 	{
 		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );	
+		
+		if( !BMvTbl.FromFinalize() )
+		{
+			tDDC.Blast_SetParam( { blasttime=0 } ); //clear the blast if blast was punished
+			
+			tDDC.Blast_Use( 0 ); // 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
+		}
 	}	
 }
 
@@ -12837,15 +12846,17 @@ Std_MoveTable.Mv_Blast <-
 		Battle_Std.InitVector(); // ベクトル全てクリア
 		local use_pat = ( Battle_Std.CheckSubSupportType( 0 ) )? 751 : 691; // 0:パワー 1:コンボ 2:エスケープ
 		BMvEff.CreateObject( { datatype=1, start_pat=use_pat, mvname="Mv_PowBlastShockwave", x=0, y=-200*128 } );
-		BMvEff.SetPlayerTimer( { muteki_dage=254, muteki_dageX=254, muteki_nage=254, muteki_nageX=254 } );
+		BMvEff.SetPlayerTimer( { muteki_dage=3, muteki_dageX=3, muteki_nage=0, muteki_nageX=0 } );
 		
 		// 回復量（100で1フレーム1回復、hpplus/100F）
 		tDDC.Blast_SetParam( { blasttime=500, hpplus=300, atkplus=115, defplus=100 } ); // 持続フレーム 回復10/F 攻防110%		
 		tDDC.Blast_Use( 0 ); // 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
+		
 		if( Def_Rule_PowBlastSpAdd )
 		{
 			BMvEff.SetSpGauge( { value=Def_Rule_PowBlastSpAdd, correct=0, limitval=100 } );
 		}
+		
 		BMvEff.AttackInfoString_Set({ word=def_AISW_Blast_PowerUp,} );
 
 		if( Def_Rule_PBlast_RecoverSupportWait ) // 発動時にサポート回復中なら回復するかどうか
@@ -12855,6 +12866,8 @@ Std_MoveTable.Mv_Blast <-
 		}
 		// 一定時間効果がある切り札の時間を延長する
 		tDDC.Kirifuda_TimeAdd( -10000, 500 ); //500増加
+		
+		BMvTbl.SetLP(0,0); //blast is hit
 	}
 	function FrameUpdate_Std() : (pat_num_BlastFall)
 	{
@@ -12873,6 +12886,13 @@ Std_MoveTable.Mv_Blast <-
 	function LastUpdate_Std()
 	{
 		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );	
+		
+		if( !BMvTbl.FromFinalize() )
+		{
+			tDDC.Blast_SetParam( { blasttime=0 } ); //clear the blast if blast was punished
+			
+			//tDDC.Blast_Use( 0 ); // 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
+		}
 	}	
 }
 
@@ -12884,7 +12904,15 @@ Std_MoveTable.Mv_BlastFall <-
 		BMvTbl.SetPattern( pat_num_BlastFall );
 		Battle_Std.InitVector(); // ベクトル全てクリア
 		BMvTbl.SetVector( { addy=250 } );
-		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
+		
+		if( BMvTbl.GetLP(0) ) 
+		{
+			BMvEff.SetPlayerTimer( { muteki_nage=254, muteki_dage=254, muteki_dageX=254, muteki_nageX=254 } );
+		}
+		else
+		{
+			BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
+		}
 	}
 	function FrameUpdate_Std()
 	{
@@ -12906,6 +12934,8 @@ Std_MoveTable.Mv_BlastLand <-
 	{
 		Battle_Std.InitVector(); // ベクトル全てクリア
 		BMvTbl.SetPattern(21);
+		
+		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
 	}
 	function Finalize_Std()
 	{
@@ -12930,7 +12960,7 @@ Std_MoveTable.Mv_ComboBlastWait <-
 			eff.pop();
 		}
 		
-		BMvEff.SetPlayerTimer( { muteki_dage=254, muteki_dageX=254, muteki_nage=254, muteki_nageX=254 } );
+		BMvEff.SetPlayerTimer( { muteki_dage=254, muteki_dageX=254, muteki_nage=0, muteki_nageX=0 } );
 		Battle_Std.Reversal.CheckTime_DrawInfo(); // リバーサルなら文字表示
 		Battle_Std.TypeSE_Play({ type="コンボブラスト" });
 		
@@ -12954,6 +12984,13 @@ Std_MoveTable.Mv_ComboBlastWait <-
 	function LastUpdate_Std()
 	{
 		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );	
+		
+		if( !BMvTbl.FromFinalize() )
+		{
+			tDDC.Blast_SetParam( { blasttime=0 } ); //clear the blast if blast was punished
+			
+			tDDC.Blast_Use( 2 ); // 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
+		}
 	}	
 }
 
@@ -12966,6 +13003,7 @@ Std_MoveTable.Mv_ComboBlast <-
 
 		local use_pat = 694;
 		local yokoBlast = Battle_Std.GS_CheckFlag( def_PP_GS_ThrustComboBlast );
+		
 		if( Battle_Std.CheckSubSupportType( 1 ) ) // 強化版
 		{
 			use_pat = (yokoBlast)? 755 : 754;
@@ -12974,6 +13012,7 @@ Std_MoveTable.Mv_ComboBlast <-
 		{
 			use_pat = (yokoBlast)? 695 : 694;
 		}
+		
 		local eff = BMvEff.CreateObject( { datatype=1, start_pat=use_pat, mvname="Mv_ComboBlastShockwave", x=0, y=-200*128 } );
 		if( eff.push() )
 		{
@@ -12981,9 +13020,10 @@ Std_MoveTable.Mv_ComboBlast <-
 			BMvEff.SetObjectFlags( { flags=_ObjFlags_ToParentHitStatus|_ObjFlags_NoGround } );
 			eff.pop();
 		}
+		
 		BMvTbl.SetAsStatusFlag( { special=_CancelFlag_Damage, time=254, flag=_ClearFlag_ChangeMv } );
 		
-		BMvEff.SetPlayerTimer( { muteki_dage=254, muteki_dageX=254, muteki_nage=254, muteki_nageX=254 } );
+		BMvEff.SetPlayerTimer( { muteki_dage=3, muteki_dageX=3, muteki_nage=0, muteki_nageX=0 } );
 		
 		tDDC.Blast_SetParam( { blasttime=0 } );
 		tDDC.Blast_Use( 2 ); // 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
@@ -12992,9 +13032,12 @@ Std_MoveTable.Mv_ComboBlast <-
 		{
 			BMvEff.SetSpGauge( { value=Def_Rule_ComboBlastSpAdd, correct=0, limitval=100 } );
 		}		
+		
 		BMvEff.AttackInfoString_Set({ word=def_AISW_Blast_Combo,} );
 		
 		Battle_Std.MvAction.AddFlag( def_MC_NoBursted ); // バーストされない行動
+		
+		BMvTbl.SetLP(0,0); //blast is hit
 	}
 	function FrameUpdate_Std() : (pat_num_BlastFall)
 	{
@@ -13020,6 +13063,8 @@ Std_MoveTable.Mv_ComboBlast <-
 			{
 				BMvTbl.SetVector( { y=0, addy=250 } ); // 落下ベクトルを与える
 			}
+			
+			tDDC.Blast_SetParam( { blasttime=0 } ); //clear the blast if blast was punished
 		}
 	}	
 }
@@ -13033,6 +13078,15 @@ Std_MoveTable.Mv_ComboBlastFall <-
 		BMvTbl.SetVector( { addy=250 } );
 
 		BMvTbl.SetAsStatusFlag( { special=_CancelFlag_Damage, time=254, flag=_ClearFlag_ChangeMv } );
+		
+		if( BMvTbl.GetLP(0) ) 
+		{
+			BMvEff.SetPlayerTimer( { muteki_nage=254, muteki_dage=254, muteki_dageX=254, muteki_nageX=254 } );
+		}
+		else
+		{
+			BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
+		}
 	}
 	function FrameUpdate_Std()
 	{
@@ -13054,6 +13108,8 @@ Std_MoveTable.Mv_ComboBlastLand <-
 	{
 		Battle_Std.InitVector(); // ベクトル全てクリア
 		BMvTbl.SetPattern(21);
+		
+		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
 	}
 	function Finalize_Std()
 	{
@@ -13078,7 +13134,7 @@ Std_MoveTable.Mv_BoundBlastWait <-
 			eff.pop();
 		}
 		
-		BMvEff.SetPlayerTimer( { muteki_dage=254, muteki_dageX=254, muteki_nage=254, muteki_nageX=254 } );
+		BMvEff.SetPlayerTimer( { muteki_dage=254, muteki_dageX=254, muteki_nage=0, muteki_nageX=0 } );
 		Battle_Std.Reversal.CheckTime_DrawInfo(); // リバーサルなら文字表示
 		Battle_Std.TypeSE_Play({ type="バウンドブラスト" });
 		
@@ -13099,7 +13155,14 @@ Std_MoveTable.Mv_BoundBlastWait <-
 	}
 	function LastUpdate_Std()
 	{
-		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );	
+		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
+
+		if( !BMvTbl.FromFinalize() )
+		{
+			tDDC.Blast_SetParam( { blasttime=0 } ); //clear the blast if blast was punished
+			
+			tDDC.Blast_Use( 1 ); // 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
+		}		
 	}
 }
 
@@ -13112,15 +13175,17 @@ Std_MoveTable.Mv_BoundBlast <-
 		local use_pat = ( Battle_Std.CheckSubSupportType( 2 ) )? 748 : 688; // 0:パワー 1:コンボ 2:エスケープ
 		BMvEff.CreateObject( { datatype=1, start_pat=use_pat, mvname="Mv_EscBlastShockwave", x=0, y=-200*128 } );
 
-		BMvEff.SetPlayerTimer( { muteki_dage=254, muteki_dageX=254, muteki_nage=254, muteki_nageX=254 } );
+		BMvEff.SetPlayerTimer( { muteki_dage=3, muteki_dageX=3, muteki_nage=0, muteki_nageX=0 } );
 		
 		tDDC.Blast_SetParam( { blasttime=0 } );
 		tDDC.Blast_Use( 1 ); // 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
 		BMvEff.AttackInfoString_Set({ word=def_AISW_Blast_Escape,} );
 		
-		Battle_Std.MvAction.AddFlag( def_MC_NoBursted ); // バーストされない行動
+		//Battle_Std.MvAction.AddFlag( def_MC_NoBursted ); // バーストされない行動
 		
 		BtlMvStd.EndBoundProc(); // やられ後行動可能でのみ初期化される処理をここでも初期化
+		
+		BMvTbl.SetLP(0,0); //blast is hit
 	}
 	function FrameUpdate_Std() : (pat_num_BlastFall)
 	{
@@ -13131,6 +13196,8 @@ Std_MoveTable.Mv_BoundBlast <-
 		{
 			BMvTbl.SetFinalize(0);
 		}
+		
+		//if( mvs.MvCount >= 20 ) BMvEff.SetPlayerTimer( { muteki_nage=0, muteki_dage=0, muteki_dageX=0, muteki_nageX=0 } );
 	}
 	function Finalize_Std()
 	{
@@ -13150,7 +13217,14 @@ Std_MoveTable.Mv_BoundBlastFall <-
 		Battle_Std.InitVector(); // ベクトル全てクリア
 		BMvTbl.SetVector( { addy=250 } );
 
-		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
+		if( BMvTbl.GetLP(0) ) 
+		{
+			BMvEff.SetPlayerTimer( { muteki_nage=254, muteki_dage=254, muteki_dageX=254, muteki_nageX=254 } );
+		}
+		else
+		{
+			BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
+		}
 	}
 	function FrameUpdate_Std()
 	{
@@ -13172,6 +13246,8 @@ Std_MoveTable.Mv_BoundBlastLand <-
 	{
 		Battle_Std.InitVector(); // ベクトル全てクリア
 		BMvTbl.SetPattern(21);
+		
+		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
 	}
 	function Finalize_Std()
 	{
@@ -13187,28 +13263,45 @@ Std_MoveTable.Mv_PowBlastShockwave <-
 	}
 	function HitInterrupt_Std()
 	{
-		// ヒットしたらゲージ１つ増やす
-		if( Def_Rule_PowBlastHitSpAdd && Battle_Std.CheckDamageTiming_ExceptDown() )
+		local player = BMvCore.GetPlayerCharaData();
+		
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
 		{
-			// 投げられ中の相手にヒットしても
-			local enemy_is_capture = 0;
-			local enemy = BMvCore.GetEnemyCharaData();
-			if( enemy.push() )
+			// ヒットしたらゲージ１つ増やす
+			if( Def_Rule_PowBlastHitSpAdd )
 			{
-				local bs = BtlMvStd.GetBoundStatus();
-				enemy.pop();
-				
-				if( bs.isCapture )
+				// 投げられ中の相手にヒットしても
+				local enemy_is_capture = 0;
+				local enemy = BMvCore.GetEnemyCharaData();
+				if( enemy.push() )
 				{
-					_dp("\n 相手がつかまれ中から増やさない");
-					enemy_is_capture = 1;
+					local bs = BtlMvStd.GetBoundStatus();
+					enemy.pop();
+					
+					if( bs.isCapture )
+					{
+						_dp("\n 相手がつかまれ中から増やさない");
+						enemy_is_capture = 1;
+					}
+				}
+				if( enemy_is_capture == 0 )
+				{
+					BMvEff.SetSpGauge( { value=Def_Rule_PowBlastHitSpAdd, correct=0, limitval=100 } );
 				}
 			}
-			if( enemy_is_capture == 0 )
+			
+			if( player.push() )
 			{
-				BMvEff.SetSpGauge( { value=Def_Rule_PowBlastHitSpAdd, correct=0, limitval=100 } );
+				BMvEff.SetPlayerTimer( { muteki_nage=254, muteki_dage=254, muteki_dageX=254, muteki_nageX=254 } );
+				BMvTbl.SetLP(0,1); //store hit
+				
+				player.pop();
 			}
 		}
+	}
+	function FrameUpdate_After()
+	{	
+		if( Battle_Std.CheckPlayerisDamage() ) BMvTbl.CalcHitValue(-100);
 	}
 	function Finalize_Std()
 	{
@@ -13223,11 +13316,30 @@ Std_MoveTable.Mv_ComboBlastShockwave <-
 	}
 	function HitInterrupt_Std()
 	{
+		local player = BMvCore.GetPlayerCharaData();
+		
 		// ヒットしたらゲージ１つ増やす
-		if( Def_Rule_ComboBlastHitSpAdd && Battle_Std.CheckDamageTiming_ExceptDown() )
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
 		{
-			BMvEff.SetSpGauge( { value=Def_Rule_ComboBlastHitSpAdd, correct=0, limitval=100 } );
+			if( Def_Rule_ComboBlastHitSpAdd )
+			{
+				BMvEff.SetSpGauge( { value=Def_Rule_ComboBlastHitSpAdd, correct=0, limitval=100 } );
+			}
+			
+			if( player.push() )
+			{
+				BMvEff.SetPlayerTimer( { muteki_nage=254, muteki_dage=254, muteki_dageX=254, muteki_nageX=254 } );
+				BMvTbl.SetLP(0,1); //store hit
+				
+				player.pop();
+			}
+			
 		}
+		
+	}
+	function FrameUpdate_After()
+	{	
+		if( Battle_Std.CheckPlayerisDamage() ) BMvTbl.CalcHitValue(-100);
 	}
 	function Finalize_Std()
 	{
@@ -13242,11 +13354,31 @@ Std_MoveTable.Mv_EscBlastShockwave <-
 	}
 	function HitInterrupt_Std()
 	{
+		local player = BMvCore.GetPlayerCharaData();
+		
 		// ヒットしたらゲージ１つ増やす
-		if( Def_Rule_EscBlastHitSpAdd && Battle_Std.CheckDamageTiming_ExceptDown() )
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
 		{
-			BMvEff.SetSpGauge( { value=Def_Rule_EscBlastHitSpAdd, correct=0, limitval=100 } );
+			
+			if( Def_Rule_EscBlastHitSpAdd )
+			{
+				BMvEff.SetSpGauge( { value=Def_Rule_EscBlastHitSpAdd, correct=0, limitval=100 } );
+			}
+
+			if( player.push() )
+			{
+				BMvEff.SetPlayerTimer( { muteki_nage=254, muteki_dage=254, muteki_dageX=254, muteki_nageX=254 } );
+				Battle_Std.MvAction.AddFlag( def_MC_NoBursted ); // バーストされない行動
+				
+				BMvTbl.SetLP(0,1); //store hit
+							
+				player.pop();
+			}
 		}
+	}
+	function FrameUpdate_After()
+	{	
+		if( Battle_Std.CheckPlayerisDamage() ) BMvTbl.CalcHitValue(-100);
 	}
 	function Finalize_Std()
 	{

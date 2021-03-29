@@ -51,7 +51,7 @@ const Def_Dbg_BtlGRDAssist		=	1;	// í“¬’†‚ÌGRD‚âTS‚ÌŒx‚ğƒQ[ƒ€‰æ–Ê‚É•\¦
 const Def_Dbg_StateChecker		=	1;	// bonus state display feature ( also use this because its great too )
 const Def_Dbg_CancelChecker		=	0;	// cancel frame count ( dont use this it sucks )
 const Def_Dbg_ExFrameLog		=	0;	// extended frame data display ( defo use this )
-const Def_Dbg_CheckInvuln		=	0;	// invuln fd display ( use this its great )
+const Def_Dbg_CheckInvuln		=	1;	// invuln fd display ( use this its great )
 const Def_Dbg_CheckHitFlag  	=   0;
 
 const Def_Dbg_TechTimingLog		=	1;
