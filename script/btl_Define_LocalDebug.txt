@@ -61,8 +61,8 @@ const Def_Dbg_CheckMovement	=	0;	// check how far attacks moves you ( needs to b
 
 const Def_Dbg_CheckInvulnMode2	=	0;	// invuln fd display 2
 
-const Def_Dbg_DrawHitBox = 1; //obvious
-const Def_Dbg_DrawHitBox_Outline = 1;
+const Def_Dbg_DrawHitBox = 0; //obvious
+const Def_Dbg_DrawHitBox_Outline = 0;
 
 const Def_Dbg_DrawCharaMarker  = 0; //draw origin point of all characters
 const Def_Dbg_DrawComboMeter = 0; //display untech min damage and damage proration values as meters

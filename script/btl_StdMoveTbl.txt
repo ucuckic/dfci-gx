@@ -10260,6 +10260,11 @@ Std_MoveTable.AttackImpact <- function( info )
 	//print( format( "\nAttackImpact[  type=%d  d_state=%d  atk_guard=%d  ]", info.type, info.d_state, info.atk_guard ) );
 }
 
+Std_MoveTable.test <- function( info=0 )
+{
+	Battle_Std.DrawDebugAttackInfo("testfnc");
+}
+
 
 
 

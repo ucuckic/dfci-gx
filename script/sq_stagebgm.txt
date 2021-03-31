@@ -1,7 +1,7 @@
 
 stage_bgm <- {};
 
-bgm_array_array <- array(250);
+bgm_array_array <- array(250); //bgm list array
 
 local file = "./bg/BgList.txt";
 if( BtlMvStd.IsFileAlive( file ) )
@@ -26,7 +26,16 @@ for(local i=0;i<250;i++)
 		{
 			__dofile__( bgmfile ) //grab BgmList
 			
-			bgm_array_array[i] = bgm_array;
+			if( i != 29 ) bgm_array_array[i] = bgm_array;
+			
+			if( bgm_array_array[29] ) 
+			{
+				bgm_array_array[29].extend( bgm_array ) //lets add every existing custom bgm to the training stage
+			}
+			else
+			{
+				bgm_array_array[29] = bgm_array
+			}
 		}				
 		
 	}

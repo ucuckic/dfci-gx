@@ -675,6 +675,12 @@ t.Mv_Atk_StdA <-
 			}
 		}
 	}
+	function HitInterrupt_After()
+	{
+		local hs = BMvTbl.GetMvHitStatus();
+		
+		Battle_Std.DrawDebugAttackInfo("hs "+hs.counterhit );
+	}
 }
 
 pat_num = BMvEff.GetPatternNum( { datatype=0, pat="BladeEff_AtkStdB" } ); // パターン文字列のパターン番号を事前取得
@@ -684,6 +690,8 @@ t.Mv_Atk_StdB <-
 	function Init_After()
 	{
 		//BMvEff.BGM_Set({ num=250 });
+		
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=254, flag=_ClearFlag_ChangeMv } );
 	}
 	function FrameUpdate_After() : (func_CreateBlade, pat_num)
 	{
@@ -693,7 +701,7 @@ t.Mv_Atk_StdB <-
 			switch( mvs.FrameID )
 			{
 			case 100:
-				func_CreateBlade( { x=0, y=0, start_pat="BladeEff_AtkStdB"}, { grp_angle=1200, vec_angle=0.2, vec_speed=300 } );			
+				func_CreateBlade( { x=0, y=0, start_pat="BladeEff_AtkStdB" }, { grp_angle=1200, vec_angle=0.2, vec_speed=300 } );			
 				break;
 			}
 		}
@@ -777,9 +785,74 @@ t.Mv_Atk_CroB <-
 
 pat_num = BMvEff.GetPatternNum( { datatype=0, pat="BladeEff_AtkCroC" } ); // パターン文字列のパターン番号を事前取得
 
+local SetPattern_NotHoldButton = function( tbl )// ButtonMask, CheckFrameID, SetPattern 
+{
+	local s = BMvTbl.GetMvStatus(); // ステータス取得
+	if( typeof tbl.CheckFrameID=="array" )
+	{
+		foreach(i,checkid in tbl.CheckFrameID)
+		{
+			if( s.FrameID == checkid )
+			{
+				//ホールドのチェックは操作親で見る
+				local p = BMvCore.GetPlayerCharaData(); // プレイヤーの情報を得る
+				if( p.push() )
+				{
+					local ret = BMvTbl.CheckButtonHold( tbl.ButtonMask );
+					
+					p.pop();
+					
+					if( !ret ) // ボタンホールドしてなかったら
+					{
+						BMvTbl.SetPattern( tbl.SetPattern );
+						
+						if( "jumpid" in tbl )
+						{
+							if( typeof tbl.jumpid=="array" )
+							{
+								return( BMvTbl.JumpFrameID( tbl.jumpid[i] ) );				
+							}
+							else
+							{
+								return( BMvTbl.JumpFrameID( tbl.jumpid ) );	
+							}
+						}
+
+					}
+				}
+			}
+		}
+	}
+	else
+	if( s.FrameID == tbl.CheckFrameID )
+	{
+		//ホールドのチェックは操作親で見る
+		local p = BMvCore.GetPlayerCharaData(); // プレイヤーの情報を得る
+		if( p.push() )
+		{
+			local ret = BMvTbl.CheckButtonHold( tbl.ButtonMask );
+			
+			p.pop();
+			
+			if( !ret ) // ボタンホールドしてなかったら
+			{
+				BMvTbl.SetPattern( tbl.SetPattern );
+				return 1;
+			}
+		}
+	}
+	else if( "EndFrameID" in tbl && s.FrameID == tbl.EndFrameID && s.isFrameUpdate )
+	{
+		// _dp("\n エクステンドアクションポテンシャル加算");
+		tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_ExtendAction ); // エクステンドアクション加算
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_ExtendAction ); // エクステンドアクションのＭｖであることを保存
+	}
+	return -1;
+}
+
 t.Mv_Atk_CroC <-
 {
-	function FrameUpdate_After() : (func_CreateBlade, pat_num)
+	function FrameUpdate_After() : (func_CreateBlade, pat_num, SetPattern_NotHoldButton)
 	{
 		local mvs = BMvTbl.GetMvStatus();
 		if( mvs.isFrameUpdate )
@@ -787,9 +860,21 @@ t.Mv_Atk_CroC <-
 			switch( mvs.FrameID )
 			{
 			case 100:
-				func_CreateBlade( { x=0, y=0, start_pat=pat_num}, { grp_angle=4000, vec_angle=0.8, vec_speed=300 } );
+				func_CreateBlade( { x=0, y=0, start_pat=pat_num }, { grp_angle=4000, vec_angle=0.8, vec_speed=300 } );
+				break;
+			case 1000:
+				local eff = func_CreateBlade( { x=0, y=0, start_pat=pat_num }, { grp_angle=4000, vec_angle=0.8, vec_speed=300 } );
+				if( eff.push() )
+				{
+					BMvTbl.SetScale( { x=12000, y=13000 } );
+					eff.pop();
+				}
+				
+				break;
 			}
 		}
+		
+		Battle_Std.SetPattern_NotHoldButton( { ButtonMask=(1<<2), CheckFrameID=[50,51], SetPattern="CroC", jumpid=[10,11], EndFrameID=200 } );
 	}
 }
 
@@ -836,6 +921,10 @@ local pat_num_BladeEff_ExAtkAirC = BMvEff.GetPatternNum( { datatype=0, pat="Blad
 
 t.Mv_Atk_AirC <-
 {
+	function Init_After()
+	{
+		//BMvTbl.SetHitCheckFlag( { type=1, val=250, time=254, flag=_ClearFlag_ChangeMv } );
+	}
 	function FrameUpdate_After() : (func_CreateAirBlade, pat_num_BladeEff_AtkAirC, pat_num_BladeEff_ExAtkAirC)
 	{
 		Battle_Std.SetPattern_NotHoldButton( { ButtonMask=(1<<2), CheckFrameID=50, SetPattern="AirC" } ); // ボタンホールドしてなかったらパターンジャンプ
@@ -853,6 +942,9 @@ t.Mv_Atk_AirC <-
 				break;
 			}
 		}
+		
+		local hc = BMvTbl.GetHitCheckFlag(1);
+		//Battle_Std.DrawDebugAttackInfo("hcf "+hc );
 	}
 }
 
@@ -1495,19 +1587,102 @@ t.Mv_Skill_J214EX <- maketmpl_Skill214( { type="EX", pos="Air" } );
 local pat_num_Eff_HaraiUde1 = BMvEff.GetPatternNum( { datatype=0, pat="Eff_HaraiUde1" } ); // パターン文字列のパターン番号を事前取得
 local pat_num_Eff_HaraiFire = BMvEff.GetPatternNum( { datatype=0, pat="Eff_HaraiFire" } ); // パターン文字列のパターン番号を事前取得
 
+t.test <- function( info=0 )
+{
+	Battle_Std.DrawDebugAttackInfo("shtestfnc "+info.counterhit);
+}
+
+t.Mv_Obj_HanTest <-
+{
+	function Init_After()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_ParentMove|_ObjFlags_ParentMuki } );
+	}
+	function FrameUpdate_After()
+	{
+		//Battle_Std.DrawDebugAttackInfo( "ht" );
+		
+		local player = BMvCore.GetPlayerCharaData();
+		local hanteiobj = BMvEff.CCheckRect(); // オブジェクト作成
+        // 設定
+        hanteiobj.SetPlayer(); //プレイヤー情報設定
+        hanteiobj.SetSrc( [ _Hantei_Kurai, 0, -1 ] ); //自分の情報設定
+        hanteiobj.SetDst( [ _Hantei_Attack, 0, -1 ] ); //相手の情報設定
+        hanteiobj.SetFlags( _HC_EnemyObj | _HC_EnemyPc  ); //検索条件設定
+
+        while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
+        {
+			Battle_Std.DrawDebugAttackInfo( "obj collide with atk" );
+			
+			if( player.push() ) 
+			{
+				
+				Battle_Std.ImpactSkill_FrameUpdate();
+				player.pop();
+			}
+			
+			local enemy = hanteiobj.GetCharaData(); // 見つかったオブジェクト取得
+			if( enemy.push() )
+			{
+				//BMvTbl.CalcHitValue(-100);
+				enemy.pop();
+			}
+        }
+	}
+}
+
 t.Mv_Skill_Sousai2 <-
 {
 	flags = def_TmplFlags_DoujiCancelOK, // 同時押しでキャンセル可にする
 	function Init_After()
 	{
+		//BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=254, flag=_ClearFlag_ChangeMv } );
+		
 		Battle_Std.ImpactSkill_Init(); // LP9使用
 		
 		// 始動補正適用をＭｖ変化後に
 		BMvEff.ChangeStartCorrectTiming();
+		
+		//BMvEff.CreateObject( { mvname="Mv_Obj_HanTest", start_pat=999, datatype=1 } );
+	}
+	function Update_After()
+	{
+
 	}
 	function FrameUpdate_After() : (pat_num_Eff_HaraiUde1, pat_num_Eff_HaraiFire)
 	{
-		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+		//Battle_Std.ImpactSkill_FrameUpdate( _HitCheckFlag_Head ); // LP9使用
+		
+		Battle_Std.ImpactSkill_FrameUpdate();
+		
+		/*
+		local player = BMvCore.GetPlayerCharaData();
+		local hanteiobj = BMvEff.CCheckRect(); // オブジェクト作成
+        // 設定
+        hanteiobj.SetPlayer(); //プレイヤー情報設定
+        hanteiobj.SetSrc( [ _Hantei_Kurai, 0, -1 ] ); //自分の情報設定
+        hanteiobj.SetDst( [ _Hantei_Attack, 0, -1 ] ); //相手の情報設定
+        hanteiobj.SetFlags( _HC_EnemyObj | _HC_EnemyPc  ); //検索条件設定
+
+        while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
+        {
+			//Battle_Std.DrawDebugAttackInfo( "obj collide with atk" );
+			
+			if( player.push() ) 
+			{
+				
+				Battle_Std.ImpactSkill_FrameUpdate( _HitCheckFlag_Head );
+				player.pop();
+			}
+			
+			local enemy = hanteiobj.GetCharaData(); // 見つかったオブジェクト取得
+			if( enemy.push() )
+			{
+				//BMvTbl.CalcHitValue(-100);
+				enemy.pop();
+			}
+        }
+		*/
 		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
@@ -1523,6 +1698,13 @@ t.Mv_Skill_Sousai2 <-
 			Battle_Std.CreateObject.Blade( { start_pat="Eff_HaraiUde1", x=0, y=0 } );
 			break;
 		}
+		
+		/*
+		BMvTbl.SetAtkCatchFlag( { hantei=0, catch_flags=_CatchFlag_AtkAllGuard, success_flags=_CatchSuccess_HitSub|_CatchSuccess_HitSub_Enemy|_CatchSuccess_FlagHit_Enemy, time=1, flag=_ClearFlag_ChangeMv } );
+		*/
+		
+		//BMvTbl.SetAtkCatchFlag( { hantei=0, time=0, flag=_ClearFlag_ChangeMv } );
+		//BMvTbl.SetAtkCatchFlag( { hantei=1, time=0, flag=_ClearFlag_ChangeMv } );
 	}
 	function HitInterrupt_After()
 	{
