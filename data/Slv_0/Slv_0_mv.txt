@@ -659,8 +659,10 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 	case "C":
 		mvparam.hit_furimuki = 1;
 		mvparam.hitmvchange = 1;
+		
 		mvparam.hitmv = "Mv_Skill_J214_End_Hit";
 		mvparam.hitmv_extend = "Mv_Skill_J214_Hit";
+		
 		mvparam.holdbutton = (1<<2);
 		mvparam.holdend_pat = 202;
 		mvparam.extend_autoXvecMin = 1;
@@ -724,7 +726,7 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 			BMvTbl.SetLP(1,0); // 残像エフェクトを出したら1
 		}
 		
-		if( mvparam.enableHold )  //consider _add to be an extended action
+		if( mvparam.enableHold==2 )  //consider _add to be an extended action
 		{
 			BMvTbl.SetLP(0,1);
 			Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_ExtendAction );
@@ -862,7 +864,7 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 			Battle_Std.SetThrowHitFinalize(usecode); // ヒット分岐ファイナライズ
 		}
 		
-		//if( Battle_Std.CheckDamageTiming() ) Battle_Std.DrawDebugAttackInfo( "f "+BMvTbl.GetMvName() );
+		if( Battle_Std.CheckDamageTiming() ) Battle_Std.DrawDebugAttackInfo( "f "+BMvTbl.GetMvName()+" extend "+isExtend );
 		
 		if( Battle_Std.CheckDamageTiming() && mvparam.hit_shift )
 		{
@@ -945,7 +947,7 @@ local maketmpl_SkillAirWarpAtk = function( param={} ) : (func_WarpEndFade)
 		
 		break;
 	case "C":
-		mvparam.enemy_track = 1;
+		mvparam.enemy_track = 0;
 		break;
 	case "EX":
 		break;
