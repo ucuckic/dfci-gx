@@ -661,6 +661,9 @@ t.Mv_Atk_StdA <-
 		
 		//Battle_Std.DrawDebugAttackInfo("emk "+bgm_array.len() );
 		*/
+		
+		//BMvTbl.SetPattern( def_PAT_AirDash_F );
+		//Battle_Std.DrawDebugAttackInfo( BMvTbl.CheckPattern( def_PAT_AirDash_F ) );
 	}
 	function FrameUpdate_After() : (func_CreateBlade, pat_num)
 	{
@@ -677,9 +680,6 @@ t.Mv_Atk_StdA <-
 	}
 	function HitInterrupt_After()
 	{
-		local hs = BMvTbl.GetMvHitStatus();
-		
-		Battle_Std.DrawDebugAttackInfo("hs "+hs.counterhit );
 	}
 }
 

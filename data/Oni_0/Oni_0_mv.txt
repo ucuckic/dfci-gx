@@ -1214,6 +1214,9 @@ t.Mv_Skill_J236_AddA <-
 		{
 			BMvTbl.SetPattern( pat_num_J236_AddA_KI ); // Ø‚èŽD’†‚Í”­¶‚ª‘‚­‚È‚é
 		}
+		
+		BMvTbl.SetLP(0,0); //x origin
+		BMvTbl.SetLP(1,0); //y origin
 	}
 	function FrameUpdate_After()
 	{
@@ -1227,12 +1230,51 @@ t.Mv_Skill_J236_AddA <-
 			//BMvTbl.SetAsStatusFlag( { normal=_CancelFlag_Always, special=_CancelFlag_Always, time=10, flag=_ClearFlag_ChangePattern|_ClearFlag_ChangeMv } );
 		}
 		
-		if( Battle_Std.GetUpdateFrameID()==200 )BMvTbl.SetCommandLongDelay(2);
+		if( Battle_Std.GetUpdateFrameID()==200 ) BMvTbl.SetCommandLongDelay(2);
+		
+		if( Battle_Std.GetUpdateFrameID()==5 )
+		{
+			local pos = BMvTbl.GetPosition(0);
+			
+			BMvTbl.SetLP(0,pos.x);
+			BMvTbl.SetLP(1,pos.y);
+		}
 		
 	}
 	function HitInterrupt_After()
 	{
-		//Battle_Std.SetThrowHitFinalize(256);
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			BMvTbl.SetFinalize(256);
+		}	
+		
+		//J236_AddA_Hit
+	}
+	function Finalize()
+	{
+		Battle_Std.SwitchNextMoveTable("Mv_Neutral", [256,"Mv_Skill_J236Add_Hit"]); //ƒfƒtƒH,[code,mv]...	
+	}
+}
+
+
+t.Mv_Skill_J236Add_Hit <-
+{
+	function Init_After()
+	{
+		Battle_Std.DrawDebugAttackInfo("x ");
+	}
+	function FrameUpdate_After()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.isLanding )
+		{
+			local ePos = Battle_Std.GetEnemyPosition();
+			
+			BMvTbl.SetPosition( { x=ePos.x } );
+			BMvTbl.SetFinalize(256);
+		}
+		
+		local vec = BMvTbl.GetVector( { flags=_Vector_Normal } );
 	}
 	function Finalize()
 	{
@@ -1240,14 +1282,32 @@ t.Mv_Skill_J236_AddA <-
 	}
 }
 
-
-
-
 t.Mv_Skill_J236_AddA_Hit <-
 {
 	function Init_After()
 	{
-		Battle_Std.DrawDebugAttackInfo("x ");
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_EnableCansel_SkilltoSkill|def_MC1_EnableCansel_SkilltoAtk );
+		
+		local x_o = BMvTbl.GetLP(0);
+		local y_o = BMvTbl.GetLP(1);
+		
+		local pos = BMvTbl.CCharaPosition();
+		pos.x = x_o;
+		pos.y = y_o;
+		
+		local posst = BMvEff.GetPointStatus( { position=pos } );
+
+		local eff = BMvEff.CreateObject( { start_pat=0xCE, x=-150, y=-300, flags=_Position_ToolShift  } );
+		if( eff.push() )
+		{
+			BMvTbl.SetAngle( { angle_float=0.1+posst.angle } );
+			
+			//Battle_Std.DrawDebugAttackInfo("x "+posst.angle );
+			
+			eff.pop();
+		}
+		
+		//Battle_Std.DrawDebugAttackInfo("x ");
 	}
 }
 

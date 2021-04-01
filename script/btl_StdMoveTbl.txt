@@ -240,6 +240,36 @@ _dp1p("\n[btl_ChrParamFunc] -> end");
 	chrparam.Param[type][Def_ChrNo_Yuk] = 200;
 }
 
+{
+	local type = "AirDashF_Vec";
+	chrparam.Param[type] <- array(CHRMAX, { x = 2500, addx = 0, y = -2500, addy = 250 }); // vec table
+}
+
+{
+	local type = "AirDashF_Startup";
+	chrparam.Param[type] <- array(CHRMAX, 2); // vector startup
+}
+
+{
+	local type = "AirDashF_MoveableF";
+	chrparam.Param[type] <- array(CHRMAX, 8); // actionable startup
+}
+
+{
+	local type = "AirDashF_Duration";
+	chrparam.Param[type] <- array(CHRMAX, 8); // vec table
+}
+
+{
+	local type = "AirDashF_RecoverVec";
+	chrparam.Param[type] <- array(CHRMAX, { use = 0, x = 2500, addx = 0, y = 0, addy = 190 }); // vec table
+}
+
+{
+	local type = "AirDashF_LastUpdVec";
+	chrparam.Param[type] <- array(CHRMAX, { use = 0, x = 2000, addx = 0, y = 0, addy = 190 }); // vec table
+}
+
 {	// 空中ダッシュでかかり硬直定義
 	local type = "frame_AirDash_B_NoCancel";
 	chrparam.Param[type] <- array(CHRMAX, 15 );// y, addy, 前X, 垂直X, 後X
@@ -13424,22 +13454,43 @@ local frame_AirDash_B_NoCancel = chrparam.Get( { type="frame_AirDash_B_NoCancel"
 local vecYAdd_AirDash_B_LastUpdate = chrparam.Get( { type="vecYAdd_AirDash_B_LastUpdate", chrnum=_ChrNo } );
 
 local AirDash_B_UseVector = chrparam.Get( { type="AirDash_B_UseVector", chrnum=_ChrNo } );
+local AirDash_F_UseVector = chrparam.Get( { type="AirDashF_Vec", chrnum=_ChrNo } );
 
 local val_AirDash_F_AddAirJumpCount = chrparam.Get( { type="空中ダッシュでの２段ジャンプ消費", chrnum=_ChrNo } );
 
 Std_MoveTable.Mv_AirDash_F <-
 {
-	function Init_Std() : (val_AirDash_F_AddAirJumpCount)
+	function Init_Std() : (val_AirDash_F_AddAirJumpCount, AirDash_F_UseVector)
 	{
 		BMvTbl.SetVector( { x=0, addx=0, flags=_Vector_DivKeep } );
 		
 		BMvTbl.SetPattern( def_PAT_Mv_AirDash );
+		if( BMvTbl.CheckPattern( def_PAT_Mv_AirDash ) != 1 )
+		{
+			local dash_pat = BMvEff.GetPatternNum( { datatype=0, pat="AirDash_F" } );
+			if( dash_pat != -1 )
+			{
+				BMvTbl.SetPattern( dash_pat );
+			}
+			else
+			{
+				BMvTbl.SetPattern( def_PAT_Jump_F );
+				BMvTbl.SetVector( AirDash_F_UseVector );
+				
+				BSound.SE_Play( { type=_SeType_Normal, num=39 } ); // fuck
+				Battle_Std.CreateObject.CommonEffect.SupecialMoveRing( { x=0, y=-200 } );
+			}
+		}
+		
+		//BMvTbl.SetPattern( def_PAT_Mv_AirDash );
+		
 		Battle_Std.TypeSE_Play({ type="アサルト" });
 
 		if( val_AirDash_F_AddAirJumpCount )
 		{
 			BMvTbl.AddAirJumpCount(val_AirDash_F_AddAirJumpCount);  //ジャンプ回数を加算し二段ジャンプした扱いにする
 		}
+		
 		Battle_Std.MoveCode.AddFlag( def_MC_PositiveAction ); // 行動コード(ポジティブ)を設定
 		
 		BMvTbl.AddAirCount( def_ACS_AirDash, 1 ); // 空中ダッシュを使った加算
