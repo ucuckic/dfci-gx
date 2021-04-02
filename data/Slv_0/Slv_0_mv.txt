@@ -8,7 +8,7 @@ t.Mv_Bound_0900 <-
 {
 	function Init_After()
 	{
-		Battle_Std.DrawDebugAttackInfo("grec" );
+		//Battle_Std.DrawDebugAttackInfo("grec" );
 	}
 }
 
@@ -221,6 +221,40 @@ t.Mv_Atk_StdC <-
 	function FrameUpdate_After() : (pat_num_StdC)
 	{
 		Battle_Std.SetPattern_NotHoldButton( { ButtonMask=(1<<2), CheckFrameID=50, SetPattern=pat_num_StdC } ); // ボタンホールドしてなかったらパターンジャンプ
+	}
+}
+
+t.Mv_Atk_Std6C <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetLP(0,0);
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+			case 100:
+				BMvTbl.SetVector( { x=9985, addx=-400, flags=_Vector_Normal } );
+				BMvTbl.SetVector_MaxX( 2000 );
+				
+				break;
+		}
+		
+		local e_dist = Battle_Std.CheckEnemyDistance(200);
+		
+		if( e_dist && BMvTbl.GetLP(0)==0 ) 
+		{
+			local vec = BMvTbl.GetVector( { flags=_Vector_Normal } );
+			if( vec.x >= 2000 )
+			{
+				BMvTbl.SetVector( { x=2000, flags=_Vector_Normal } );
+				BMvTbl.SetLP(0,1);
+			}
+		}
+		
+		
+		//if( e_dist < 256*128 ) BMvTbl.SetVector( { x=2000, addx=-400, flags=_Vector_Normal } );
 	}
 }
 
@@ -745,7 +779,7 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 		}
 	}
 	
-	ret_tmpl.FrameUpdate_After <- function() : (func_WarpEndFade, mvparam, call_WarpZanzou)
+	ret_tmpl.FrameUpdate_After <- function() : (func_WarpEndFade, mvparam, call_WarpZanzou, param)
 	{
 		local mvs = BMvTbl.GetMvStatus();
 		
@@ -839,6 +873,17 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 		case 999:
 			func_WarpEndFade(); // ワープ終了のフェードイン
 			// 数F無敵つけて抜ける
+					
+			if( param.type=="ExtendA" )
+			{
+				if( BMvTbl.CheckFurimuki() )
+				{
+					
+					BMvTbl.SetMuki( _Direction_Auto );
+					BMvTbl.SetPattern( "J214_End" );
+				}
+			}
+			
 			BMvTbl.SetHitCheckFlag( { type=0, val=_HitCheckFlag_FireBall, time=5, flag=_ClearFlag_ChangeMv } ); // 弾無敵を消す
 			if( Battle_Std.CheckEnemyisDamage() )
 			{
@@ -864,15 +909,35 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 			Battle_Std.SetThrowHitFinalize(usecode); // ヒット分岐ファイナライズ
 		}
 		
-		if( Battle_Std.CheckDamageTiming() ) Battle_Std.DrawDebugAttackInfo( "f "+BMvTbl.GetMvName()+" extend "+isExtend );
+		//if( Battle_Std.CheckDamageTiming() ) Battle_Std.DrawDebugAttackInfo( "f "+BMvTbl.GetMvName()+" extend "+isExtend );
 		
 		if( Battle_Std.CheckDamageTiming() && mvparam.hit_shift )
 		{
 			local epos = Battle_Std.GetEnemyPosition();
+			local s_dist = Battle_Std.GetFrontStageDistance();
 			
-			BMvTbl.SetPosition( { x=epos.x } );
+			local track_add = 250*128;
 			
-			BMvTbl.SetPosition( { x=50, flags=_Position_Add|_Position_CaptureShift|_Position_ChangeMuki } );
+			//Battle_Std.DrawDebugAttackInfo( ( abs( epos.x )+track_add )-def_POS_GamenHajiX );
+			
+			local enemy = BMvCore.GetEnemyCharaData();
+			local muki = BMvTbl.GetMuki();
+			
+			local haji_dif = ( abs(epos.x) - def_POS_GamenHajiX )/128
+			
+			Battle_Std.DrawDebugAttackInfo( haji_dif );
+			
+			if( haji_dif <= -320 )
+			{		
+				
+				
+				BMvTbl.SetPosition( { x=epos.x } );
+				
+				BMvTbl.SetPosition( { x=track_add, flags=_Position_Add|_Position_ChangeMuki } );
+				
+				BMvTbl.JumpFrameID( 999 );
+			}
+
 		}
 		
 	}
@@ -955,11 +1020,24 @@ local maketmpl_SkillAirWarpAtk = function( param={} ) : (func_WarpEndFade)
 	
 	ret_tmpl.Init_After <- function()
 	{
+		BMvTbl.SetLP(0,0);
 	}
 	
-	ret_tmpl.FrameUpdate_After <- function() : (func_WarpEndFade, mvparam)
+	ret_tmpl.FrameUpdate_After <- function() : (func_WarpEndFade, mvparam, param)
 	{
 		local mvs = BMvTbl.GetMvStatus();
+		
+		if( param.type=="A" )
+		{
+			if( mvs.isLanding && BMvTbl.CheckFurimuki() )
+			{
+				
+				BMvTbl.SetMuki( _Direction_Auto );
+				BMvTbl.SetPattern( "J214_End" );
+				
+				func_WarpEndFade();
+			}
+		}
 		
 		// 出て少したったら空中必殺技回数制限をかける
 		if( mvparam.useaircount && mvs.MvCount == 4 && mvs.CallCount == 0 )
@@ -1048,13 +1126,18 @@ local maketmpl_SkillAirWarpAtk = function( param={} ) : (func_WarpEndFade)
 	
 	ret_tmpl.HitInterrupt_After <- function() : (mvparam)
 	{
-		if( Battle_Std.CheckDamageTiming() && mvparam.hit_shift )
+		if( Battle_Std.CheckDamageTiming() )
 		{
-			local epos = Battle_Std.GetEnemyPosition();
+			BMvTbl.SetLP(0,1);
 			
-			BMvTbl.SetPosition( { x=epos.x } );
-			
-			BMvTbl.SetPosition( { x=50, flags=_Position_Add|_Position_CaptureShift|_Position_ChangeMuki } );
+			if( mvparam.hit_shift )
+			{
+				local epos = Battle_Std.GetEnemyPosition();
+				
+				BMvTbl.SetPosition( { x=epos.x } );
+				
+				BMvTbl.SetPosition( { x=50, flags=_Position_Add|_Position_CaptureShift|_Position_ChangeMuki } );
+			}
 		}
 	}
 	
@@ -1146,6 +1229,8 @@ t.Mv_Skill_Sousai2 <-
 		BMvEff.ChangeStartCorrectTiming();
 		
 		Battle_Std.ImpactSkill_Init(); // LP9使用
+		
+		BMvTbl.SetLP(0,0);
 	}
 	function FrameUpdate_After()
 	{
@@ -1155,9 +1240,35 @@ t.Mv_Skill_Sousai2 <-
 		local no_sidou = !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_SidouHitSkill );
 		
 		if( mvs.FrameID==5 && Battle_Std.CheckEnemyisDamage() && no_sidou ) BMvTbl.JumpFrameID( 6 );
+		
+		local enemy = BMvCore.GetNearEnemyCharaData();
+		local mvhs = BMvTbl.GetMvHitStatus();
+		
+		if( mvhs.Type&_HitType_Damage && mvhs.isCatchFlag == 0 && BMvTbl.GetLP(0)==0 )
+		{
+			local epos = Battle_Std.GetEnemyPosition();
+			local pos = BMvTbl.GetPosition( 0 );
+			if( epos.y < pos.y )
+			{
+				local dif = (pos.y - epos.y)/128;
+			
+				local enemy = BMvCore.GetNearEnemyCharaData();
+				if( enemy.push() )
+				{
+					local vec = BMvTbl.GetVector( { flags=_Vector_Bound } );
+					BMvTbl.SetVector( { y=( vec.y )+dif*2, x=vec.x-( dif*1.6 ) flags=_Vector_Bound  } ); //adjust xvec also to prevent unintended sideswaps
+					enemy.pop();
+				}
+			}
+			
+			BMvTbl.SetLP(0,1);
+		}
+
 	}
 	function HitInterrupt_After()
 	{
+
+		
 		Battle_Std.ImpactSkill_HitInterrupt( def_MC1_AtkLow|def_MC1_AtkJump ); // LP9使用
 	}
 }

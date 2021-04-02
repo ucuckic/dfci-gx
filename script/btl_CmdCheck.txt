@@ -548,7 +548,8 @@ function Battle_Std::CmdCheck( t ) : (check_DoujiButton)
 	//フラグを見て同時押しチェックオブジェクトを出す
 	
 	//行動可能状態から出したコマンドのようだな
-	if( check_CancelNone != 0 )
+	//if( check_CancelNone != 0 )
+	if( 1 ) //cheatery to reduce the pain of no macros
 	{
 		//None設定の技が強引に出せるフレーム
 		if( (DoujiCheck_none == 1) && ( BMvTbl.GetPP( def_PP_NoneDouji ) <=0 ) )

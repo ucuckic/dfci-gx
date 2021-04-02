@@ -13179,7 +13179,7 @@ Std_MoveTable.Mv_BoundBlastWait <-
 	function FrameUpdate_Std()
 	{
 		local mvs = BMvTbl.GetMvStatus();
-		if( mvs.MvCount >= 2)
+		if( mvs.MvCount >= 10)
 		{
 			BMvTbl.SetFinalize(0);
 		}

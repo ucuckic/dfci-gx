@@ -127,6 +127,9 @@ t.Mv_Atk_StdA <-
 {
 	function Init_After()
 	{
+		//Battle_Std.DrawDebugAttackInfo(_CatchFlag_AtkNoGuardThrow); 
+		
+		//BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall , time=246 } );
 	}
 }
 
@@ -136,6 +139,7 @@ t.Mv_Atk_StdB <-
 {
 	function Init_After()
 	{
+		//BMvTbl.SetHitCheckFlag( { type=1, val=35 , time=246 } );
 	}
 	function FrameUpdate_After()
 	{
@@ -144,6 +148,10 @@ t.Mv_Atk_StdB <-
 
 t.Mv_Atk_StdC <-
 {
+	function Init_After()
+	{
+		//BMvTbl.SetHitCheckFlag( { type=0, val=35 , time=260  } );
+	}
 	function Update_After()
 	{
 	}
@@ -240,18 +248,21 @@ local maketmpl_GroundTrust = function( param={} )
 			local hs = BMvTbl.GetMvHitStatus();
 			//ヒット中何となく寄せる
 			//やられＸベクトルは無効になっているので注意
-			if( s.FrameID==200 && hs.Type & _HitType_Damage && hs.isCatchFlag == 0 ) //当身とられた時は除外
+			if( s.FrameID==200 && hs.Type & _HitType_Hit && hs.isCatchFlag == 0 ) //当身とられた時は除外
 			{
 				local enemy = BMvCore.GetNearEnemyCharaData();
 				if( enemy.isdone() )
 				{
 					local posst = BMvEff.GetPointStatus( { target=enemy } ); // 位置情報取得
-					local vx = posst.distance_x/20;
+					local vx = posst.distance_x/15;
+					local vy = posst.distance_x/100;
+					
+					//Battle_Std.DrawDebugAttackInfo(vx+" d "+posst.distance_x); 
 					
 					if( enemy.push() )
 					{
 						local vec = BMvTbl.GetVector( { flags=_Vector_Bound } );
-						BMvTbl.SetVector( { x=vx, addx=0, flags=_Vector_Normal  } );
+						BMvTbl.SetVector( { x=vx, addx=0, flags=_Vector_Bound  } );
 						
 						enemy.pop();
 					}
@@ -274,7 +285,8 @@ local maketmpl_Thrust_AddAtk = function( param={} )
 	local ret_tmpl = {};
 	
 	local mvparam = {
-	vec_div = 50,
+		vec_div = 30,
+		guard_vec_div = 20,
 	};
 	
 	switch( param.type )
@@ -285,7 +297,7 @@ local maketmpl_Thrust_AddAtk = function( param={} )
 		mvparam.vec_div = 20;
 		break;
 	case "C":
-		mvparam.vec_div = 25;
+		mvparam.vec_div = 20;
 		break;
 	case "EX":
 		break;
@@ -320,18 +332,22 @@ local maketmpl_Thrust_AddAtk = function( param={} )
 		local hs = BMvTbl.GetMvHitStatus();
 		//ヒット中何となく寄せる
 		//やられＸベクトルは無効になっているので注意
-		if( s.FrameID==200 && hs.Type & _HitType_Damage && hs.isCatchFlag == 0 ) //当身とられた時は除外
+		if( s.FrameID==200 && hs.Type & _HitType_Hit && hs.isCatchFlag == 0 ) //当身とられた時は除外
 		{
 			local enemy = BMvCore.GetNearEnemyCharaData();
 			if( enemy.isdone() )
 			{
 				local posst = BMvEff.GetPointStatus( { target=enemy } ); // 位置情報取得
-				local vx = posst.distance_x/mvparam.vec_div;
+				
+				local use_div = ( hs.Type & _HitType_Guard )? mvparam.guard_vec_div : mvparam.vec_div
+				local vx = posst.distance_x/use_div;
+				
+				local use_addx = ( hs.Type & _HitType_Guard )? -200 : 0;
 				
 				if( enemy.push() )
 				{
 					local vec = BMvTbl.GetVector( { flags=_Vector_Bound } );
-					BMvTbl.SetVector( { x=vx, addx=0, flags=_Vector_Normal  } );
+					BMvTbl.SetVector( { x=vx, addx=use_addx, flags=_Vector_Bound  } );
 					
 					enemy.pop();
 				}
@@ -796,6 +812,8 @@ t.Mv_Skill_Sousai2 <-
 		BMvEff.ChangeStartCorrectTiming();		
 		
 		//Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_EnableCansel_SkilltoSkill );
+		
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall , time=246, flag=_ClearFlag_ChangeFrame  } );
 	}
 	function FrameUpdate_After()
 	{

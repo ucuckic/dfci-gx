@@ -612,6 +612,8 @@ t.Mv_Throw_A_Hit <-
 {
 	function Init_After()
 	{
+		Battle_Std.InitVector();
+		
 		BMvTbl.SetLP(0,0);
 		
 		local eff = BMvEff.CreateObject( { x=80, y=-240, datatype=1, start_pat=55, flags=_Position_ToolShift } );
