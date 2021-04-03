@@ -4,6 +4,8 @@ _dp("\n[mv.txt]");
 
 local t = {};
 
+const CDef_Hiw_PP_22Count = 0;
+
 //-----------------------------------------------------------------------------
 // 固有関数
 //-----------------------------------------------------------------------------
@@ -31,12 +33,36 @@ t.Mv_Throw_F_Hit <-
 // イベント
 //-----------------------------------------------------------------------------
 
+t.Mv_Null_0202Checker <-
+{
+	function Init_After()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll } );
+	}
+	function Update_After()
+	{
+		local e_dmg = Battle_Std.CheckEnemyisDamage();
+		if( !e_dmg )
+		{
+			BMvTbl.SetPP(CDef_Hiw_PP_22Count,0);
+		}
+	}
+}
+
+t.Mv_Startup <-
+{
+	function Init_After()
+	{
+		BMvEff.CreateObject( { mvname="Mv_Null_0202Checker" } );
+	}
+}
+
 t.Mv_Standby <-
 {
-	function FrameUpdate_After()
+	function Init_After()
 	{
+		BMvEff.CreateObject( { mvname="Mv_Null_0202Checker" } );
 	}
-
 }
 
 t.Mv_RoundWinPattern <-
@@ -91,11 +117,62 @@ t.Mv_CallSupportEnd <-
 // 通常技
 //-----------------------------------------------------------------------------
 
+t.Mv_Obj_CounterHitRect <-
+{
+	function Init_After()
+	{
+		Battle_Std.SetPos_MarkingEnemy();
+	}
+	function HitInterrupt_After()
+	{
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			//Battle_Std.SetEnemyBoundSt( { airrecover = 1, settime=1500 } );
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() ) 
+			{
+				local boundvec = BMvTbl.GetVector( { flags=_Vector_Bound } );
+				local e_mvs = BMvTbl.GetMvName();
+				
+				BMvTbl.SetNoUkemiTimeLimitFlag( { val=0, time=255, flag=_ClearFlag_ChangeMv } );
+				
+				enemy.pop();
+				/*
+				local ret = BMvEff.CapturePlayer( { target = enemy } );
+			
+				if( ret == 1 )
+				{
+					BMvEff.ThrowRelease( { type=20 } );
+					BMvTbl.SetFinalize(0);
+					
+					if( enemy.push() )
+					{
+
+						Battle_Std.BoundInit();
+						BMvTbl.SetVector( { x=boundvec.x, y=boundvec.y, addx=boundvec.addx, addy=boundvec.addy, flags=_Vector_Bound } );
+						
+						BMvTbl.SetHitStop( 25, _ValAdd );
+						
+						Battle_Std.DrawDebugAttackInfo("d "+e_mvs );
+						
+						enemy.pop();
+					}
+				}
+				*/
+			}
+			
+
+		}
+		
+	}
+}
+
 t.Mv_Atk_StdA <-
 {
 	function Init_After()
 	{
 		//BMvEff.CreateObject( { start_pat="Eff426SP_LastBall" } );
+		
 	}
 	function FrameUpdate_After()
 	{
@@ -164,6 +241,14 @@ t.Mv_Atk_StdC <-
 	{
 		// set_atkmask_param3 を使うときは必ず入れること
 		BMvTbl.SetHan6LayerMask( { val = 0 } ); // 全表示
+	}
+}
+
+t.Mv_Atk_Std6A <- 
+{
+	function FrameUpdate_After()
+	{
+		Battle_Std.AddToolShift_NoSurinuke_FU( 3, (1<<1) );
 	}
 }
 
@@ -279,6 +364,8 @@ local maketmpl_Skill236 = function( param={} )
 	
 	ret_tmpl.FrameUpdate_After <- function() : (ball_pat, ball_mv)
 	{
+		Battle_Std.AddToolShift_NoSurinuke_FU( 3, (1<<1) );
+		
 		switch( Battle_Std.GetFrameIDStatus() )
 		{
 		case 10100:
@@ -730,7 +817,7 @@ local maketmpl_Skill0202 = function( param={} )
 		
 		break;
 	case "C":
-		hit_mvname = "Mv_Skill_214C_Hit";
+		mvparam.hit_mv = "Mv_Skill_0202C_Hit";
 		break;
 	case "EX":
 		break;
@@ -762,7 +849,7 @@ local maketmpl_Skill0202 = function( param={} )
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 			case 20:
-				if( bs.IsDown() ) BMvTbl.CalcHitValue(1);
+				//if( bs.IsDown() ) BMvTbl.CalcHitValue(1);
 				
 				break;
 			case 100:
@@ -797,7 +884,7 @@ local maketmpl_Skill0202 = function( param={} )
 
 	ret_tmpl.Finalize <- function() : (mvparam)
 	{
-		Battle_Std.SwitchNextMoveTable("Mv_Neutral", [256,mvparam.hit_mv]); //デフォ,[code,mv]...
+		Battle_Std.SwitchNextMoveTable("Mv_Crouch_Wait", [256,mvparam.hit_mv]); //デフォ,[code,mv]...
 	}
 	
 	ret_tmpl.LastUpdate_After <- function()
@@ -811,6 +898,7 @@ local maketmpl_Skill0202 = function( param={} )
 
 t.Mv_Skill_0202A <- maketmpl_Skill0202( { type="A" } );
 t.Mv_Skill_0202B <- maketmpl_Skill0202( { type="B" } );
+t.Mv_Skill_0202C <- maketmpl_Skill0202( { type="C" } );
 
 local SetEnemyAngle = function(_angle)
 {
@@ -824,6 +912,7 @@ local SetEnemyAngle = function(_angle)
 
 t.Mv_Skill_0202A_Hit <-
 {
+	flags = def_TmplFlags_NoAddComboRate,
 	function Init_After()
 	{
 		local eff = BMvEff.CreateObject( { x=145, y=-60, datatype=1, start_pat=55, flags=_Position_ToolShift } );
@@ -883,6 +972,7 @@ local ThrowParam_WithEnemyHantei = function( use_tbl )
 
 t.Mv_Skill_0202B_Hit <-
 {
+	flags = def_TmplFlags_NoAddComboRate,
 	function Init_After()
 	{
 		local eff = BMvEff.CreateObject( { x=145, y=-60, datatype=1, start_pat=55, flags=_Position_ToolShift } );
@@ -921,6 +1011,66 @@ t.Mv_Skill_0202B_Hit <-
 			break;
 		case 100:
 			//BMvTbl.SetPrio( _CharaPrio_Near );
+			break;
+		}
+		
+		//Battle_Std.MutekiThrowRelease( { FrameID=100, x=128, y=20, type=2 } );
+		Battle_Std.ThrowRelease( { id=100, x=128, y=20, type=2 } );
+	}
+	function HitInterrupt_After()
+	{
+		Battle_Std.SetEnemyBoundSt( { settime = 7 } );
+	}
+	function LastUpdate_After()
+	{
+		//Battle_Std.NoCansel_NoAttackHit();
+	}
+}
+
+t.Mv_Skill_0202C_Hit <-
+{
+	flags = def_TmplFlags_NoAddComboRate,
+	function Init_After()
+	{
+		local eff = BMvEff.CreateObject( { x=145, y=-60, datatype=1, start_pat=55, flags=_Position_ToolShift } );
+		if( eff.push() )
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround } );
+			eff.pop();
+		}
+		
+		BMvTbl.AddPP(CDef_Hiw_PP_22Count,1);
+	}
+	function FrameUpdate_After() : (SetEnemyAngle)
+	{
+		Battle_Std.AddToolShift_NoSurinuke_FU( 3, (1<<1) );
+		local count = BMvTbl.GetPP(CDef_Hiw_PP_22Count);
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 1:
+			BMvTbl.SetPrio( _CharaPrio_Near );
+			
+			BMvEff.ThrowParam( { pattern=320, x=140, y=120, frame=3, hantei_rect=[ _Hantei_Etc, 11 ] } );
+			//SetEnemyAngle(3000);
+			break;
+		case 2:
+			BMvEff.ThrowParam( { pattern=320, x=145, y=120, frame=3, hantei_rect=[ _Hantei_Etc, 11 ] } );
+			SetEnemyAngle(200);
+			break;
+		case 3:
+			BMvEff.ThrowParam( { pattern=320, x=140, y=-410, frame=0, hantei_rect=[ _Hantei_Etc, 10 ] } );
+			SetEnemyAngle(0);
+			break;
+		case 4:
+			BMvEff.ThrowParam( { pattern=320, x=124, y=-358, frame=0, hantei_rect=[ _Hantei_Etc, 10 ] } );
+			
+			break;
+		case 5:
+			BMvEff.ThrowParam( { pattern=320, x=122, y=-354, frame=0, hantei_rect=[ _Hantei_Etc, 10 ] } );
+			break;
+		case -200:
+			if( count >= 4 ) BMvTbl.Frame_Proc( 1, _ValAdd );
 			break;
 		}
 		

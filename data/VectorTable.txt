@@ -924,6 +924,8 @@ VectorList <-
 		
 		[ 400,  3000,  3600,    0, 250 ], // 124 with high xvec
 		
+		[ 500,  5000,  -1500,    0, 250 ], // fast forward low rising
+		
 		//------------------------------------------------------------------------------■
 		//255まで
 	],
@@ -1310,6 +1312,30 @@ vectmpl.add({
 			ground_ukemi_num = -1, // 床受け身番号 -1:地上受け身不可
 			out_effect_name = "Eff_Hit_Down", // 発生エフェクト名	
 			flag_down = true, // ダウン状態扱いとする
+		},
+	]
+})
+
+vectmpl.add({
+	number = 20, // 定義番号
+
+	name = "のけぞらない",
+	prio_vector = 0, // ベクトル優先度
+	ko_vector = def_VL_KoVector, // KO時のベクトル修正 0 だと修正しない
+	Finalize_Hit = "Mv_Modori_Down", //無いとファイナライズ通った時点でエラー
+	power=def_VL_Pow_LV0, //声無しやられレベル
+
+	tblcount = 1, // テーブル数
+	tbl = 
+	[
+		{
+			vector_num = 20, // 使用ベクトル番号
+			hit_pattern = 0,
+			guard_pattern = def_VL_GuardPat_Ground,
+			vector_time = 0, // 発生時間
+			vector_returntime = 0, // 壁反射ベクトル
+			ukemitime = -1, // 受身不能時間 -1:空中受け身不可 -2:引継ぎ -1000以下:((n+1000)*-1)加算
+			ground_ukemi_num = -1, // 床受け身番号 -1:地上受け身不可
 		},
 	]
 })
@@ -8470,6 +8496,50 @@ vectmpl.add({
 		{
 			ukemitime = 16, // 基本受け身不可時間
 			vector_num = 133, // 使用ベクトル番号
+			hit_pattern = def_VLP_KiriUkiYoko,
+			vector_time = -1, // 発生時間
+			vector_returntime = 250, // 壁反射ベクトル
+			flag_boundwall = true, // 
+			flag_boundwall_stageside = true, // ステージ端のみ壁にぶつかる
+			flag_erasekasanari = true, // 重なり消去
+			wall_ukemi_num = -1, // 壁受け身不可
+			ground_ukemi_num = -1, // 床受け身番号
+			flag_noboundmutekiplus = true, // 激突時の無敵カウント加算無し
+		},
+		{
+			vector_type = 0, // 状態 0-地上 1-空中 （基本値 1）		
+			vector_num = 197, // 使用ベクトル番号
+			hit_pattern = def_VLP_AomukeBound,
+			vector_time = -1, // 発生時間
+			vector_returntime = 0, // 壁反射ベクトル
+			ukemitime = -2, // 受身不能時間 -1:空中受け身不可 -2:引継ぎ -1000以下:((n+1000)*-1)加算
+			ground_ukemi_num = -1, // 床受け身番号 -1:地上受け身不可
+			out_effect_name = "Eff_Hit_Down", // 発生エフェクト名					
+			flag_down = true, // ダウン状態扱いとする
+		},
+	]
+})
+
+vectmpl.add({
+	number = 841, // 定義番号
+
+	name = "fast_forward_norise_wallstick",
+	prio_vector = 110, // ベクトル優先度
+	ko_vector = 0, // KO時のベクトル修正 0 だと修正しない
+	downhit_vector = 237, // flag_down で移行するベクトル番号
+	wallbound_vector = 900, //壁ヒット時に移行するベクトル番号
+	Finalize_Hit = "Mv_Modori_Down",
+
+	hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_check = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_vector = 133, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
+
+	tblcount = 2, // テーブル数
+	tbl = 
+	[
+		{
+			ukemitime = 16, // 基本受け身不可時間
+			vector_num = 500, // 使用ベクトル番号
 			hit_pattern = def_VLP_KiriUkiYoko,
 			vector_time = -1, // 発生時間
 			vector_returntime = 250, // 壁反射ベクトル

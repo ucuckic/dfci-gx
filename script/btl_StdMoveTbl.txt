@@ -11127,10 +11127,10 @@ Std_MoveTable.Mv_ExSpecialDouji <-
 
 
 // Std_MoveTableに特殊技関係をガーッと追加する関数
-local Add_EXAtks = function( stdmv ) : (ground_atk_init, air_atk_init, set_AirAtkLandStatus, set_AirAtk_LandMoveableFrame)
+local Add_EXAtks = function( stdmv ) : (ground_atk_init, air_atk_init, set_AirAtkLandStatus, set_AirAtk_LandMoveableFrame, clear_rapidcancel_flag)
 {
 	//関数内関数
-	local makemv_GroundEXAtk = function( param={} ) : (ground_atk_init)
+	local makemv_GroundEXAtk = function( param={} ) : (ground_atk_init, clear_rapidcancel_flag)
 	{
 		local retmv = {};
 		
@@ -11142,7 +11142,7 @@ local Add_EXAtks = function( stdmv ) : (ground_atk_init, air_atk_init, set_AirAt
 		local pat_num = BMvEff.GetPatternNum( { datatype=0, pat=pat } ); // パターン文字列のパターン番号を事前取得
 		if( pat_num != -1 ) pat = pat_num;
 		
-		retmv.Init_Std <- function() : ( ground_atk_init, limit, pat, movecode )
+		retmv.Init_Std <- function() : ( ground_atk_init, limit, pat, movecode, clear_rapidcancel_flag )
 		{
 			ground_atk_init(); //通常攻撃共通Init
 			
@@ -11155,6 +11155,8 @@ local Add_EXAtks = function( stdmv ) : (ground_atk_init, air_atk_init, set_AirAt
 		
 			BMvTbl.SetComboLimit( limit );
 			BMvTbl.SetPattern( pat );
+			
+			clear_rapidcancel_flag();
 		}
 
 		local fu_voice = param.FUVoice;
@@ -11177,7 +11179,7 @@ local Add_EXAtks = function( stdmv ) : (ground_atk_init, air_atk_init, set_AirAt
 	}
 
 
-	local makemv_AirEXAtk = function( param={} ) : (air_atk_init, set_AirAtkLandStatus)
+	local makemv_AirEXAtk = function( param={} ) : (air_atk_init, set_AirAtkLandStatus, clear_rapidcancel_flag)
 	{
 		local retmv = {};
 		
@@ -11188,7 +11190,7 @@ local Add_EXAtks = function( stdmv ) : (ground_atk_init, air_atk_init, set_AirAt
 		local pat_num = BMvEff.GetPatternNum( { datatype=0, pat=pat } ); // パターン文字列のパターン番号を事前取得
 		if( pat_num != -1 ) pat = pat_num;		
 		
-		retmv.Init_Std <- function() : ( air_atk_init, limit, pat, movecode )
+		retmv.Init_Std <- function() : ( air_atk_init, limit, pat, movecode, clear_rapidcancel_flag )
 		{
 			air_atk_init(); //通常攻撃共通Init
 			
@@ -11203,6 +11205,8 @@ local Add_EXAtks = function( stdmv ) : (ground_atk_init, air_atk_init, set_AirAt
 		
 			BMvTbl.SetComboLimit( limit );
 			BMvTbl.SetPattern( pat );
+			
+			clear_rapidcancel_flag();
 		}
 
 		local fu_voice = param.FUVoice;

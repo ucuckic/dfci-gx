@@ -9,7 +9,7 @@ t.Mv_Obj_Yakko <-
 	function FrameUpdate_After()
 	{
 		local mvs = BMvTbl.GetMvStatus();
-		if( mvs.MvCount == 5 ) BMvTbl.CalcHitValue(1);
+		if( mvs.MvCount == 5 && mvs.CallCount==0 ) BMvTbl.CalcHitValue(1);
 	}
 }
 
@@ -1087,7 +1087,9 @@ local maketmpl_AirSlushDownKick = function( param={} )
 	local ret_tmpl = {};
 	
 	local use_param = {
-		set_y_vec = -2500 // 標準Ｙベクトル
+		set_y_vec = -2500, // 標準Ｙベクトル
+		
+		track_enemy = 0,
 	}
 	
 	switch( param.type )
@@ -1100,6 +1102,7 @@ local maketmpl_AirSlushDownKick = function( param={} )
 		use_param.set_y_vec = -2800;
 		break;
 	case "EX":
+		use_param.track_enemy = 1;
 		break;
 	}
 	
@@ -1121,11 +1124,74 @@ local maketmpl_AirSlushDownKick = function( param={} )
 			// _dp("\n ↑上昇中↑　"+set_y_vec+"に10%寄せる:"+vec.y+"+"+plus_y_vec+" = "+(vec.y+plus_y_vec) );
 		}
 		
+		if( use_param.track_enemy )
+		{
+			local epos = Battle_Std.GetEnemyPosition();	
+			local pos = BMvTbl.GetPosition( 0 );
+							
+			local use_addy = 0xfa;
+			local use_y = -2000;
+			local use_addx = 0;
+			
+			local e_dist = Battle_Std.GetEnemyDistance();
+			local pos_dif = epos.y - pos.y;
+			
+			local track_max_x = 750*128;
+			local track_max_y = 250*128;
+			
+			if( e_dist > track_max_x ) e_dist = track_max_x;
+			if( pos_dif > track_max_y ) pos_dif = track_max_y;
+			
+			if( e_dist )
+			{
+				use_y -= e_dist/40
+				use_addy += e_dist/500;
+				use_addx -= e_dist/500;
+				
+				if( pos_dif > 0 ) //above opponent
+				{
+					use_y += pos_dif/40;
+					use_addy += pos_dif/100;
+				}
+				else
+				{
+					//below opponent
+				}
+				
+				Battle_Std.DrawDebugAttackInfo("px "+pos_dif+" yy "+use_y );
+
+				
+				BMvTbl.SetVector( { x=e_dist/20, y=use_y, addy=use_addy, addx=0, flags=_Vector_Normal } );
+			}
+		}
+		
+		BMvTbl.SetLP(0,0);
+		
 	}
 
 	
-	ret_tmpl.FrameUpdate_After <- function()
+	ret_tmpl.FrameUpdate_After <- function() : (use_param)
 	{
+		local mvs = BMvTbl.GetMvStatus();
+		
+		local vec = BMvTbl.GetVector( 0 );
+		local pos = BMvTbl.GetPosition( 0 );
+		local e_dist = Battle_Std.GetEnemyDistance();
+		local epos = Battle_Std.GetEnemyPosition();	
+		local pos_dif = epos.y - pos.y;
+		
+		local y_max = 4500;
+		
+		if( vec.y > y_max )
+		{
+			BMvTbl.SetVector( { y=y_max, addy=0, flags=_Vector_Normal } );
+		}
+			
+		if( use_param.track_enemy && BMvTbl.GetLP(0)==0 )
+		{
+		}
+		
+		if( pos.y >= -150*128 && mvs.FrameID==2 || mvs.FrameID==2 && e_dist <= 300*128 && pos_dif <= 200*128 ) BMvTbl.JumpFrameID( 3 );
 	}
 	
 	return ret_tmpl;
@@ -1551,6 +1617,8 @@ t.Mv_Skill_41236SP_Hit <-
 		BMvEff.SetCamera_Clipping( 0 ); //画面端のクリッピング補正を切る
 		
 		BMvEff.ThrowChara_SetJoint( 0 ); // 投げているキャラを自分の移動にくっつけるかどうか
+		
+		BMvEff.SetExist( { level = _Exist_NoWall } );
 	}
 	function FrameUpdate_After() : (move_enemy)
 	{
@@ -1561,10 +1629,10 @@ t.Mv_Skill_41236SP_Hit <-
 			BMvEff.CreateObject( { mvname="Mv_Null_YakkyoCA1_0", x=200<<7, y=-200<<7 } );
 			
 			BMvTbl.SetPosition( { x=90, flags=_Position_Add|_Position_ChangeMuki|_Position_ToolShift } );
-			move_enemy(-105);
+			move_enemy(-205);
 			break;
 		case 101:
-			BMvTbl.SetVector( { x=1500, flags=_Vector_Normal } );
+			BMvTbl.SetVector( { x=2500, flags=_Vector_Normal } );
 			break;
 		case 200: // うちあげ
 			BMvTbl.SetVector( { x=0, flags=_Vector_Normal } );
@@ -1581,7 +1649,13 @@ t.Mv_Skill_41236SP_Hit <-
 			break;
 		case 500: // 最後の1F
 			BMvEff.FadeProc_Set( { type=0, time=[0,10,15] color=0xFFFFFF } ); // 
+			BMvEff.SetExist( { level = _Exist_NoWall, mode=_ExistMode_Erase } );
+			
+			Battle_Std.AddXPos_CheckFrontStage(0,200)
+			
 			BMvEff.ThrowParam( { x=200, y=0, } );
+			
+			
 			break;
 		}
 	}
@@ -1603,6 +1677,7 @@ t.Mv_Skill_41236SP_Hit <-
 		BMvEff.ResetViewCamera();
 	
 		BMvEff.SetCamera_Clipping( 1 ); //画面端のクリッピング補正をかける
+		BMvEff.SetExist( { level = _Exist_NoWall, mode=_ExistMode_Erase } );
 	}
 }
 

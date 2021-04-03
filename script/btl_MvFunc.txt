@@ -886,6 +886,14 @@ Battle_Std.AttackImpact_StdFunc <- function(info)
 				Battle_Std.ComboPoint_Multi( def_CPH_CounterHit ); // コンボポイントを乗算
 			}
 			
+			local enemy = BMvCore.GetLastHitCharaData( 0 ); 
+			if( enemy.push() )
+			{
+				BMvTbl.SetHitStop( 8, _ValAdd ); // 相手のヒットストップだけ伸ばす
+				
+				enemy.pop();
+			}
+			
 			// _dp("\n カウンターヒット回数加算");
 			tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_CounterHit ); // カウンターヒット回数加算
 		}
@@ -4411,6 +4419,12 @@ function Battle_Std::JumpFrameID_NotHoldButton(tbl)// mask, checkid, jumpid )
 					}
 				}
 			}
+			else if( "EndFrameID" in tbl && s.FrameID == tbl.EndFrameID && s.isFrameUpdate )
+			{
+				// _dp("\n エクステンドアクションポテンシャル加算");
+				tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_ExtendAction ); // エクステンドアクション加算
+				Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_ExtendAction ); // エクステンドアクションのＭｖであることを保存
+			}
 		}
 	}
 	else //これはひどい
@@ -4439,7 +4453,13 @@ function Battle_Std::JumpFrameID_NotHoldButton(tbl)// mask, checkid, jumpid )
 				}
 			}		
 		}
-	
+		else if( "EndFrameID" in tbl && s.FrameID == tbl.EndFrameID && s.isFrameUpdate )
+		{
+			// _dp("\n エクステンドアクションポテンシャル加算");
+			tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_ExtendAction ); // エクステンドアクション加算
+			Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_ExtendAction ); // エクステンドアクションのＭｖであることを保存
+		}
+		
 	}
 	return -1;
 }
@@ -4482,6 +4502,12 @@ Battle_Std.SetPattern_NotHoldButton <- function( tbl )// ButtonMask, CheckFrameI
 						return 1;
 					}
 				}
+			}
+			else if( "EndFrameID" in tbl && s.FrameID == tbl.EndFrameID && s.isFrameUpdate )
+			{
+				// _dp("\n エクステンドアクションポテンシャル加算");
+				tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_ExtendAction ); // エクステンドアクション加算
+				Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_ExtendAction ); // エクステンドアクションのＭｖであることを保存
 			}
 		}
 	}
@@ -9312,6 +9338,19 @@ Battle_Std.DrawHitBoxes_Outlined <- function()
 
 
 //////////not boxes
+
+Battle_Std.SetEnemyHitStop <- function( _time=0, _flag=_ValSet )
+{
+	local enemy = BMvCore.GetNearEnemyCharaData();
+	if( enemy.isdone() )
+	{
+		if( enemy.push() )
+		{
+			BMvTbl.SetHitStop( _time, _flag );
+			enemy.pop();
+		}
+	}
+}
 
 Battle_Std.SetEnemyBoundSt <- function( boundst_param )
 {

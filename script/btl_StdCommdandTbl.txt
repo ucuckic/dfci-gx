@@ -1797,7 +1797,7 @@ if( Def_Rule_GameSystem == Def_RGS_CLI )
 	
 	t.Std_AirDash_F <-
 	{ //-------------------------------
-		num = def_CN_Assault_Air, name = "Cmd_AirDash_F", command = [ "0606@N,255@@D,4@@L,4@" ], // 0606@N,255@@L,10@@D,12@
+		num = def_CN_Assault_Air, name = "Cmd_AirDash_F", command = [ "0606@N,255@@D,10@" ], // 0606@N,255@@L,10@@D,12@
 		CmdBeforeStdFunc = function() : (AirDashCount)
 		{
 			if( BMvTbl.AddAirCount( def_ACS_AirDash, 0 ) > AirDashCount ) return 0; // 空中ダッシュを使ってた
@@ -2970,7 +2970,7 @@ t.Atk_Std6A <-
 	CmdBeforeStdFunc = function()
 	{
 		if( Battle_Std.CancelCheck_NormalAtk()==0 ) return 0;
-		if( BMvTbl.GetPP(def_PP_CmdStatus)&def_PP_CS_DoujiDash_F ) return 0;
+		//if( BMvTbl.GetPP(def_PP_CmdStatus)&def_PP_CS_DoujiDash_F ) return 0;
 		return 1;
 	},
 

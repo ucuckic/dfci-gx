@@ -263,7 +263,19 @@ t.Mv_Atk_Std3C <-
 	function HitInterrupt_After()
 	{
 		if( Battle_Std.CheckGuardTiming() ) BMvTbl.SetVector( { x=-600, y=-1500, addy=250, flags=_Vector_Normal } );
-		//if( Battle_Std.CheckDamageTiming() ) BMvTbl.SetVector( { x=1600, y=-3500, addy=250, flags=_Vector_Normal } );
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			local enemy = BMvCore.GetNearEnemyCharaData(); 
+			if( enemy.push() )
+			{
+				local stp = BMvTbl.SetHitStop( 8, _ValGet ); // 相手のヒットストップだけ伸ばす
+				local hs = BMvTbl.GetMvHitStatus();
+				
+				enemy.pop();
+				
+				Battle_Std.DrawDebugAttackInfo( "ini "+hs.Count );
+			}
+		}
 	}
 }
 
@@ -1261,14 +1273,14 @@ t.Mv_Skill_Sousai2 <-
 				}
 			}
 			
+			Battle_Std.SetEnemyHitStop(0); //prevent nu ch from interference
+			
 			BMvTbl.SetLP(0,1);
 		}
 
 	}
 	function HitInterrupt_After()
 	{
-
-		
 		Battle_Std.ImpactSkill_HitInterrupt( def_MC1_AtkLow|def_MC1_AtkJump ); // LP9使用
 	}
 }

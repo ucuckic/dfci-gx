@@ -312,6 +312,13 @@ se["Mv_Skill_0202A_FU"] <- {
 	selist = { common = [533], }
 }
 
+se["Mv_Atk_Std6A_FU"] <- {
+	Param0=10,
+	average = 100,
+	selist = { common = [150], }
+}
+
+
 /*
 
 se["Mv_Skill_0202B_FU"] <- {

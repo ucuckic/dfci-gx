@@ -12,7 +12,7 @@ local t =
 	
 	Skill_0202A = {},
 	Skill_0202B = {},
-	//Skill_0202C = {},
+	Skill_0202C = {},
 
 	Skill_236A = {},
 	Skill_236B = {},
@@ -143,6 +143,7 @@ local t =
 	Skill_63214SP = {},	
 	
 	Atk_Std6C = { num = def_CN_Atk_StdC-1 },
+	Atk_Std6A = {},
 	
 	Std_Throw_F ={ command = ["4+C"] }
 	
