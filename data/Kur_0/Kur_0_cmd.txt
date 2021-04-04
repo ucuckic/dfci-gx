@@ -10,6 +10,10 @@ local t =
 	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
 	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
 
+	Skill_0202A = {},
+	Skill_0202B = {},
+	Skill_0202C = {},
+	
 	Skill_236A = {},
 	Skill_236B = {},
 	Skill_236C = {},

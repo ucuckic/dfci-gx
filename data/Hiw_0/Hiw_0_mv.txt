@@ -252,6 +252,14 @@ t.Mv_Atk_Std6A <-
 	}
 }
 
+t.Mv_Atk_Std6C <-
+{
+	function FrameUpdate_After()
+	{
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
+	}
+}
+
 
 t.Mv_Atk_CroA <-
 {
@@ -825,7 +833,6 @@ local maketmpl_Skill0202 = function( param={} )
 	
 	ret_tmpl.Init_After <- function()
 	{
-
 	}
 	
 	ret_tmpl.FrameUpdate_After <- function() : (mvparam)
@@ -921,6 +928,8 @@ t.Mv_Skill_0202A_Hit <-
 			BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround } );
 			eff.pop();
 		}
+
+		Battle_Std.MvAction.AddFlag( def_MC_NoBursted );
 	}
 	function FrameUpdate_After()
 	{
@@ -981,6 +990,8 @@ t.Mv_Skill_0202B_Hit <-
 			BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround } );
 			eff.pop();
 		}
+		
+		Battle_Std.MvAction.AddFlag( def_MC_NoBursted );
 	}
 	function FrameUpdate_After() : (SetEnemyAngle)
 	{
@@ -1040,6 +1051,8 @@ t.Mv_Skill_0202C_Hit <-
 		}
 		
 		BMvTbl.AddPP(CDef_Hiw_PP_22Count,1);
+		
+		Battle_Std.MvAction.AddFlag( def_MC_NoBursted );
 	}
 	function FrameUpdate_After() : (SetEnemyAngle)
 	{

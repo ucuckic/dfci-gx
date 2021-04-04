@@ -717,10 +717,11 @@ function Battle_Std::MakeMoveTable( t, cmd, _ChrNum = 0 )
 		{
 			local bs = BtlMvStd.GetBoundStatus();
 
-			local bound_string = "Mv_Bound_0000";
+			local bound_string = "Mv_BoundWall_0000";
 			local next_string = bound_string.slice( 0, bound_string.len() - bs.Num.tostring().len() ) + bs.Num;
 			
-			//Battle_Std.DrawDebugAttackInfo("nstr "+next_string+" t "+("d" in t) );
+			//Battle_Std.DrawDebugAttackInfo(" bsn "+bs.Num );
+			//Battle_Std.DrawDebugAttackInfo("nstr "+next_string );
 
 			if( next_string in mv )
 			{

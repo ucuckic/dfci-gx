@@ -884,16 +884,7 @@ Battle_Std.AttackImpact_StdFunc <- function(info)
 			else
 			{
 				Battle_Std.ComboPoint_Multi( def_CPH_CounterHit ); // コンボポイントを乗算
-			}
-			
-			local enemy = BMvCore.GetLastHitCharaData( 0 ); 
-			if( enemy.push() )
-			{
-				BMvTbl.SetHitStop( 8, _ValAdd ); // 相手のヒットストップだけ伸ばす
-				
-				enemy.pop();
-			}
-			
+			}	
 			// _dp("\n カウンターヒット回数加算");
 			tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_CounterHit ); // カウンターヒット回数加算
 		}

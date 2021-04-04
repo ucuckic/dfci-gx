@@ -4,99 +4,6 @@ _dp("\n[Asu_0_mv.txt]");
 
 local t = {};
 
-/*
-t.Mv_Bound_0900 <- 
-{
-	function Init_Std() // 
-	{
-		Battle_Std.BoundInit();
-		
-		BMvTbl.SetLP(0,0);
-		BMvTbl.SetLP(1,0); //force anim
-		
-		local bs = BtlMvStd.GetBoundStatus();
-		if( bs.VecCount==0 )
-		{			
-			BMvTbl.SetPattern( "WallStuck" );
-		}
-		
-		//Battle_Std.DrawDebugAttackInfo("char bound ow "+bs.VecCount );
-
-	}
-	function Update_Std()
-	{
-		Battle_Std.BoundUpdate();	
-		
-		local mvs = BMvTbl.GetMvStatus();
-		local bs = BtlMvStd.GetBoundStatus();
-				
-		if ( mvs.FrameID==5 ) BMvTbl.SetLP(1,1);
-		
-		local frame_tick_speed = 2;
-		
-		if( mvs.MvCountFrame%frame_tick_speed==0 && mvs.MvCountFrame > 0 && BMvTbl.GetLP(0)==0 && BMvTbl.GetLP(1)==0 && bs.VecCount==0 ) 
-		{
-			BMvTbl.Frame_Proc( 1, _ValAdd );
-			
-					
-			//Battle_Std.DrawDebugAttackInfo("char bound ow "+mvs.MvCountFrame );
-		}
-	}
-	function FrameUpdate_Std()
-	{
-		local mvs = BMvTbl.GetMvStatus();
-		local bs = BtlMvStd.GetBoundStatus();
-		
-		local cp;
-		local enemy = BMvCore.GetEnemyCharaData();
-		
-		if( enemy.push() )
-		{
-			cp = BMvTbl.ComboPoint_Calc( { num=0 } );
-			enemy.pop();
-		}
-			
-			
-		local stick_time = 1 * cp;
-		
-		if( mvs.MvCount >= stick_time && bs.VecCount==0 && BMvTbl.GetLP(0)==0 ) 
-		{
-			BMvTbl.SetPattern( 330 );
-			
-			BMvTbl.Frame_Proc( 1, _ValSet );
-			
-			BMvTbl.SetLP(0,1);
-			
-			BMvTbl.SetVector( { y=0, addy=250, flags=_Vector_Bound } );
-		}
-		
-		if( BMvTbl.GetLP(0) )
-		{
-			mvs = BMvTbl.GetMvStatus();
-			if (mvs.FrameID==100) //落下チェックID中なら
-			{
-				local vec = BMvTbl.GetVector( { flags=_Vector_Bound }); //ベクトル取得
-				if ( vec.y >= 0 )
-				{
-					if (BMvTbl.JumpFrameID(256) == -1)
-					{
-						_dem("【警告】飛び先のフレームIDが無い");
-					}
-				}
-			}
-		}
-		
-	}
-	function Finalize_Std() // 
-	{
-		BtlMvStd.SetBoundFinalize();
-	}
-	function LastUpdate_Std() // 
-	{	
-		BtlMvStd.ClearBound(); // 状態解除
-	}
-}
-*/
 //-----------------------------------------------------------------------------
 // 固有関数
 //-----------------------------------------------------------------------------
@@ -517,7 +424,7 @@ t.Mv_Atk_CroB <-
 	}
 	function FrameUpdate_After() : (func_CreateBlade)
 	{
-		// Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head ); // Param1 == 8 の時、_HitCheckFlag_Head 頭無敵
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head ); // Param1 == 8 の時、_HitCheckFlag_Head 頭無敵
 	
 		local mvs = BMvTbl.GetMvStatus();
 		if( mvs.isFrameUpdate )
@@ -1054,7 +961,8 @@ t.Mv_Skill_Sousai2 <-
 	}
 	function FrameUpdate_After() : (func_CallTrustBladeEffect)
 	{
-		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
 		
 		local mvs = BMvTbl.GetMvStatus();
 		

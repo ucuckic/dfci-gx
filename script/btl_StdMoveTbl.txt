@@ -5948,6 +5948,8 @@ Std_MoveTable.Mv_Atk_CroA <-
 		BMvTbl.SetPattern(def_PAT_Atk_CroA);
 		BMvTbl.SetPP(def_PP_StdComboChain,1);
 		BMvTbl.SetPP(def_PP_CroComboChain,1);
+		
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function FrameUpdate_Std()
 	{
@@ -10035,9 +10037,15 @@ Std_MoveTable.Mv_Obj_BigWall <-
 	}
 }
 
-Std_MoveTable.Mv_Bound_0900 <- 
+local maketmpl_WallStickBound = function( param={} )
 {
-	function Init_Std() // 
+	local ret_tmpl = {};
+	local mvparam = 
+	{
+		stick_time = ( "stick_time" in param )? param.stick_time : -1,
+	};
+	
+	ret_tmpl.Init_Std <- function()
 	{
 		Battle_Std.BoundInit();
 		
@@ -10045,19 +10053,15 @@ Std_MoveTable.Mv_Bound_0900 <-
 		BMvTbl.SetLP(1,0); //force anim
 		BMvTbl.SetLP(2,0); //slide
 		
-		//AirUkemi
-		
 		local bs = BtlMvStd.GetBoundStatus();
 		if( bs.VecCount==0 )
 		{			
 			BMvTbl.SetPattern( "WallStuck" );
 			BMvEff.CreateObject( { mvname="Mv_Obj_BigWall", datatype=1, start_pat="big_wall" } ); // BIG WALL stop a nigga from running up
 		}
-		
-		//Battle_Std.DrawDebugAttackInfo("char bound ow "+bs.VecCount );
-
 	}
-	function Update_Std()
+	
+	ret_tmpl.Update_Std <- function()
 	{
 		Battle_Std.BoundUpdate();	
 		
@@ -10085,24 +10089,33 @@ Std_MoveTable.Mv_Bound_0900 <-
 			//Battle_Std.DrawDebugAttackInfo("x "+pos.x+" usem "+use_muki );
 		}
 	}
-	function FrameUpdate_Std()
+	
+	ret_tmpl.FrameUpdate_Std <- function() : (mvparam)
 	{
 		local mvs = BMvTbl.GetMvStatus();
 		local bs = BtlMvStd.GetBoundStatus();
 		
-		local cp;
-		local enemy = BMvCore.GetEnemyCharaData();
-		
-		if( enemy.push() )
-		{
-			cp = BMvTbl.ComboPoint_Calc( { num=0 } );
-			enemy.pop();
-		}
-		
+		local stick_time;
 		local slide_time = 5;
 		local slide_addy = 10;
 		
-		local stick_time = ( (1 * cp) < slide_time )? slide_time : 1 * cp;
+		if( mvparam.stick_time == -1 )
+		{
+			local cp;
+			local enemy = BMvCore.GetEnemyCharaData();
+			
+			if( enemy.push() )
+			{
+				cp = BMvTbl.ComboPoint_Calc( { num=0 } );
+				enemy.pop();
+			}
+			
+			stick_time = ( (1 * cp) < slide_time )? slide_time : 1 * cp;
+		}
+		else
+		{
+			stick_time = mvparam.stick_time;
+		}
 		
 		if( mvs.CallCount==0 )
 		{
@@ -10129,16 +10142,13 @@ Std_MoveTable.Mv_Bound_0900 <-
 						BMvTbl.SetPattern( 330 );
 						
 						BMvTbl.Frame_Proc( 1, _ValSet );
+
+						BMvTbl.SetVector( { y=vec.y, addy=250, flags=_Vector_Bound } );
+						
 						
 						BMvTbl.SetLP(0,1);
-						
-						BMvTbl.SetVector( { y=vec.y, addy=250, flags=_Vector_Bound } );
 					}
 				}
-			}
-			if( mvs.MvCount >= stick_time && bs.VecCount==0 && BMvTbl.GetLP(0)==0 ) 
-			{
-
 			}
 		}
 		
@@ -10159,15 +10169,25 @@ Std_MoveTable.Mv_Bound_0900 <-
 		}
 		
 	}
-	function Finalize_Std() // 
+	
+	ret_tmpl.Finalize_Std <- function()
 	{
 		BtlMvStd.SetBoundFinalize();
 	}
-	function LastUpdate_Std() // 
+	
+	ret_tmpl.LastUpdate_Std <- function()
 	{	
-		BtlMvStd.ClearBound(); // ó‘Ô‰ðœ
+		BtlMvStd.ClearBound();
 	}
+	
+	return ret_tmpl;
+
 }
+
+Std_MoveTable.Mv_BoundWall_0900 <- maketmpl_WallStickBound( { stick_time = -1 } );
+Std_MoveTable.Mv_BoundWall_0901 <- maketmpl_WallStickBound( { stick_time = 120 } ); //901 static wallbound (long)
+Std_MoveTable.Mv_BoundWall_0902 <- maketmpl_WallStickBound( { stick_time = 100 } ); //902 static wallbound (normal)
+Std_MoveTable.Mv_BoundWall_0903 <- maketmpl_WallStickBound( { stick_time = 55 } ); //903 static wallbound (short)
 
 //‚«‚è‚à‚ÝŒn“‚Í“¯‚¶ˆ—
 

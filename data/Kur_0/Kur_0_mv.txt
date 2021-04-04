@@ -12,6 +12,9 @@ local t = {};
 
 const CDef_Kur_SP_KirifudaUse = 0;
 
+const CDef_Kur_PP_OD_Time = 6;
+//const CDef_Kur_PP_OD_State = 1; def_PP_Kur_OverDriveType
+
 //-----------------------------------------------------------------------------
 // 固有関数
 //-----------------------------------------------------------------------------
@@ -42,7 +45,7 @@ func_BL.Call <- function( param={} )
 func_BL.CallAtk <- function( param={} )
 {
 	local useparam = 0;
-	switch( tDDC.KirifudaWatch_GetParam( 0 ) ) // 0:黒 1:赤 2:緑 3:青
+	switch( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) ) // 0:黒 1:赤 2:緑 3:青
 	{
 	case 0:
 		useparam = param.Normal;
@@ -72,7 +75,7 @@ func_BL.ModeBlue_JumpCancel <- function()
 	// モードブルーの時にジャンプキャンセル可能なフラグを立てる
 	if( Battle_Std.GetUpdateParam2() & 32 )
 	{
-		local mode_blue = ( tDDC.KirifudaWatch_GetParam( 0 ) == 3 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+		local mode_blue = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 3 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 		if( mode_blue )
 		{
 			BMvTbl.SetAsStatusFlag( { normal=_CancelFlag_Hit, time=32, flag=_ClearFlag_ChangeFrame } );
@@ -107,7 +110,7 @@ local makemv_BLAtk = function( param={} )
 // LP0を使用する
 local kiri_SpeedUp = function( param={} )
 {
-	if( tDDC.KirifudaWatch_GetParam( 0 ) == 3 ) // 切り札中(モードブルー)
+	if( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 3 ) // 切り札中(モードブルー)
 	{
 		if( "Param3" in param )
 		{
@@ -157,7 +160,7 @@ local kiri_SpeedUp = function( param={} )
 
 local kiri_EndSpeedDown = function( _setXvec = 0 )
 {
-	if( tDDC.KirifudaWatch_GetParam( 0 ) != 3 ) // 切り札状態じゃない
+	if( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) != 3 ) // 切り札状態じゃない
 	{
 		// 切り札による加速処理が行われている
 		if( Battle_Std.MoveCode.CheckFlag( def_MC_CharaFlag1 ) )
@@ -303,10 +306,39 @@ t.Mv_Throw_F_Hit <-
 // イベント
 //-----------------------------------------------------------------------------
 
+t.Mv_Null_0202Manage <-
+{
+	function Init_After()
+	{
+		BMvTbl.SetLP(0,0);
+	}
+	function FrameUpdate_After()
+	{
+		local player = BMvCore.GetPlayerCharaData();
+
+		local od_type = BMvTbl.GetPP( def_PP_Kur_OverDriveType );
+		local last_od_type = BMvTbl.GetLP(0);
+		
+		if( od_type != last_od_type )
+		{
+			if( player.push() )
+			{
+				BMvEff.SetPaletteSlot( od_type, 0 );
+				player.pop();
+			}
+			
+		}
+		
+		BMvTbl.SetLP(0,od_type);
+	}
+}
+
 t.Mv_Startup <-
 {
 	function Init_After()
 	{
+		BMvEff.CreateObject( { mvname="Mv_Null_0202Manage" } );
+		BMvEff.CreateObject( { mvname="Mv_Null_KirifudaStatus_Green" } );
 	}
 }
 
@@ -448,6 +480,7 @@ t.Mv_Atk_StdB <-
 	{
 	}
 }
+
 t.Mv_BLAtk_StdB <- makemv_BLAtk();
 
 
@@ -617,7 +650,7 @@ local maketmpl_Skill236 = function( param={} ) : (func_BL, pat_num_BL236)
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
-			local mode_red = ( tDDC.KirifudaWatch_GetParam( 0 ) == 1 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+			local mode_red = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 1 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 			local bl_pat = (mode_red)? bl_pat_b : bl_pat_n;
 
 			func_BL.Call( { pat=bl_pat, x=pos.x, y=pos.y, Kezuri=1 } ); // 呼び出し
@@ -687,7 +720,7 @@ local maketmpl_SkillJ236 = function( param={} ) : (func_BL, pat_num_BLJ236)
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
-			local mode_red = ( tDDC.KirifudaWatch_GetParam( 0 ) == 1 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+			local mode_red = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 1 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 			local bl_pat = (mode_red)? bl_pat_b : bl_pat_n;
 
 			func_BL.Call( { pat=bl_pat, x=pos.x, y=pos.y, Kezuri=1 } ); // 呼び出し
@@ -863,6 +896,73 @@ pat_num_BL214.EX_B <- BMvEff.GetPatternNum( { datatype=0, pat="BL214EXB" } ); //
 pat_num_BL214.ActDummy <- BMvEff.GetPatternNum( { datatype=0, pat="BL214ActDummy" } ); // パターン文字列のパターン番号を事前取得
 pat_num_BL214.ActFlash <- BMvEff.GetPatternNum( { datatype=0, pat="BL214ActFlash" } ); // パターン文字列のパターン番号を事前取得
 
+t.Mv_Obj_214Dummy <-
+{
+	function Init_After()
+	{
+	}
+	function FrameUpdate_After()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		local player = BMvCore.GetPlayerCharaData();
+		
+		local oya_pat = BMvTbl.GetLP(0);
+		
+		if( player.push() )
+		{
+			local p_can = ( BCMDTbl.CheckCancelFlag( 1 ) );
+			local p_lp2 = BMvTbl.GetLP(2);
+			local p_mvname = BMvTbl.GetMvName();
+			
+			player.pop();
+			
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.push() )
+			{
+				local oya_mvs = BMvTbl.GetMvStatus();
+				oya.pop();
+				
+				if( oya_mvs.DataPattern != oya_pat ) 
+				{
+					BMvTbl.SetFinalize(0);				
+				}
+			}
+			else
+			{
+				if( p_mvname.find("_Add") )
+				{
+					BMvTbl.SetFinalize(0);
+				}
+				else
+				{
+					BMvTbl.SetFinalize(256);
+				}
+			}
+		}
+	}
+	function Finalize()
+	{
+		local code = BMvTbl.GetFinalizeCode();
+		if( code == 256 ) 
+		{
+			BMvTbl.SetNextMoveTable( "Mv_Obj_214Dummy_Fin" );
+		}
+		else
+		{
+			BMvTbl.SetDeleteMoveTable();
+		}
+	}
+}
+
+t.Mv_Obj_214Dummy_Fin <-
+{
+	flags = def_TmplFlags_ChangeStatusOnly,
+	function Init_After()
+	{
+		BMvTbl.JumpFrameID( 100 );
+	}
+}
+
 
 local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
 {
@@ -956,7 +1056,7 @@ local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
 	
 	retmv.Init <- function() : (bl_pat_n, bl_pat_b)
 	{
-		local mode_blue = ( tDDC.KirifudaWatch_GetParam( 0 ) == 3 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+		local mode_blue = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 3 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 		if( mode_blue )
 		{
 			BMvTbl.SetPattern( bl_pat_b );
@@ -978,21 +1078,25 @@ local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
 	
 	local move = function( move_angle_n, move_angle_b, move_pow_n, move_pow_b ) : (pat_num_BL214)
 	{
-		local mode_blue = ( tDDC.KirifudaWatch_GetParam( 0 ) == 3 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+		local mvs = BMvTbl.GetMvStatus();
+		
+		local mode_blue = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 3 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 		//move_angle
 		local move_angle = (mode_blue)? move_angle_b : move_angle_n; // 使うもの決定
-		local frame = 10;
+		local frame = 30;
 		local pow = (mode_blue)? move_pow_b : move_pow_n;
 		local minpow = 250;
 		local vec = BMvEff.GetVector_FromAngle( { angle = move_angle, speed = pow } );
 
-		local eff = BMvEff.CreateObject( { start_pat=pat_num_BL214.ActDummy, x=vec.x*7, y=vec.y*7 } );
+		local eff = BMvEff.CreateObject( { start_pat=pat_num_BL214.ActDummy, x=vec.x*7, y=vec.y*7, mvname="Mv_Obj_214Dummy" } );
 		if( eff.push() )
 		{
 			local vec = BMvEff.GetVector_FromAngle( { angle = move_angle, speed = minpow } );
 			BMvTbl.SetVector( { x=vec.x, y=vec.y, flags=_Vector_Normal } );
 
-			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange } );
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); //_ObjFlags_EraseParentPatChange
+			BMvTbl.SetLP(0,mvs.DataPattern);
+			
 			eff.pop();
 		}
 		local eff = BMvEff.CreateObject( { start_pat=pat_num_BL214.ActFlash } );
@@ -1045,6 +1149,7 @@ local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
 			break;
 		}
 	}
+	
 	retmv.HitInterrupt_After <- function() : (set_KurCancelTiming)
 	{
 		local mvhs = BMvTbl.GetMvHitStatus();
@@ -1171,7 +1276,7 @@ t.Mv_Skill_214_AddA <- {
 		{
 		case 100:
 			BMvTbl.SetMuki( _Direction_Reverse );
-			func_BL.Call( { mvname="Mv_BLSkill_214_AddA", x=-BMvTbl.GetLP(0), y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
+			func_BL.Call( { mvname="Mv_BLSkill_214_AddA", x=-BMvTbl.GetLP(0)-175, y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
 			BMvTbl.SetMuki( _Direction_Reverse );
 			break;
 		}	
@@ -1191,7 +1296,7 @@ t.Mv_Skill_214_AddB <- {
 		{
 		case 100:
 			BMvTbl.SetMuki( _Direction_Reverse );
-			func_BL.Call( { mvname="Mv_BLSkill_214_AddB", x=-BMvTbl.GetLP(0), y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
+			func_BL.Call( { mvname="Mv_BLSkill_214_AddB", x=-BMvTbl.GetLP(0)-175, y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
 			BMvTbl.SetMuki( _Direction_Reverse );
 			break;
 		}	
@@ -1212,7 +1317,7 @@ t.Mv_Skill_214_AddC <- {
 		{
 		case 100:
 			BMvTbl.SetMuki( _Direction_Reverse );
-			func_BL.Call( { mvname="Mv_BLSkill_214_AddC", x=-BMvTbl.GetLP(0), y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
+			func_BL.Call( { mvname="Mv_BLSkill_214_AddC", x=-BMvTbl.GetLP(0)-175, y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
 			BMvTbl.SetMuki( _Direction_Reverse );
 			break;
 		}	
@@ -1296,7 +1401,7 @@ t.Mv_Skill_Sousai <-
 		Battle_Std.ImpactSkill_Init(); // LP9使用
 		
 		// モードグリーン時は性能アップ
-		local mode_green = ( tDDC.KirifudaWatch_GetParam( 0 ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+		local mode_green = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 		if( mode_green )
 		{
 			BMvTbl.SetPattern( pat_num_Sousai_G ); // 全体Ｆの短いパターンに
@@ -1309,7 +1414,7 @@ t.Mv_Skill_Sousai <-
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
-			local mode_green = ( tDDC.KirifudaWatch_GetParam( 0 ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+			local mode_green = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 			local usepat = ( mode_green )? pat_num_BLSousaiG : pat_num_BLSousai;
 		
 			local eff = func_BL.Call( { pat=usepat, mvname="Mv_BLSkill_Sousai", x=200, y=-250, Kezuri=1 } );
@@ -1365,7 +1470,7 @@ t.Mv_Skill_Sousai2 <-
 		BMvEff.ChangeStartCorrectTiming();		
 		
 		// モードグリーン時は性能アップ
-		local mode_green = ( tDDC.KirifudaWatch_GetParam( 0 ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+		local mode_green = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 		if( mode_green )
 		{
 			BMvTbl.SetPattern( pat_num_Sousai2_G ); // 全体Ｆの短いパターンに
@@ -1386,7 +1491,7 @@ t.Mv_Skill_Sousai2 <-
 	}	
 	function Finalize()
 	{
-		local mode_green = ( tDDC.KirifudaWatch_GetParam( 0 ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+		local mode_green = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 		local usemv = ( mode_green )? "Mv_Skill_Sousai2G_Sousai" : "Mv_Skill_Sousai2_Sousai";
 		Battle_Std.SwitchNextMoveTable("Mv_Neutral", [256,usemv]); //デフォ,[code,mv]...		
 	}
@@ -1795,7 +1900,7 @@ t.Mv_Skill_KirifudaFin <-
 	flags = def_TmplFlags_NoAddComboRate|def_TmplFlags_ChangeStatusOnly // コンボレートを加算しない, 状態の移行のみ行う
 	function Init_After() : (func_BL, pat_num_BLKirifudaFin, set_Kirifda, aura_pat)
 	{
-		local od_type= set_Kirifda(); // 切り札の効果をセットしてパレット変更したりする
+		local od_type = set_Kirifda(); // 切り札の効果をセットしてパレット変更したりする
 		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_Kirifuda ); // 切り札のＭｖ
 		
 		if( od_type ) // 0:黒以外
@@ -1846,11 +1951,12 @@ t.Mv_Null_KirifudaStatus_Green <-
 			return;
 		}
 		
-		if( tDDC.Kirifuda_CheckTime()==0 || tDDC.KirifudaWatch_GetParam( 0 ) != 2 ) // 切り札じゃない or 緑じゃない
+		if( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) != 2 ) // 切り札じゃない or 緑じゃない
 		{
-			BMvTbl.SetFinalize( 0 );
+			//BMvTbl.SetFinalize( 0 );
 			return;
 		}
+		
         local rs = BMvTbl.GetMvRoundStatus();
 
         // 暗転中はタイマー停止するので増えない
@@ -1935,6 +2041,117 @@ t.Mv_Null_KirifudaStatus_Green <-
 	}
 }
 
+t.Mv_Obj_0202InitObj <-
+{
+	function FrameUpdate_After()
+	{
+		local player = BMvCore.GetPlayerCharaData();
+		if( player.push() )
+		{
+			local p_fuid = Battle_Std.GetUpdateFrameID();
+			player.pop();
+			
+			if( p_fuid == 100 ) BMvTbl.SetFinalize(0);
+		}
+	}
+}
+
+local maketmpl_Skill0202 = function( param={} ) : (func_BL, pat_num_BL236, pat_num_BLKirifuda, pat_num_BLKirifudaFin, pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B, pat_num_BLODFin_R, pat_num_BLODFin_G, pat_num_BLODFin_B)
+{
+	local ret_tmpl = {};
+	
+	local mvparam =
+	{
+		use_pat = "0202x",
+		od_type = 0, //1 = red, 2 = green, 3 = blue
+	}
+	
+	switch( param.type )
+	{
+	case "A":
+		mvparam.od_type = 1;
+		break;
+	case "B":
+		mvparam.od_type = 3;
+		break;
+	case "C":
+		mvparam.od_type = 2;
+		break;
+	case "EX":
+
+		break;
+	}
+	
+	ret_tmpl.Init_After <- function() : (func_BL, mvparam, pat_num_BLKirifuda, pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B)
+	{
+		BMvTbl.SetPattern( "0202x" );
+		
+		BMvTbl.SetLP(0,0); // オーバードライブ予約 0:黒 1:赤 2:緑 3:青
+		BMvTbl.SetLP(2,0); // ランダムで選ばれたオーバードライブかどうか
+
+		local aura_pat = [0, pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B];
+
+		local voice_type = [0, "Mv_Skill_Kirifuda_R_Init", "Mv_Skill_Kirifuda_G_Init", "Mv_Skill_Kirifuda_B_Init"];
+	
+		
+		local eff = func_BL.Call( { pat=pat_num_BLKirifuda, mvname="Mv_Obj_0202InitObj", x=200, y=-250 } );
+		if( eff.push() )
+		{
+			BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } ); // このMvでのみ有効
+			
+			if( mvparam.od_type ) // 0:黒以外
+			{
+				local aura = BMvEff.CreateObject( { start_pat=aura_pat[mvparam.od_type] } ); // オーラ設定
+				if( aura.push() )
+				{
+					BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_FromParentStop|_ObjFlags_ToParentStop|_ObjFlags_ParentMove } );
+					aura.pop();
+				}
+			}
+			eff.pop();
+			Battle_Std.TypeSE_Play({ type=voice_type[mvparam.od_type] }); // ボイス再生
+		}
+	}
+	
+	ret_tmpl.FrameUpdate_After <- function() : (mvparam, func_BL, pat_num_BLKirifudaFin, pat_num_BLODFin_R, pat_num_BLODFin_G, pat_num_BLODFin_B )
+	{
+		local aura_pat = [0, pat_num_BLODFin_R, pat_num_BLODFin_G, pat_num_BLODFin_B];
+		
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 100:
+			if( mvparam.od_type ) // 0:黒以外
+			{
+				local eff = func_BL.Call( { pat=pat_num_BLKirifudaFin, x=200, y=-250 } );
+				if( eff.push() )
+				{
+					BMvEff.SetPaletteSlot( mvparam.od_type, 0 );
+					
+					//BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll } );
+					
+					local aura = BMvEff.CreateObject( { start_pat=aura_pat[mvparam.od_type] } ); // オーラ設定
+					if( aura.push() )
+					{
+						BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_FromParentStop|_ObjFlags_ToParentStop|_ObjFlags_ParentMove } ); //_ObjFlags_MoveTimeStopAll
+						aura.pop();
+					}
+					eff.pop();
+				}
+				
+				BMvTbl.SetPP( def_PP_Kur_OverDriveType, mvparam.od_type ); 
+			}
+			break;
+		}
+	}
+	
+	return ret_tmpl;
+
+}
+
+t.Mv_Skill_0202A <- maketmpl_Skill0202({ type="A" });
+t.Mv_Skill_0202B <- maketmpl_Skill0202({ type="B" });
+t.Mv_Skill_0202C <- maketmpl_Skill0202({ type="C" });
+
 //-----------------------------------------------------------------------------
 // 超必殺技
 //-----------------------------------------------------------------------------
@@ -1945,7 +2162,7 @@ t.Mv_Skill_41236SP <-
 	{
 		BMvTbl.SetLP(0,0); // どっちに分岐するでショー
 		
-		local mode_green = ( tDDC.KirifudaWatch_GetParam( 0 ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+		local mode_green = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 2 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 		if( mode_green )
 		{
 			if( !Battle_Std.CheckEnemyisDamage() ) // 相手がやられ中は通常のにするので、それ以外でコマ投げに

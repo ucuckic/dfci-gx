@@ -631,7 +631,9 @@ const def_ACS_AirDash	= 7;
 /* 13 */const def_MC1_VeryWeakImpactAtk = 4096; // 
 /* 14 */const def_MC1_ExtendAction = 8192; // エクステンドアクションしたＭｖ
 /* 15 */const def_MC1_AutoSPGuardAtk = 16384; // 
+
 /* 16 */
+
 /* 17 */const def_MC1_Reversal = 65536; // リバーサル表示の出たMv
 /* 18 */const def_MC1_KirifudaReversaled = 131072; // 相手がリバーサル切り札中の行動
 /* 19 */const def_MC1_NotPlusBlast = 262144; // 発動時にブラストを増やさない（なんか特殊過ぎるけど…）
@@ -672,6 +674,8 @@ const def_MC2_CheckEndExtendAction = 2;
 const def_MC2_ZyodanAirAtk = 4; // 上段化したジャンプ攻撃
 const def_MC2_FromEnemyCharaFlag1 = 8; // 敵が設定・参照するフラグ１
 const def_MC2_CounterHit = 16;
+
+const def_MC2_WallStick_NoScale = 32;
 
 //mvtmplフラグ
 const def_TmplFlags_ChangeStatusOnly		= 1; //状態の移行のみを行う（※他のフラグも入ってるような状態になるよ）

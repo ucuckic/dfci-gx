@@ -8565,6 +8565,50 @@ vectmpl.add({
 })
 
 vectmpl.add({
+	number = 842, // 定義番号
+
+	name = "137_stick_120f",
+	prio_vector = 110, // ベクトル優先度
+	ko_vector = 0, // KO時のベクトル修正 0 だと修正しない
+	downhit_vector = 237, // flag_down で移行するベクトル番号
+	wallbound_vector = 901, //壁ヒット時に移行するベクトル番号
+	Finalize_Hit = "Mv_Modori_Down",
+
+	hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_check = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_vector = 133, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
+
+	tblcount = 2, // テーブル数
+	tbl = 
+	[
+		{
+			ukemitime = 16, // 基本受け身不可時間
+			vector_num = 133, // 使用ベクトル番号
+			hit_pattern = def_VLP_KiriUkiYoko,
+			vector_time = -1, // 発生時間
+			vector_returntime = 250, // 壁反射ベクトル
+			flag_boundwall = true, // 
+			flag_boundwall_stageside = true, // ステージ端のみ壁にぶつかる
+			flag_erasekasanari = true, // 重なり消去
+			wall_ukemi_num = -1, // 壁受け身不可
+			ground_ukemi_num = -1, // 床受け身番号
+			flag_noboundmutekiplus = true, // 激突時の無敵カウント加算無し
+		},
+		{
+			vector_type = 0, // 状態 0-地上 1-空中 （基本値 1）		
+			vector_num = 197, // 使用ベクトル番号
+			hit_pattern = def_VLP_AomukeBound,
+			vector_time = -1, // 発生時間
+			vector_returntime = 0, // 壁反射ベクトル
+			ukemitime = -2, // 受身不能時間 -1:空中受け身不可 -2:引継ぎ -1000以下:((n+1000)*-1)加算
+			ground_ukemi_num = -1, // 床受け身番号 -1:地上受け身不可
+			out_effect_name = "Eff_Hit_Down", // 発生エフェクト名					
+			flag_down = true, // ダウン状態扱いとする
+		},
+	]
+})
+
+vectmpl.add({
 	number = 850, // 定義番号
 
 	name = "bigforward_wallstick",
@@ -8667,6 +8711,48 @@ vectmpl.add({
 	number = 900, // 定義番号
 
 	name = "wall_stick", // 
+	prio_vector = 999, // ベクトル優先度
+	ko_vector = 0, // KO時のベクトル修正 0 だと修正しない
+
+	//hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	//hitflag_check = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	//hitflag_vector = 133, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
+
+	Finalize_Hit = "Mv_Modori_Down",
+	power=def_VL_Pow_LV0, //声無しやられレベル
+
+	tblcount = 2, // テーブル数
+	tbl = 
+	[
+		{
+			ukemitime = -1, // 受身不能時間 -1:空中受け身不可 -2:引継ぎ -1000以下:((n+1000)*-1)加算
+			vector_num = 299, // 使用ベクトル番号
+			hit_pattern = def_VLP_SuityokuUki,
+			vector_time = -1, // 発生時間
+			vector_returntime = 0, // 壁反射ベクトル
+			ground_ukemi_num = -1, // 床受け身番号
+			out_effect_name = "Eff_WallBound",
+			ground_ukemi_num = -1, // 床受け身番号
+			flag_noboundmutekiplus = true, // 激突時の無敵カウント加算無し
+		},
+		{
+			vector_type = 0, // 状態 0-地上 1-空中 （基本値 1）		
+			ukemitime = -2, // 受身不能時間 -1:空中受け身不可 -2:引継ぎ -1000以下:((n+1000)*-1)加算
+			vector_num = 20, // 使用ベクトル番号
+			hit_pattern = def_VLP_UtubuseBigDown,
+			vector_time = -1, // 発生時間
+			vector_returntime = 0, // 壁反射ベクトル
+			ground_ukemi_num = -1, // 床受け身番号 -1:地上受け身不可
+			out_effect_name = "Eff_Hit_Down", // 発生エフェクト名	
+			flag_down = true, // ダウン状態扱いとする
+		},				
+	]
+})
+
+vectmpl.add({
+	number = 901, // 定義番号
+
+	name = "wall_stick_fixed_long", // 
 	prio_vector = 999, // ベクトル優先度
 	ko_vector = 0, // KO時のベクトル修正 0 だと修正しない
 

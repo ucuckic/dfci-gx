@@ -1248,6 +1248,8 @@ local maketmpl_HaseiKamae = function( param={} ) : (kiri_FastExtend, pat_num_214
 		Battle_Std.SetPattern_NotHoldButton( { ButtonMask=holdbutton, CheckFrameID=100, EndFrameID=110, SetPattern=holdend_pat } ); // ボタンホールドしてなかったらパターンジャンプ
 		
 		kiri_FastExtend( { Param2 = 32, ExtendFrameID=110 } );
+		
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Legs );
 	}
 	
 	return ret_tmpl;
@@ -1309,7 +1311,8 @@ t.Mv_Skill_Sousai2 <-
 	}
 	function FrameUpdate_After()
 	{
-		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
 		
 		local no_sidou = !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_SidouHitSkill );
 		if( !BMvTbl.GetLP(0) ) 

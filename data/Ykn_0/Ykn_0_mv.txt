@@ -182,6 +182,7 @@ t.Mv_Atk_CroC <-
 {
 	function FrameUpdate_After()
 	{
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
 	}
 }
 
@@ -817,7 +818,8 @@ t.Mv_Skill_Sousai2 <-
 	}
 	function FrameUpdate_After()
 	{
-		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
 	}	
 	function HitInterrupt_After()
 	{
