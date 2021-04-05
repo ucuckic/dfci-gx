@@ -807,6 +807,8 @@ Battle_Std.AttackImpact_StdFunc <- function(info)
 		}
 	}
 	
+	Battle_Std.EnemyDamageFlag_Del( def_DF_MarkingBound );
+	
 	local Guard = ((info.flags&_ImpactFlag_IsGuard)!=0);
 	local Yarare = (((info.flags&_ImpactFlag_IsBound)!=0)&&!Guard);
 
@@ -4939,7 +4941,9 @@ Battle_Std.CreateObject <- {};
 
 Battle_Std.CreateObject.Blade <- function( tbl={} )
 {
-	local eff = BMvEff.CreateObject( { start_pat=tbl.start_pat, x=tbl.x, y=tbl.y, flags=_Position_ToolShift });
+	local use_mv = ( "mvname" in tbl )? tbl.mvname : "";
+	
+	local eff = BMvEff.CreateObject( { start_pat=tbl.start_pat, x=tbl.x, y=tbl.y, mvname=use_mv, flags=_Position_ToolShift } );
 	if( eff.push() )
 	{
 		BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange|_ObjFlags_NoGround } );
@@ -6745,6 +6749,15 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 			// hitstop_f - 攻撃のヒットストップF（＝先行でチェーンが繋がる猶予F）が仕込みができるフレームになるよ
 			local hitstop_f = 24; // 両者が止まる時間停止（ヒットストップのようなもの）
 			local pride_win = 0; // 得意属性に打ち勝ったかどうか
+			
+			local eff_color = 0;
+			
+			if( NoCan_Clash )
+			{
+				pride_win = 1;
+				eff_color = 0xff0000;
+			}
+			
 
 			// 指定があったら固定
 			if( "hitstop" in param )
@@ -6786,9 +6799,9 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 					hitstop_f = 8; // 超弱い
 				}
 				
-				
 				if( pride_win )
 				{
+					if( !NoCan_Clash ) eff_color = 0x008000;
 					// 相手のヒットストップを増やす
 					if( enemy.push() )
 					{
@@ -6796,6 +6809,8 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 						
 						enemy.pop();
 					}
+					
+					BMvEff.AttackInfoString_Set({ word="PRIDE WIN" } );
 				}
 			}
 			
@@ -6830,7 +6845,7 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 				local eff = BMvEff.CreateObject( { datatype=1, start_pat="Eff_Sousai", y=-200*128 } );
 				if( eff.push() )
 				{
-					if( NoCan_Clash ) BMvEff.SetCharaColor( { color=0xff0000, time=9999, type=0 } );
+					BMvEff.SetCharaColor( { color=eff_color, time=9999, type=0 } );
 					
 					BMvTbl.SetPrio( _CharaPrio_Near );
 					BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround } );
@@ -7248,6 +7263,16 @@ Battle_Std.CheckDamageTiming_ExceptDown <- function()
 	return 0;
 }
 
+Battle_Std.CheckDamageTiming_OnlyDown <- function()
+{
+	local mvhs = BMvTbl.GetMvHitStatus();
+	if( mvhs.isFirstUpdate && mvhs.Type&_HitType_Damage && mvhs.isCatchFlag == 0 && mvhs.IsDown() == 1 )
+	{
+		return 1;
+	}
+	return 0;
+}
+
 Battle_Std.CheckDamageTiming_ExceptDownFrameID <- function( _FrameID = 0 )
 {
 	local mvs = BMvTbl.GetMvStatus();
@@ -7295,6 +7320,31 @@ Battle_Std.CheckHitTiming_FrameID <- function( _FrameID = 0 )
 	if( mvs.FrameID == _FrameID && Battle_Std.CheckHitTiming() )
 	{
 		return 1;
+	}
+	return 0;
+}
+
+Battle_Std.CheckCatchedTiming_FlagHit <- function()
+{
+	local mvhs = BMvTbl.GetMvHitStatus();
+	if( mvhs.isFirstUpdate && mvhs.Type&_HitType_Damage && mvhs.isCatchFlag )
+	{
+		return 1;
+	}
+	return 0;
+}
+
+Battle_Std.AddDamageFlagInterrupt <- function( flag )
+{
+	local mvhs = BMvTbl.GetMvHitStatus();
+	if( mvhs.Type&_HitType_Damage && mvhs.isCatchFlag == 0 )
+	{
+		//0やisFirstUpdateだと初段ヒット時に入らないので二回やるためにCount<=1にしている
+		if( mvhs.Count <= 1 )
+		{
+			Battle_Std.EnemyDamageFlag_Add( flag );
+			return 1;
+		}
 	}
 	return 0;
 }

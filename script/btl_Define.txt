@@ -1072,6 +1072,16 @@ const def_PP_AuraType				= 48;	//見た目何のオーラがはられてる？
 const def_PP_ReversalLeftTime		= 41;	//これが1以上で必殺技を出すとリバーサル扱いになる
 const def_PP_AssaultCount			= 43;	//アサルトを出したか（空中での回数制限用。地上状態になると０になる）
 
+// Battle_Std.EnemyDamageFlag_Add( def_DF_SetedEXSLimit );
+
+const def_DF_CharaFlag1	= 128;
+
+const def_DF_CharaFlag2	= 16384;
+const def_DF_CharaFlag3	= 32768;
+
+const def_DF_MarkingBound		= 524288; // やられに印をつける記憶（AttackImpactのたびに消える）
+
+
 // ↓この辺のフラグは監視オブジェクトで見ていて重いので今後使わない
 const def_PP_BoundStatus			= 42;	//やられ中のフラグ管理（エリアルやられとか、呪縛やられとか、コンボ中１回しかできないもの用）
 	const def_PP_BS_None			= 0;
@@ -1370,7 +1380,7 @@ const def_CN_Skill_DoubleCircleB	= 102;
 const def_CN_Skill_DoubleCircleA	= 103;
 
 const def_CN_Liberate			= 106; //ヴェールオフ
-const def_CN_Blast			= 104; //金ブラスト
+const def_CN_Blast			= 109; //金ブラスト 104 > 109 fix problem with simul input overlap
 const def_CN_ComboBlast		= 105; //ＯＭブラスト
 const def_CN_BoundBlast		= 106; //青ブラスト
 const def_CN_BoundBlastEx	= 108; //EX青ブラスト（やられ中でなくても出せる特殊なもの）

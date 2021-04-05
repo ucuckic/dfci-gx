@@ -9,12 +9,14 @@ bgm_array.append( { chance=20, num=61 } ); //dotabata conv song
 
 bgm_array.append( { num=1 } );
 bgm_array.append( { num=2 } );
-bgm_array.append( { num=3 } );
+
 bgm_array.append( { num=4 } );
 bgm_array.append( { num=5 } );
+
 bgm_array.append( { num=7 } );
 bgm_array.append( { num=8 } );
 bgm_array.append( { num=9 } );
+
 bgm_array.append( { num=13 } );
 bgm_array.append( { num=14 } );
 bgm_array.append( { num=15 } );

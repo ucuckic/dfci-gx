@@ -695,6 +695,8 @@ t.Mv_Atk_StdB <-
 	}
 	function FrameUpdate_After() : (func_CreateBlade, pat_num)
 	{
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
+		
 		local mvs = BMvTbl.GetMvStatus();
 		if( mvs.isFrameUpdate )
 		{
@@ -850,6 +852,33 @@ local SetPattern_NotHoldButton = function( tbl )// ButtonMask, CheckFrameID, Set
 	return -1;
 }
 
+t.Mv_CroC_Blade <-
+{
+	function Init_Std()
+	{
+	}
+	function FrameUpdate_After()
+	{
+		local player = BMvCore.GetPlayerCharaData();
+		if( player.push() )
+		{
+			local player_fuid = Battle_Std.GetUpdateFrameID()
+			
+			//oya_mvs = BMvTbl.GetMvStatus();
+			player.pop();
+			
+			if( player_fuid == 7 )
+			{
+				BMvEff.EraseObjectFlags( { flags=_ObjFlags_ParentMove } );
+			}			
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
 t.Mv_Atk_CroC <-
 {
 	function FrameUpdate_After() : (func_CreateBlade, pat_num, SetPattern_NotHoldButton)
@@ -860,10 +889,10 @@ t.Mv_Atk_CroC <-
 			switch( mvs.FrameID )
 			{
 			case 100:
-				func_CreateBlade( { x=0, y=0, start_pat=pat_num }, { grp_angle=4000, vec_angle=0.8, vec_speed=300 } );
+				func_CreateBlade( { x=0, y=0, start_pat=pat_num, mvname="Mv_CroC_Blade" }, { grp_angle=4000, vec_angle=0.8, vec_speed=300 } );
 				break;
 			case 1000:
-				local eff = func_CreateBlade( { x=0, y=0, start_pat=pat_num }, { grp_angle=4000, vec_angle=0.8, vec_speed=300 } );
+				local eff = func_CreateBlade( { x=0, y=0, start_pat=pat_num, mvname="Mv_CroC_Blade" }, { grp_angle=4000, vec_angle=0.8, vec_speed=300 } );
 				if( eff.push() )
 				{
 					BMvTbl.SetScale( { x=12000, y=13000 } );
@@ -875,6 +904,8 @@ t.Mv_Atk_CroC <-
 		}
 		
 		Battle_Std.SetPattern_NotHoldButton( { ButtonMask=(1<<2), CheckFrameID=[50,51], SetPattern="CroC", jumpid=[10,11], EndFrameID=200 } );
+		
+		Battle_Std.AddToolShift_NoSurinuke_FU( 3, (1<<1) );
 	}
 }
 
@@ -1179,6 +1210,7 @@ local maketmpl_SkillJ236 = function( param={} ) : (pat_num_BallEff_J236, pat_num
 				
 				local vec = BMvTbl.GetVector( { flags=_Vector_Keep } ); //保存してあったのを開く
 				if( vec.addy <= 190 ) vec.addy = 190; // 最低限ジャンプのベクトルに近くする
+				if( vec.y < 0 ) vec.y /= 2;
 				
 				Battle_Std.InitVector();
 				BMvTbl.SetVector( { x=vec.x, y=vec.y, addx=vec.addx, addy=vec.addy, flags=_Vector_Normal } );
@@ -1655,35 +1687,6 @@ t.Mv_Skill_Sousai2 <-
 		
 		Battle_Std.ImpactSkill_FrameUpdate();
 		
-		/*
-		local player = BMvCore.GetPlayerCharaData();
-		local hanteiobj = BMvEff.CCheckRect(); // オブジェクト作成
-        // 設定
-        hanteiobj.SetPlayer(); //プレイヤー情報設定
-        hanteiobj.SetSrc( [ _Hantei_Kurai, 0, -1 ] ); //自分の情報設定
-        hanteiobj.SetDst( [ _Hantei_Attack, 0, -1 ] ); //相手の情報設定
-        hanteiobj.SetFlags( _HC_EnemyObj | _HC_EnemyPc  ); //検索条件設定
-
-        while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
-        {
-			//Battle_Std.DrawDebugAttackInfo( "obj collide with atk" );
-			
-			if( player.push() ) 
-			{
-				
-				Battle_Std.ImpactSkill_FrameUpdate( _HitCheckFlag_Head );
-				player.pop();
-			}
-			
-			local enemy = hanteiobj.GetCharaData(); // 見つかったオブジェクト取得
-			if( enemy.push() )
-			{
-				//BMvTbl.CalcHitValue(-100);
-				enemy.pop();
-			}
-        }
-		*/
-		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 10:
@@ -1818,13 +1821,13 @@ t.Mv_Obj_Eff_BigHandArm <-
 {
 	function Vanish()
 	{
-		Battle_Std.DrawDebugAttackInfo("lp0 "+BMvTbl.GetLP(0) );
+		//Battle_Std.DrawDebugAttackInfo("lp0 "+BMvTbl.GetLP(0) );
 		if( BMvTbl.GetLP(0)==0 )
 		{
 			BMvTbl.SetLP(0,10);
 			BMvTbl.JumpFrameID(900);
 			
-			Battle_Std.DrawDebugAttackInfo("van " );
+			//Battle_Std.DrawDebugAttackInfo("van " );
 			return;
 		}
 	}

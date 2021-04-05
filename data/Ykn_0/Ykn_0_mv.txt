@@ -423,6 +423,8 @@ local maketmpl_0202AntiAir = function( param={} )
 	
 	ret_tmpl.FrameUpdate_After <- function()
 	{
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
+		
 		local mvs = BMvTbl.GetMvStatus();
 		switch( mvs.FrameID )
 		{

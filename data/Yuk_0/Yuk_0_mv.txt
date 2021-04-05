@@ -1018,6 +1018,8 @@ t.Mv_Skill_Sousai <-
 		{
 			BMvTbl.SetLP(1,1); // コンボ中の発動だった
 		}
+		
+		BMvTbl.SetLP(3,0);
 	}
 	function FrameUpdate_After()
 	{
@@ -1041,19 +1043,47 @@ t.Mv_Skill_Sousai <-
 		case 250: // ダミー表示
 			BMvEff.CreateObject( { mvname="Mv_Obj_SousaiDummy" } );
 			break;
-		}		
+		}	
+	}
+	function Update_After()
+	{
+		if( BMvTbl.GetLP(3) && Battle_Std.CheckEnemyisCapture() )
+		{
+			BMvEff.ThrowRelease( { type=113, airrecover=0, flags=_ThrowRelease_NoGroundRecover } );
+			Battle_Std.SetEnemyHitStop(10);
+		}
 	}
 	function HitInterrupt_After()
 	{
+		if( Battle_Std.CheckDamageTiming_OnlyDown() )
+		{
+			if( !Battle_Std.EnemyDamageFlag_Check(def_DF_CharaFlag1) )
+			{
+				local enemy = BMvCore.GetEnemyCharaData();
+
+				BMvEff.CapturePlayer( { target = enemy } );
+
+				BMvTbl.SetLP(3,1);
+			}
+			
+			Battle_Std.AddDamageFlagInterrupt(def_DF_CharaFlag1); //otg relaunch flag
+		}
+		
 		Battle_Std.ImpactSkill_HitInterrupt( def_MC1_AtkLow|def_MC1_AtkBall ); // LP9使用
 		
 		if( BMvTbl.GetLP(0)==0 && Battle_Std.CheckDamageTiming_ExceptDownFrameID( 200 ) )
 		{
 			BMvTbl.SetLP(0,1); // 二段目があたったのを記憶
 		}
+		
 		if( BMvTbl.GetLP(0)==2 && Battle_Std.CheckDamageTiming_ExceptDownFrameID( 350 ) )
 		{
-			local eff = BMvEff.CreateObject( { start_pat=90 } );
+			
+			local no_sidou = !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_SidouHitSkill );
+			
+			local use_pat = (no_sidou)? "SousaiAtkNoSidou" : 90;
+			
+			local eff = BMvEff.CreateObject( { start_pat=use_pat } );
 			if( eff.push() )
 			{
 				Battle_Std.SetPos_MarkingEnemy();
@@ -1084,6 +1114,7 @@ local maketmpl_Skill0202 = function( param={} )
 		holdBtn = 0,
 		extendPat = 0,
 		onceCheck = 0,
+		AddX = 0,
 	}
 
 	switch( param.type )
@@ -1111,6 +1142,7 @@ local maketmpl_Skill0202 = function( param={} )
 	case "AirC":
 		mvParam.holdBtn = (1<<2);
 		mvParam.extendPat = "J214_End";
+		mvParam.AddX = 150;
 		break;
 	case "EX":
 		mvParam.onceCheck = 1;
@@ -1155,6 +1187,15 @@ local maketmpl_Skill0202 = function( param={} )
 			Battle_Std.CreateObject.CommonEffect.SupecialMoveRing( { x=150, y=-250 } );
 			break;
 		case 80: // 攻撃ちょっと前
+			break;
+		case 250:
+			BMvEff.CreateObject( { mvname="Mv_Obj_SousaiDummy" } );
+			
+			if( mvParam.AddX ) Battle_Std.AddXPos_NearEnemy(0,mvParam.AddX);
+			
+			break;
+		case 200:
+			//Battle_Std.AddXPos_NearEnemy(0,150);
 			break;
 		}
 		
@@ -1239,7 +1280,7 @@ t.Mv_Skill_Sousai2 <-
 	}
 	function FrameUpdate_After()
 	{
-		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
 		
 		Battle_Std.CheckSousai(); // def_MC_Sousai と触れたら相殺する
 		if( !Battle_Std.LP_CheckFlag(0,CDef_Yuk_Sousai2_SousaiDelBall) && Battle_Std.MoveCode.CheckFlag( def_MC_Sousai_EnemySubSuccess ) )
