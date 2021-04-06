@@ -1059,6 +1059,18 @@ const def_PP_PlayerStatus			= 57; //汎用ステータスとか？
 	const def_PP_PS_isBallSousaiMv	= 128;	//飛び道具相殺属性のモーションかどうか
 	const def_PP_PS_NoAura			= 256;	//オーラを再張りしない
 	//↑この辺適当なタイミングで折られてるっぽいよ
+	
+
+const GuardGauge_Max 			= 10000; 	// maximum gauge value
+
+const GuardGauge_CoolTime	 	= 400; 		// time after gauge adjustment before regen starts
+const GuardGauge_RegenSpeed 	= 100; 		// gauge val restored per frame
+
+const GuardGauge_SPGuardCost	= 2000;
+
+	
+const def_PP_GuardGaugeVal = 70; //guard meter value
+
 
 const def_PP_AuraType				= 48;	//見た目何のオーラがはられてる？
 	const def_PP_AT_isNone			= 0;

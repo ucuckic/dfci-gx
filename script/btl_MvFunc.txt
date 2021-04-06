@@ -9380,6 +9380,41 @@ Battle_Std.DrawHitBoxes_Outlined <- function()
 
 //////////not boxes
 
+Battle_Std.GuardGauge <- {};
+
+Battle_Std.GuardGauge.CreateGaugeObject <- function()
+{
+	BMvEff.CreateObject( { mvname="Mv_Null_GuardGaugeObject" } );
+}
+
+Battle_Std.GuardGauge.Sub <- function( _Val=0 )
+{
+	local guard_val = BMvTbl.GetPP( def_PP_GuardGaugeVal );
+	if( guard_val >= 0 )
+	{
+		BMvTbl.AddPP( def_PP_GuardGaugeVal, _Val );
+	}
+}
+
+Battle_Std.GuardGauge.Set <- function( _Val=0 )
+{
+	local guard_val = BMvTbl.GetPP( def_PP_GuardGaugeVal );
+	if( _Val > GuardGauge_Max ) _Val = GuardGauge_Max
+	
+	BMvTbl.SetPP( def_PP_GuardGaugeVal, _Val );
+}
+
+Battle_Std.GuardGauge.Check <- function()
+{
+	local guard_val = BMvTbl.GetPP( def_PP_GuardGaugeVal );
+	return guard_val;
+}
+
+Battle_Std.GuardGauge.Clear <- function()
+{
+	BMvTbl.SetPP( def_PP_GuardGaugeVal, GuardGauge_Max );
+}
+
 Battle_Std.SetEnemyHitStop <- function( _time=0, _flag=_ValSet )
 {
 	local enemy = BMvCore.GetNearEnemyCharaData();

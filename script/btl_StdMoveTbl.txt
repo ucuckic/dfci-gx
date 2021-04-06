@@ -15879,6 +15879,15 @@ Std_MoveTable.Mv_Skill_Sousai4 <-
 	}
 }
 
+Std_MoveTable.Mv_Null_GuardGaugeObject <-
+{
+	function Init_After()
+	{
+		BMvEff.SetObjectFlags( { flags= _ObjFlags_NoCamera|_ObjFlags_NoRender|_ObjFlags_EraseParentPatChange } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+	}
+}
+
 
 //定義したテーブルを返す
 return Std_MoveTable;
