@@ -15933,6 +15933,8 @@ Std_MoveTable.Mv_Obj_GuardGaugeBar <-
 		BMvTbl.SetPosition( { x=pos_x*128,y=2*128, flags=_Position_Add } );
 		
 		BMvTbl.SetLP(0,0); //guard gauge cooldown
+		
+		BMvTbl.SetPrio( _CharaPrio_GaugeHP_P1 );
 	}
 	function FrameUpdate()
 	{
@@ -15963,7 +15965,7 @@ Std_MoveTable.Mv_Obj_GuardGaugeBar <-
 		
 		if( x_scale < 0 ) x_scale = 0;
 		
-		BMvTbl.SetScale( { x=( x_scale*10000 )*p_side, y=y_scale*10000 } );
+		BMvTbl.SetScale( { x=( x_scale*10000 ), y=y_scale*10000 } );
 		
 		if( guard_gauge.flags&def_PP_GF_Broken )
 		{
@@ -15974,7 +15976,30 @@ Std_MoveTable.Mv_Obj_GuardGaugeBar <-
 	}
 }
 
-Std_MoveTable.Mv_Obj_GuardGaugeObject <-
+
+Std_MoveTable.Mv_Null_GuardGaugeObject <-
+{
+	function Init_After()
+	{
+		local p_side = BMvTbl.GetPlayerSide();
+		local pos_x = ( p_side )? 130 : -125;
+		
+		BMvTbl.SetPosition( { x=pos_x*128, y=-500*128, flags=0 } );
+		
+		BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBar", start_pat="dbg_rect2opaque", datatype=1 } );
+		BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBG", start_pat="GuardGaugePattern", datatype=1 } );
+		
+		BMvTbl.SetFinalize(0);
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+
+}
+
+
+Std_MoveTable.Mv_Obj_GuardGaugeBG <-
 {
 	function Init()
 	{
@@ -15989,9 +16014,10 @@ Std_MoveTable.Mv_Obj_GuardGaugeObject <-
 		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll|_ObjFlags_NoRenderBlackOut } );
 		
 		BMvTbl.SetHan6LayerMask( { val=(1<<p_side) } );
-		BMvTbl.SetPrio( _CharaPrio_GaugeHP_P1 );
 		
-		BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBar", start_pat="dbg_rect2opaque", datatype=1 } );
+		//BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBar", start_pat="dbg_rect2opaque", datatype=1 } );
+		
+		BMvTbl.SetPrio( _CharaPrio_GaugeHP_P1 );
 	}
 }
 

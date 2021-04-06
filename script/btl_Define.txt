@@ -1074,7 +1074,7 @@ const GuardGauge_RegenSpeed 	= 30; 		// gauge val restored per frame
 
 const GuardGauge_SPGuardCost	= 2000;
 
-const def_PP_AirGuarded 			= 65; //guard meter value
+const def_PP_AirGuarded 			= 65; //has airguarded an attack
 
 	
 const def_PP_GuardGaugeVal 			= 70; //guard meter value

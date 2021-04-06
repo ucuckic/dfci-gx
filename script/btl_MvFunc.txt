@@ -9452,7 +9452,7 @@ Battle_Std.GuardGauge.DelFlags <- function( flag )
 
 Battle_Std.GuardGauge.CreateGaugeObject <- function()
 {
-	local eff = BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeObject", start_pat="GuardGaugePattern", datatype=1 } );
+	local eff = BMvEff.CreateObject( { mvname="Mv_Null_GuardGaugeObject" } );
 	if( eff.push() )
 	{
 		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera } );
