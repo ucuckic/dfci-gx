@@ -701,6 +701,14 @@ t.Mv_Atk_AirC <-
 {
 }
 
+t.Mv_Atk_Std6A <-
+{
+	function Init_After()
+	{
+		Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_DoubleGuardDamage );
+	}
+}
+
 t.Mv_Atk_StdA <-
 {
 	function Init_After()
@@ -1250,6 +1258,8 @@ local maketmpl_HaseiKamae = function( param={} ) : (kiri_FastExtend, pat_num_214
 		kiri_FastExtend( { Param2 = 32, ExtendFrameID=110 } );
 		
 		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Legs );
+		
+		if( Battle_Std.GetUpdateFrameID()==110 ) Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_DoubleGuardDamage );
 	}
 	
 	return ret_tmpl;

@@ -19,28 +19,6 @@ local func_WarpEndFade = function()
 	BMvEff.SetCharaFlash( { color = 0x00AAFF, type = 0, time = delay+10 } );
 }
 
-t.Mv_Bound_0900 <-
-{
-	function Init_After()
-	{
-		//Battle_Std.DrawDebugAttackInfo("grec" );
-	}
-}
-
-t.Mv_GroundRecover <- 
-{
-	function Init()
-	{
-		//Battle_Std.DrawDebugAttackInfo("grec" );
-		
-		BMvTbl.SetFinalize(256);
-	}	
-	function Finalize() // 
-	{
-		Battle_Std.SwitchNextMoveTable("Mv_Neutral",[256,"Mv_Recover"]); //デフォ,[code,mv]...
-	}
-}
-
 //-----------------------------------------------------------------------------
 // 固有関数
 //-----------------------------------------------------------------------------
@@ -1483,7 +1461,8 @@ t.Mv_Skill_Kirifuda <-
 				if( ball.push() )
 				{
 					// // 各種補正は最初の１ヒットのみの状態にする
-					BMvTbl.SetNoHoseiFlag( { val=0x80, time=254, flag=0 } );	
+					BMvTbl.SetNoHoseiFlag( { val=0x80, time=254, flag=0 } );
+					
 					ball.pop();
 				}
 			}
@@ -1631,6 +1610,8 @@ t.Mv_FireBall_Kirifuda <-
 				}
 			}
 		}
+				
+		Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_HalveGuardDamage );
 	}
 	function HitInterrupt_After()
 	{

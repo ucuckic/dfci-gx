@@ -677,6 +677,10 @@ const def_MC2_CounterHit = 16;
 
 const def_MC2_WallStick_NoScale = 32;
 
+const def_MC2_DoubleGuardDamage = 64;
+const def_MC2_HalveGuardDamage = 128;
+const def_MC2_NoGuardDamage = 256;
+
 //mvtmplフラグ
 const def_TmplFlags_ChangeStatusOnly		= 1; //状態の移行のみを行う（※他のフラグも入ってるような状態になるよ）
 const def_TmplFlags_NoFurimuki				= 2; //振り向きを行わない(地上必殺技は基本振り向くがこれがあると振り向かない)
@@ -1061,15 +1065,23 @@ const def_PP_PlayerStatus			= 57; //汎用ステータスとか？
 	//↑この辺適当なタイミングで折られてるっぽいよ
 	
 
+const Def_Rule_AdvanceGuardGGCost = -2500; // アドバのコスト
+
 const GuardGauge_Max 			= 10000; 	// maximum gauge value
 
-const GuardGauge_CoolTime	 	= 400; 		// time after gauge adjustment before regen starts
-const GuardGauge_RegenSpeed 	= 100; 		// gauge val restored per frame
+const GuardGauge_CoolTime	 	= 120; 		// time after gauge adjustment before regen starts
+const GuardGauge_RegenSpeed 	= 30; 		// gauge val restored per frame
 
 const GuardGauge_SPGuardCost	= 2000;
 
+const def_PP_AirGuarded 			= 65; //guard meter value
+
 	
-const def_PP_GuardGaugeVal = 70; //guard meter value
+const def_PP_GuardGaugeVal 			= 70; //guard meter value
+const def_PP_GuardGauge_CoolTimer	= 71; //guard cooldown timer tracking
+const def_PP_GuardGauge_Flags		= 72; //guardflags currently set
+	const def_PP_GF_None			= 0;
+	const def_PP_GF_Broken			= 1;
 
 
 const def_PP_AuraType				= 48;	//見た目何のオーラがはられてる？

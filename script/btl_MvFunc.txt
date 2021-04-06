@@ -1471,6 +1471,64 @@ Battle_Std.DamageImpact_StdFunc <- function(info) : (set_DefenseMissEffect, set_
 	
 	//print( format( "\nDamageImpact[  type=%d  d_state=%d  atk_guard=%d  ]", info.type, info.d_state, info.atk_guard ) );
 	//print("\n中段："+Tyudan+" 下段："+Gedan+" 上段："+Zyodan+" 立："+StdGuard+"　屈："+CroGuard+" 空："+AirGuard+"  "+mask)
+	local atk_enemy = BMvCore.GetLastDamageCharaData( 0 );
+	
+	if( PosisAir && info.type&_HitType_Guard && BMvTbl.GetPP(def_PP_AirGuarded)==0 )
+	{
+		BMvEff.CreateObject( { mvname="Mv_Obj_AirGuardNoAct" } );
+	}
+	
+	local damage_val = (PosisAir)? info.DAMAGE*2.5 : info.DAMAGE;
+	
+
+	if( atk_enemy.push() )
+	{
+		if( Battle_Std.MoveCodeEx.CheckFlag( 2, def_MC2_DoubleGuardDamage ) ) damage_val*=2;
+		if( Battle_Std.MoveCodeEx.CheckFlag( 2, def_MC2_HalveGuardDamage ) ) damage_val/=2;
+		if( Battle_Std.MoveCodeEx.CheckFlag( 2, def_MC2_NoGuardDamage ) ) damage_val = 0;
+		
+		atk_enemy.pop();
+	}
+	
+	local guard_gauge = Battle_Std.GuardGauge.Check();
+	local is_broken = guard_gauge.flags;
+	
+	if( info.type&_HitType_Guard )
+	{
+		if( !is_broken )
+		{
+			Battle_Std.GuardGauge.Add( -damage_val );
+			
+			guard_gauge = Battle_Std.GuardGauge.Check();
+			local GaugeAfter = guard_gauge.guard_val;
+			
+			if( GaugeAfter==0 ) //guard reduced to 0 after receiving an attack
+			{
+				local enemy = BMvCore.GetEnemyCharaData();
+				if( enemy.push() )
+				{
+					local eff = BMvEff.CreateObject( { mvname="Mv_Obj_GuardCrushRect", start_pat="GuardCrushRect", datatype=1 } );
+					if( eff.push() )
+					{
+						Battle_Std.SetPos_MarkingEnemy();
+						eff.pop();
+					}
+					enemy.pop();
+				}
+				
+				Battle_Std.GuardGauge.AddFlags( def_PP_GF_Broken );
+				Battle_Std.GuardGauge.Set( -10000 );
+				
+				BMvEff.AttackInfoString_Set( { word= "GUARD CRUSH" } );	
+			}
+			else
+			{
+				Battle_Std.GuardGauge.SetCoolTime( GuardGauge_CoolTime );
+			}
+		}
+		
+		//Battle_Std.DrawDebugAttackInfo("guarding "+damage_val );
+	}
 }
 
 //殴られた相手と反対の向きを向く
@@ -6845,7 +6903,7 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 				local eff = BMvEff.CreateObject( { datatype=1, start_pat="Eff_Sousai", y=-200*128 } );
 				if( eff.push() )
 				{
-					BMvEff.SetCharaColor( { color=eff_color, time=9999, type=0 } );
+					if( eff_color ) BMvEff.SetCharaColor( { color=eff_color, time=9999, type=0 } );
 					
 					BMvTbl.SetPrio( _CharaPrio_Near );
 					BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround } );
@@ -9382,17 +9440,46 @@ Battle_Std.DrawHitBoxes_Outlined <- function()
 
 Battle_Std.GuardGauge <- {};
 
-Battle_Std.GuardGauge.CreateGaugeObject <- function()
+Battle_Std.GuardGauge.AddFlags <- function( flag )
 {
-	BMvEff.CreateObject( { mvname="Mv_Null_GuardGaugeObject" } );
+	BMvTbl.SetPP(def_PP_GuardGauge_Flags, ( BMvTbl.GetPP(def_PP_GuardGauge_Flags)|flag ) ); 
 }
 
-Battle_Std.GuardGauge.Sub <- function( _Val=0 )
+Battle_Std.GuardGauge.DelFlags <- function( flag )
+{
+	BMvTbl.SetPP(def_PP_GuardGauge_Flags, ( BMvTbl.GetPP(def_PP_GuardGauge_Flags)&~flag ) ); 
+}
+
+Battle_Std.GuardGauge.CreateGaugeObject <- function()
+{
+	local eff = BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeObject", start_pat="GuardGaugePattern", datatype=1 } );
+	if( eff.push() )
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera } );
+		eff.pop();
+	}
+}
+
+Battle_Std.GuardGauge.Add <- function( _Val=0 )
 {
 	local guard_val = BMvTbl.GetPP( def_PP_GuardGaugeVal );
+	
+	if( guard_val < 0 )
+	{
+		if( _Val > 0 )
+		{
+			BMvTbl.AddPP( def_PP_GuardGaugeVal, _Val );
+		}
+	}
+	
 	if( guard_val >= 0 )
 	{
 		BMvTbl.AddPP( def_PP_GuardGaugeVal, _Val );
+		
+		guard_val = BMvTbl.GetPP( def_PP_GuardGaugeVal );
+		
+		if( guard_val >= GuardGauge_Max ) BMvTbl.SetPP( def_PP_GuardGaugeVal, GuardGauge_Max );
+		if( guard_val < 0 ) BMvTbl.SetPP( def_PP_GuardGaugeVal, 0 );
 	}
 }
 
@@ -9404,10 +9491,23 @@ Battle_Std.GuardGauge.Set <- function( _Val=0 )
 	BMvTbl.SetPP( def_PP_GuardGaugeVal, _Val );
 }
 
+Battle_Std.GuardGauge.SetCoolTime <- function( _Val=0 )
+{
+	BMvTbl.SetPP( def_PP_GuardGauge_CoolTimer, _Val );
+}
+
 Battle_Std.GuardGauge.Check <- function()
 {
-	local guard_val = BMvTbl.GetPP( def_PP_GuardGaugeVal );
-	return guard_val;
+	local ret_tbl = 
+	{
+		guard_val = BMvTbl.GetPP( def_PP_GuardGaugeVal ),
+		cool_time = BMvTbl.GetPP( def_PP_GuardGauge_CoolTimer ),
+		flags = BMvTbl.GetPP( def_PP_GuardGauge_Flags ),
+	}
+	
+	//local guard_val = BMvTbl.GetPP( def_PP_GuardGaugeVal );
+	
+	return ret_tbl;
 }
 
 Battle_Std.GuardGauge.Clear <- function()

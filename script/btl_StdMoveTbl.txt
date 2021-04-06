@@ -3832,8 +3832,11 @@ Std_MoveTable.Mv_Guard <-
 			local command = BMvTbl.CheckCommandString( { command=[ "A+B", "B+C", "A+C" ], lastdelay=1 } );
 			local command_ng = BMvTbl.CheckCommandString( { command=[ "236A+B", "214A+B", "236B+C", "214B+C" ], lastdelay=1 } );
 			
+			local guard_gauge = Battle_Std.GuardGauge.Check();
+			local is_broken = guard_gauge.flags;
+			
 			// _dp("\n command:"+command+" command_ng:"+command_ng);
-			if( BMvTbl.GetLP(6)==0 && command && command_ng == 0 && mvs.MvCount<=6 )
+			if( BMvTbl.GetLP(6)==0 && command && command_ng == 0 && mvs.MvCount<=6 && !is_broken )
 			{
 				// ※多段は１回押せばある程度成立する
 				// def_PP_GS_AliveAdvGuardVec が生きている限り
@@ -3939,7 +3942,9 @@ Std_MoveTable.Mv_Guard <-
 				{
 					// _dp("\n 継続アドバ");
 				}
+				
 				BMvTbl.SetLP(6,1); // 発動フラグ（２回発動しないように）
+				Battle_Std.GuardGauge.Add(Def_Rule_AdvanceGuardGGCost);
 				
 
 				// LP7とかどうなの？　飛び道具かどうかのチェックが曖昧
@@ -7670,6 +7675,8 @@ Std_MoveTable.Mv_Startup <- //開幕かませ・絶対通るようになった
 {
 	function Init_Std() : (duetparam, sptstandbyparam)
 	{
+		Battle_Std.GuardGauge.CreateGaugeObject();
+		
 		if( Def_Dbg_LocalDebugMode ) //ローカル環境でのデバッグ時
 		{
 			BMvEff.CreateObject( { mvname="Mv_ErrorCheckObject" } );
@@ -13234,7 +13241,7 @@ Std_MoveTable.Mv_BoundBlast <-
 		local use_pat = ( Battle_Std.CheckSubSupportType( 2 ) )? 748 : 688; // 0:パワー 1:コンボ 2:エスケープ
 		BMvEff.CreateObject( { datatype=1, start_pat=use_pat, mvname="Mv_EscBlastShockwave", x=0, y=-200*128 } );
 
-		BMvEff.SetPlayerTimer( { muteki_dage=3, muteki_dageX=3, muteki_nage=0, muteki_nageX=0 } );
+		BMvEff.SetPlayerTimer( { muteki_dage=1, muteki_dageX=1, muteki_nage=0, muteki_nageX=0 } );
 		
 		tDDC.Blast_SetParam( { blasttime=0 } );
 		tDDC.Blast_Use( 1 ); // 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
@@ -13307,6 +13314,7 @@ Std_MoveTable.Mv_BoundBlastLand <-
 		BMvTbl.SetPattern(21);
 		
 		BMvEff.SetPlayerTimer( { muteki_dage=0, muteki_dageX=0, muteki_nage=0, muteki_nageX=0 } );
+		BMvTbl.SetMoveableFlag( { move=0, time=5, flag=_ClearFlag_ChangeMv } );
 	}
 	function Finalize_Std()
 	{
@@ -15879,12 +15887,183 @@ Std_MoveTable.Mv_Skill_Sousai4 <-
 	}
 }
 
-Std_MoveTable.Mv_Null_GuardGaugeObject <-
+Std_MoveTable.Mv_Obj_GuardCrushRect <-
 {
-	function Init_After()
+	function Init()
 	{
-		BMvEff.SetObjectFlags( { flags= _ObjFlags_NoCamera|_ObjFlags_NoRender|_ObjFlags_EraseParentPatChange } );
-		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		local enemy = BMvCore.GetNearEnemyCharaData();
+		if( enemy.push() )
+		{
+			local vec = BMvTbl.GetVector( { flags=_Vector_Bound } );
+			BMvEff.SetPlayerTimer( { muteki_nage=0, muteki_dage=0, muteki_dageX=0, muteki_nageX=0 } );
+			
+			enemy.pop();
+			
+			BMvTbl.SetVector( { x=vec.x, y=vec.y, addx=vec.addx, addy=vec.addy, flags=_Vector_Keep  } );
+		}
+	}
+	function HitInterrupt()
+	{
+		local kept_vec = BMvTbl.GetVector( { flags=_Vector_Keep } );
+		
+		local enemy = BMvCore.GetNearEnemyCharaData();
+		if( enemy.push() )
+		{
+			BMvTbl.SetVector( { x=kept_vec.x, y=kept_vec.y, addx=kept_vec.addx, addy=kept_vec.addy, flags=_Vector_Bound } );
+			//Battle_Std.DrawDebugAttackInfo("setting kept vec" );
+			enemy.pop();			
+		}
+		
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
+Std_MoveTable.Mv_Obj_GuardGaugeBar <-
+{
+	function Init()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll|_ObjFlags_NoRenderBlackOut } );
+		
+		local p_side = BMvTbl.GetPlayerSide();
+		local pos_x = ( p_side )? 53 : -58;
+		
+		BMvTbl.SetPosition( { x=pos_x*128,y=2*128, flags=_Position_Add } );
+		
+		BMvTbl.SetLP(0,0); //guard gauge cooldown
+	}
+	function FrameUpdate()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		local rs = BMvTbl.GetMvRoundStatus();
+		
+		local guard_gauge = Battle_Std.GuardGauge.Check();
+		
+		local gauge_value = guard_gauge.guard_val;
+		local gauge_cool = guard_gauge.cool_time;
+		
+		if( rs.TimeUpdate )
+		{
+			if( gauge_cool )
+			{
+				BMvTbl.AddPP( def_PP_GuardGauge_CoolTimer, -1 );
+			}
+			else
+			{
+				Battle_Std.GuardGauge.Add( GuardGauge_RegenSpeed );
+			}
+		}
+		
+		local p_side = ( BMvTbl.GetPlayerSide() )? -1 : 1;
+		
+		local y_scale = 6;
+		local x_scale = ( (gauge_value * 1.11)/(GuardGauge_Max/100) );
+		
+		if( x_scale < 0 ) x_scale = 0;
+		
+		BMvTbl.SetScale( { x=( x_scale*10000 )*p_side, y=y_scale*10000 } );
+		
+		if( guard_gauge.flags&def_PP_GF_Broken )
+		{
+			BMvEff.SetCharaColor( { color=0x808080, time=1, type=0 } );
+			
+			if( gauge_value == GuardGauge_Max ) Battle_Std.GuardGauge.DelFlags( def_PP_GF_Broken );
+		}
+	}
+}
+
+Std_MoveTable.Mv_Obj_GuardGaugeObject <-
+{
+	function Init()
+	{
+		Battle_Std.GuardGauge.Clear();
+		
+		BMvTbl.SetMuki( _Direction_Right );
+		
+		local p_side = BMvTbl.GetPlayerSide();
+		local pos_x = ( p_side )? 130 : -125;
+		
+		BMvTbl.SetPosition( { x=pos_x*128, y=-500*128, flags=0 } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll|_ObjFlags_NoRenderBlackOut } );
+		
+		BMvTbl.SetHan6LayerMask( { val=(1<<p_side) } );
+		BMvTbl.SetPrio( _CharaPrio_GaugeHP_P1 );
+		
+		BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBar", start_pat="dbg_rect2opaque", datatype=1 } );
+	}
+}
+
+//親のMvが変化or特定フレームで投げ属性を消去する
+Std_MoveTable.Mv_Obj_SetAutoThrowMv <-
+{
+	function Init()
+	{
+		//_dm("次のフレームにフラグを消去");
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_NoRender } );//これは時間停止の影響を受けます
+		BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );		
+		BMvTbl.SetPosition( {y=1024, flags=_Position_CaptureShift } );
+		//LP0 ::指定フレーム
+	}
+	function Update()
+	{
+		local s = BMvTbl.GetMvStatus();	
+		local frame = BMvTbl.GetLP(0); //何フレーム後に消すのか
+		local end_flag = ( s.MvCount>frame);
+		if( end_flag) BMvTbl.SetFinalize(0);
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+	function LastUpdate()
+	{
+		//print("\nフラグけすお");
+		BMvEff.CreateObject( {  mvname="Mv_Obj_DelThrowMv" } ); //1F後にフラグを消すMvを作成
+	}
+}
+
+Std_MoveTable.Mv_Obj_AirGuardNoAct <-
+{
+	function Init()
+	{
+		//_dm("次のフレームにフラグを消去");
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_NoRender | _ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );		
+		BMvTbl.SetPosition(  {y=1024, flags=_Position_CaptureShift } );
+
+		BMvTbl.SetPP(def_PP_AirGuarded,1);
+	}
+	function FrameUpdate()
+	{
+		local p = BMvCore.GetPlayerCharaData();
+		if( p.push() )
+		{
+			local mypos = BMvTbl.GetPosition();
+			local isAir = ( BCMDTbl.CheckPosState( _PosState_Air )!=0 );	
+			BMvEff.SetBoundSt( { settime = 10 } );
+			
+			if( !isAir ) 
+			{
+				BMvEff.SetBoundSt( { settime = 4 } );
+			}
+
+			p.pop();
+			
+			if( !isAir )
+			{
+				BMvTbl.SetPP(def_PP_AirGuarded,0);
+				
+				BMvTbl.SetFinalize(0);
+			}
+		}
+
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
 	}
 }
 

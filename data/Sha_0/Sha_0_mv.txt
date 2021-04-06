@@ -274,6 +274,8 @@ t.Mv_Startup <-
 	{
 		// VITA以外では炎髪のフレアとパーティクルを生成する
 		if( _DevVITA == 0 ) BMvEff.CreateObject( { x=0, y=0, mvname="Mv_Eff_KamiHikari" } );
+		
+		//Battle_Std.GuardGauge.CreateGaugeObject();
 	}
 }
 
@@ -281,7 +283,7 @@ t.Mv_Standby <-
 {
 	function Init_After()
 	{
-		Battle_Std.DrawDebugAttackInfo("stndby" );
+		//Battle_Std.DrawDebugAttackInfo("stndby" );
 	}
 	function FrameUpdate_After()
 	{
@@ -607,11 +609,169 @@ local draw_Effect = function( _pat, _mv="" )
 		eff.pop();
 	}
 }
+/*
+
+t.AttackImpact <- function( info )
+{
+	Battle_Std.AttackImpact_StdFunc(info);
+}
+
+t.Mv_Obj_GuardCrushRect <-
+{
+	function Init_After()
+	{
+		local enemy = BMvCore.GetNearEnemyCharaData();
+		if( enemy.push() )
+		{
+			local vec = BMvTbl.GetVector( { flags=_Vector_Bound } );
+			BMvEff.SetPlayerTimer( { muteki_nage=0, muteki_dage=0, muteki_dageX=0, muteki_nageX=0 } );
+			
+			enemy.pop();
+			
+			BMvTbl.SetVector( { x=vec.x, y=vec.y, addx=vec.addx, addy=vec.addy, flags=_Vector_Keep  } );
+		}
+	}
+	function HitInterrupt_After()
+	{
+		local kept_vec = BMvTbl.GetVector( { flags=_Vector_Keep } );
+		
+		local enemy = BMvCore.GetNearEnemyCharaData();
+		if( enemy.push() )
+		{
+			BMvTbl.SetVector( { x=kept_vec.x, y=kept_vec.y, addx=kept_vec.addx, addy=kept_vec.addy, flags=_Vector_Bound } );
+			//Battle_Std.DrawDebugAttackInfo("setting kept vec" );
+			enemy.pop();			
+		}
+		
+	}
+}
+
+t.DamageImpact <- function( info )
+{
+	Battle_Std.DamageImpact_StdFunc(info);
+	
+	local damage_val = info.DAMAGE;
+	local guard_gauge = Battle_Std.GuardGauge.Check();
+
+	local is_broken = guard_gauge.flags;
+	
+	if( info.type&_HitType_Guard )
+	{
+		if( !is_broken )
+		{
+			Battle_Std.GuardGauge.Add( -damage_val );
+			
+			guard_gauge = Battle_Std.GuardGauge.Check();
+			local GaugeAfter = guard_gauge.guard_val;
+			
+			if( GaugeAfter==0 ) //guard reduced to 0 after receiving an attack
+			{
+				local enemy = BMvCore.GetEnemyCharaData();
+				if( enemy.push() )
+				{
+					local eff = BMvEff.CreateObject( { mvname="Mv_Obj_GuardCrushRect", start_pat="GuardCrushRect", datatype=1 } );
+					if( eff.push() )
+					{
+						Battle_Std.SetPos_MarkingEnemy();
+						eff.pop();
+					}
+					enemy.pop();
+				}
+				
+				Battle_Std.GuardGauge.AddFlags( def_PP_GF_Broken );
+				Battle_Std.GuardGauge.Set( -10000 );
+			}
+			else
+			{
+				Battle_Std.GuardGauge.SetCoolTime( GuardGauge_CoolTime );
+			}
+		}
+		
+		//Battle_Std.DrawDebugAttackInfo("guarding "+damage_val );
+	}
+}
+
+t.Mv_Obj_GuardGaugeBar <-
+{
+	function Init()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		
+		local p_side = BMvTbl.GetPlayerSide();
+		local pos_x = ( p_side )? 53 : -58;
+		
+		BMvTbl.SetPosition( { x=pos_x*128,y=2*128, flags=_Position_Add } );
+		
+		BMvTbl.SetLP(0,0); //guard gauge cooldown
+	}
+	function FrameUpdate()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		local rs = BMvTbl.GetMvRoundStatus();
+		
+		local guard_gauge = Battle_Std.GuardGauge.Check();
+		
+		local gauge_value = guard_gauge.guard_val;
+		local gauge_cool = guard_gauge.cool_time;
+		
+		if( rs.TimeUpdate )
+		{
+			if( gauge_cool )
+			{
+				BMvTbl.AddPP( def_PP_GuardGauge_CoolTimer, -1 );
+			}
+			else
+			{
+				Battle_Std.GuardGauge.Add( GuardGauge_RegenSpeed );
+			}
+		}
+		
+		local p_side = ( BMvTbl.GetPlayerSide() )? -1 : 1;
+		
+		local y_scale = 6;
+		local x_scale = ( (gauge_value * 1.11)/(GuardGauge_Max/100) );
+		
+		if( x_scale < 0 ) x_scale = 0;
+		
+		BMvTbl.SetScale( { x=( x_scale*10000 )*p_side, y=y_scale*10000 } );
+		
+		if( guard_gauge.flags&def_PP_GF_Broken )
+		{
+			BMvEff.SetCharaColor( { color=0x808080, time=1, type=0 } );
+			
+			if( gauge_value == GuardGauge_Max ) Battle_Std.GuardGauge.DelFlags( def_PP_GF_Broken );
+		}
+	}
+}
+
+t.Mv_Obj_GuardGaugeObject <-
+{
+	function Init_After()
+	{
+		Battle_Std.GuardGauge.Clear();
+		
+		BMvTbl.SetMuki( _Direction_Right );
+		
+		local p_side = BMvTbl.GetPlayerSide();
+		local pos_x = ( p_side )? 130 : -125;
+		
+		BMvTbl.SetPosition( { x=pos_x*128, y=-500*128, flags=0 } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera } );
+		
+		BMvTbl.SetHan6LayerMask( { val=(1<<p_side) } );
+		BMvTbl.SetPrio( _CharaPrio_GaugeHP_P1 );
+		
+		BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBar", start_pat="dbg_rect2opaque", datatype=1 } );
+	}
+}
+*/
 
 t.Mv_Atk_StdA <-
 {
 	function Init_After() : (bgm_array_array,draw_Effect)
 	{
+		//Battle_Std.GuardGauge.CreateGaugeObject();
+		
 		//BMvEff.SetPaletteSlot( 1, 0 );
 		
 		//draw_Effect( "BladeEff_SPStartWing", "Mv_BladeEff_SPStartWing" );
@@ -892,6 +1052,8 @@ t.Mv_Atk_CroC <-
 				func_CreateBlade( { x=0, y=0, start_pat=pat_num, mvname="Mv_CroC_Blade" }, { grp_angle=4000, vec_angle=0.8, vec_speed=300 } );
 				break;
 			case 1000:
+				Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_DoubleGuardDamage );
+				
 				local eff = func_CreateBlade( { x=0, y=0, start_pat=pat_num, mvname="Mv_CroC_Blade" }, { grp_angle=4000, vec_angle=0.8, vec_speed=300 } );
 				if( eff.push() )
 				{
