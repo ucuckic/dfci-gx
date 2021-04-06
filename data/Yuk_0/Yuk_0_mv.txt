@@ -10,6 +10,18 @@ const CDef_Yuk_KirifudaCanselHPAdd = -300; // 切り札ジャンプやエクステンド技キャ
 
 local t = {};
 
+t.AttackImpact <- function( info )
+{
+	Battle_Std.DrawDebugAttackInfo( "atkdamagestat "+info.DAMAGE );
+	Battle_Std.AttackImpact_StdFunc(info);
+}
+
+t.DamageImpact <- function( info )
+{
+	Battle_Std.DrawDebugAttackInfo( "e_atkdamagestat "+info.DAMAGE );
+	Battle_Std.DamageImpact_StdFunc(info);
+}
+
 //-----------------------------------------------------------------------------
 // 固有関数
 //-----------------------------------------------------------------------------
