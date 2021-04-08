@@ -771,11 +771,17 @@ t.Mv_Atk_CroB <-
 	function Init_After()
 	{
 		Battle_Std.MoveCode.DelFlag( def_MC_NoJumpCansel ); // u’Êí‚b‚Å‚à‚i‚b•s‰Âv‚ðÁ‚·
+		
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 }
 
 t.Mv_Atk_CroC <-
 {
+	function Init_After()
+	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
+	}
 	function FrameUpdate_After()
 	{
 	}

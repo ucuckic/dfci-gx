@@ -10,10 +10,172 @@ _dp("\n[Kur_0_mv.txt]");
 
 local t = {};
 
+
+
 const CDef_Kur_SP_KirifudaUse = 0;
 
 const CDef_Kur_PP_OD_Time = 6;
+const CDef_Kur_PP_HeatGauge = 7;
+
+const CDef_Kur_PP_BL_X = 8;
+const CDef_Kur_PP_BL_Y = 9;
+
+const Kur_Heat_Max = 10000;
+const Kur_Heat_CD_Time = 420;
+
 //const CDef_Kur_PP_OD_State = 1; def_PP_Kur_OverDriveType
+
+
+local chrFunc = {};
+
+chrFunc.SetOverHeat <- function()
+{
+	BMvTbl.SetPP( CDef_Kur_PP_HeatGauge, -Kur_Heat_Max*2);
+	BMvTbl.SetPP( def_PP_Kur_OverDriveType, 0 );
+	
+	BMvEff.CreateObject( { mvname="Mv_Null_OverHeatCheck" } );
+}
+
+chrFunc.AddHeat <- function( _Val )
+{
+	local heat_val = BMvTbl.GetPP( CDef_Kur_PP_HeatGauge );
+	
+	if( heat_val < 0 ) return;
+	
+	if( heat_val <= Kur_Heat_Max )
+	{
+		if( heat_val + _Val >= Kur_Heat_Max )
+		{
+			//BMvTbl.SetPP( CDef_Kur_PP_HeatGauge, Kur_Heat_Max);
+			BMvTbl.SetPP( CDef_Kur_PP_HeatGauge, -Kur_Heat_Max);
+		}
+		else 
+		if( heat_val + _Val <= 0 )
+		{
+			BMvTbl.SetPP( CDef_Kur_PP_HeatGauge, 0);
+		}
+		else
+		{
+			BMvTbl.AddPP( CDef_Kur_PP_HeatGauge, _Val);
+		}
+	}
+}
+
+t.Mv_Obj_HeatGauge <-
+{
+	function Init()
+	{
+		BMvTbl.SetPosition( { x=-360*128, y=-25*128 } );
+		BMvTbl.SetPP( CDef_Kur_PP_HeatGauge, 0);
+		
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll | _ObjFlags_NoCamera } );
+		
+		BMvTbl.SetPrio( _CharaPrio_GaugeCombo_P1 );
+		
+		BMvTbl.SetLP(0,0); //overheat proc
+	}
+	function FrameUpdate_After()
+	{
+		local heat_val = BMvTbl.GetPP( CDef_Kur_PP_HeatGauge );
+		local over_heat = ( heat_val < 0 );
+		
+		local y_scale = 12;
+		local x_scale = ( over_heat )? ( Kur_Heat_Max / 60  ) : ( heat_val/60 );
+		
+		if( over_heat && BMvTbl.GetLP(0)==0 )
+		{
+			BMvEff.SetCharaColor( { color = 0xFF0000, type = 2, intime = 60, time = Kur_Heat_CD_Time } );	
+			
+			BMvTbl.SetLP(0,1);
+		}
+		
+		if( !over_heat ) BMvTbl.SetLP(0,0);
+		
+		if( x_scale < 0 ) x_scale = 0;
+		
+		BMvTbl.SetScale( { x=( x_scale*10000 ), y=y_scale*10000 } );
+	}
+}
+
+t.Mv_Null_OverHeatCheck <-
+{
+	function Init_After()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_NoRender | _ObjFlags_MoveTimeStopAll | _ObjFlags_NoCamera } );	
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		
+		Battle_Std.DrawDebugAttackInfo( "oh" );
+	}
+	function FrameUpdate_After() : (chrFunc)
+	{
+		BMvTbl.SetPP( def_PP_Kur_OverDriveType,0 );
+		
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.MvCount == Kur_Heat_CD_Time ) BMvTbl.SetFinalize();
+	}
+	function Finalize() : (chrFunc)
+	{
+		BMvTbl.SetPP( CDef_Kur_PP_HeatGauge, Kur_Heat_Max );
+		
+		local oya = BMvCore.GetParentCharaData();
+		if( oya.push() )
+		{
+			BMvTbl.SetLP(0,0);
+			oya.pop();
+		}
+		
+		Battle_Std.DrawDebugAttackInfo( "unheat" );
+		
+		BMvTbl.SetDeleteMoveTable();
+		
+	}
+}
+
+t.Mv_Null_HeatCheck <-
+{
+	function Init_After()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_NoRender | _ObjFlags_MoveTimeStopAll | _ObjFlags_NoCamera } );	
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		
+		BMvEff.CreateObject( { mvname="Mv_Obj_HeatGauge", start_pat="dbg_rect2opaque", datatype=1 } );
+		
+		BMvTbl.SetLP(0,0); //overheat state
+	}
+	function FrameUpdate_After() : (chrFunc)
+	{
+		local rs = BMvTbl.GetMvRoundStatus();
+		local heat_val = BMvTbl.GetPP( CDef_Kur_PP_HeatGauge );
+		local od_state = BMvTbl.GetPP( def_PP_Kur_OverDriveType );
+		
+		local over_heat = ( heat_val < 0 );
+
+        if( rs.TimeUpdate )
+        {
+			if( od_state == 0 && BMvTbl.GetLP(0)==0 )
+			{
+				chrFunc.AddHeat(-10);
+			}
+			else 
+			if( od_state > 0 )
+			{
+				if( over_heat )
+				{			
+					if( BMvTbl.GetLP(0)==0 ) 
+					{
+						chrFunc.SetOverHeat();
+						BMvTbl.SetLP(0,1);
+					}
+				}
+				else
+				{
+					chrFunc.AddHeat(5);
+				}
+			}
+		}
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // 固有関数
@@ -21,15 +183,40 @@ const CDef_Kur_PP_OD_Time = 6;
 
 local func_BL = {};
 
+func_BL.SetPos <- function()
+{
+	local pos = BMvTbl.GetPosition( 0 );
+	
+	BMvTbl.SetPP( CDef_Kur_PP_BL_X,pos.x );
+	BMvTbl.SetPP( CDef_Kur_PP_BL_Y,pos.y );
+}
+
+func_BL.RetPos <- function()
+{
+	ret_tbl <-
+	{
+		x = BMvTbl.GetPP( CDef_Kur_PP_BL_X ),
+		y = BMvTbl.GetPP( CDef_Kur_PP_BL_Y ),
+	}
+	
+	return ret_tbl;
+}
+
 func_BL.Call <- function( param={} )
 {
 	// local odtype = BMvTbl.GetPP( def_PP_Kur_OverDriveType ); // 0:黒 1:赤 2:緑 3:青
-	local pos = { x=param.x<<7, y=param.y<<7 };
 
-	local eff = ("pat" in param)? BMvEff.CreateObject( { start_pat=param.pat, x=pos.x, y=pos.y, mvname=("mvname" in param)? param.mvname : "" } )
-								: BMvEff.CreateObject( { x=pos.x, y=pos.y, mvname=param.mvname } );
+	local pos_x = ( "x" in param )? param.x*128 : 0;
+	local pos_y = ( "y" in param )? param.y*128 : 0;
+
+	local eff = ("pat" in param)? BMvEff.CreateObject( { start_pat=param.pat, x=pos_x, y=pos_y, mvname=("mvname" in param)? param.mvname : "Mv_BLObj_Std" } )
+								: BMvEff.CreateObject( { x=pos_x, y=pos_y, mvname=param.mvname } );
 	if( eff.push() )
 	{
+
+		if( "setx" in param ) BMvTbl.SetPosition( { x=param.setx } );
+		if( "sety" in param ) BMvTbl.SetPosition( { y=param.sety } );
+
 		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_FromParentStop|_ObjFlags_ToParentStop|_ObjFlags_ToParentHitBack|_ObjFlags_ToParentHitStatus|_ObjFlags_EraseParentDamage|_ObjFlags_ParentMove } );
 		
 		if( Def_Rule_SkillKezuriType && "Kezuri" in param )
@@ -64,10 +251,40 @@ func_BL.CallAtk <- function( param={} )
 	local eff = BMvEff.CreateObject( { start_pat=useparam.pat, x=useparam.x<<7, y=useparam.y<<7, mvname=("mvname" in useparam)? useparam.mvname : "" } );
 	if( eff.push() )
 	{
+		if( "setx" in param ) BMvTbl.SetPosition( { x=param.setx } );
+		if( "sety" in param ) BMvTbl.SetPosition( { x=param.sety } );
+
+		
 		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_FromParentStop|_ObjFlags_ToParentStop|_ObjFlags_ToParentHitBack|_ObjFlags_ToParentHitStatus|_ObjFlags_EraseParentDamage|_ObjFlags_ParentMove } );
 		eff.pop();
 	}
 	return eff;
+}
+
+func_BL.ModeBlue_HalveGuardDamage <- function()
+{
+	local mode_blue = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 3 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+	if( mode_blue )
+	{
+		Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_HalveGuardDamage );
+	}
+	else
+	{
+		Battle_Std.MoveCodeEx.DelFlag( 2, def_MC2_HalveGuardDamage );
+	}
+}
+
+func_BL.ModeBlue_SkillToSkill <- function()
+{
+	local mode_blue = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 3 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
+	if( mode_blue )
+	{
+		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_EnableCansel_SkilltoSkill );
+	}
+	else
+	{
+		Battle_Std.MoveCodeEx.DelFlag( 1, def_MC1_EnableCansel_SkilltoSkill );
+	}
 }
 
 func_BL.ModeBlue_JumpCancel <- function()
@@ -80,6 +297,27 @@ func_BL.ModeBlue_JumpCancel <- function()
 		{
 			BMvTbl.SetAsStatusFlag( { normal=_CancelFlag_Hit, time=32, flag=_ClearFlag_ChangeFrame } );
 		}
+	}
+}
+
+t.Mv_BLObj_Std <-
+{
+	function Init()
+	{
+	}
+	function FrameUpdate() : (func_BL)
+	{
+		local pos = BMvTbl.GetPosition( 0 );
+		
+		BMvTbl.SetPP( CDef_Kur_PP_BL_X, pos.x );
+		BMvTbl.SetPP( CDef_Kur_PP_BL_Y, pos.y );
+		
+		func_BL.ModeBlue_HalveGuardDamage();		
+		func_BL.ModeBlue_SkillToSkill();
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
 	}
 }
 
@@ -339,6 +577,8 @@ t.Mv_Startup <-
 	{
 		BMvEff.CreateObject( { mvname="Mv_Null_0202Manage" } );
 		BMvEff.CreateObject( { mvname="Mv_Null_KirifudaStatus_Green" } );
+		
+		BMvEff.CreateObject( { mvname="Mv_Null_HeatCheck" } );
 	}
 }
 
@@ -475,6 +715,7 @@ t.Mv_Atk_StdB <-
 	function Init_After() : (func_BL, pat_num_BLAtk_StdB)
 	{
 		func_BL.Call( { pat=pat_num_BLAtk_StdB, x=200, y=-200 } );
+		func_BL.ModeBlue_HalveGuardDamage();	
 	}
 	function FrameUpdate_After()
 	{
@@ -491,6 +732,7 @@ t.Mv_Atk_StdC <-
 	function Init_After() : (func_BL, pat_num_BLAtk_StdC)
 	{
 		func_BL.Call( { pat=pat_num_BLAtk_StdC, x=200, y=-230 } );	
+		func_BL.ModeBlue_HalveGuardDamage();	
 	}
 	function FrameUpdate_After()
 	{
@@ -529,6 +771,7 @@ t.Mv_Atk_CroB <-
 	function Init_After() : (func_BL, pat_num_BLAtk_CroB)
 	{
 		func_BL.Call( { pat=pat_num_BLAtk_CroB, x=50, y=-200 } );	
+		func_BL.ModeBlue_HalveGuardDamage();	
 
 		Battle_Std.MoveCode.DelFlag( def_MC_NoJumpCansel ); // 「通常ＣでもＪＣ不可」を消す
 	}
@@ -546,6 +789,7 @@ t.Mv_Atk_CroC <-
 	function Init_After() : (func_BL, pat_num_BLAtk_CroC)
 	{
 		func_BL.Call( { pat=pat_num_BLAtk_CroC, x=100, y=-140 } );	
+		func_BL.ModeBlue_HalveGuardDamage();	
 	}
 	function FrameUpdate_After()
 	{
@@ -567,6 +811,7 @@ t.Mv_Atk_AirB <-
 	function Init_After() : (func_BL, pat_num_BLAtk_AirB)
 	{
 		func_BL.Call( { pat=pat_num_BLAtk_AirB, x=150, y=-250 } );	
+		func_BL.ModeBlue_HalveGuardDamage();	
 	}
 	function FrameUpdate_After()
 	{
@@ -581,6 +826,7 @@ t.Mv_Atk_AirC <-
 	function Init_After() : (func_BL, pat_num_BLAtk_AirC)
 	{
 		func_BL.Call( { pat=pat_num_BLAtk_AirC, x=150, y=-200 } );	
+		func_BL.ModeBlue_HalveGuardDamage();	
 	}
 	function FrameUpdate_After()
 	{
@@ -611,6 +857,9 @@ local maketmpl_Skill236 = function( param={} ) : (func_BL, pat_num_BL236)
 	local pos = { x=150, y=-250 };
 	local bl_pat_n = pat_num_BL236.A;
 	local bl_pat_b = pat_num_BL236.A_R;
+	
+	local ComboLimit = DEF_BS_CL_Skill06;
+	
 	switch( param.type )
 	{
 	case "A":
@@ -624,12 +873,18 @@ local maketmpl_Skill236 = function( param={} ) : (func_BL, pat_num_BL236)
 		pos.y = -250;
 		bl_pat_n = pat_num_BL236.B;
 		bl_pat_b = pat_num_BL236.B_R;
+		
+		ComboLimit = DEF_BS_CL_Skill07; 
+		
 		break;
 	case "C":
 		pos.x = 200;
 		pos.y = -250;
 		bl_pat_n = pat_num_BL236.C;
 		bl_pat_b = pat_num_BL236.C_R;
+		
+		ComboLimit = DEF_BS_CL_Skill08; 
+		
 		break;
 	case "EX":
 		pos.x = 200;
@@ -639,14 +894,18 @@ local maketmpl_Skill236 = function( param={} ) : (func_BL, pat_num_BL236)
 		break;
 	}
 	
-	ret_tmpl.Init_After <- function()
+	ret_tmpl.Init_After <- function() : (ComboLimit)
 	{
 		// 各種補正は最初の１ヒットのみ
 		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );
+		
+		BMvTbl.SetComboLimit(ComboLimit);
 	}
 	
 	ret_tmpl.FrameUpdate_After <- function() : (pos, bl_pat_n, bl_pat_b, func_BL)
 	{
+		func_BL.ModeBlue_SkillToSkill();
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
@@ -673,9 +932,49 @@ t.Mv_Skill_236EX <- maketmpl_Skill236( { type="EX" } );
 
 local pat_num_BLJ236 = {};
 pat_num_BLJ236.A <- BMvEff.GetPatternNum( { datatype=0, pat="BLJ236" } ); // パターン文字列のパターン番号を事前取得
+
+pat_num_BLJ236.C <- BMvEff.GetPatternNum( { datatype=0, pat="BLJ236C" } ); // パターン文字列のパターン番号を事前取得
+
 pat_num_BLJ236.EX <- BMvEff.GetPatternNum( { datatype=0, pat="BLJ236EX" } ); // パターン文字列のパターン番号を事前取得
+
 pat_num_BLJ236.A_B <- BMvEff.GetPatternNum( { datatype=0, pat="BLJ236_B" } ); // パターン文字列のパターン番号を事前取得
+
 pat_num_BLJ236.EX_B <- BMvEff.GetPatternNum( { datatype=0, pat="BLJ236EX_B" } ); // パターン文字列のパターン番号を事前取得
+
+t.Mv_BLSkill_J214 <-
+{
+	function Init()
+	{
+		BMvTbl.SetLP(0,0);
+		
+		Battle_Std.AddXPos_NearEnemy(0,150);
+	}
+	function FrameUpdate_After() : (func_BL)
+	{
+		func_BL.SetPos();
+		func_BL.ModeBlue_SkillToSkill();
+		func_BL.ModeBlue_HalveGuardDamage();
+		
+		if( Battle_Std.GetUpdateFrameID()==50 ) BMvTbl.SetLP(0,1);
+		
+		local epos = Battle_Std.GetEnemyPosition();
+		local p_pos = BMvTbl.GetPosition( 0 );
+		
+		local target_y = -300;
+		
+		local y_dif = ( ( epos.y + (target_y*128) ) - p_pos.y )/128;
+
+		if( y_dif < 0 && BMvTbl.GetLP(0)==0 ) 
+		{
+			BMvTbl.SetVector( { y=(y_dif)*20, flags=_Vector_Normal } );
+		}
+		
+	}
+	function Finalize()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
 
 local maketmpl_SkillJ236 = function( param={} ) : (func_BL, pat_num_BLJ236)
 {
@@ -686,46 +985,105 @@ local maketmpl_SkillJ236 = function( param={} ) : (func_BL, pat_num_BLJ236)
 	local pos = { x=280, y=-250 };
 	local bl_pat_n = pat_num_BLJ236.A;
 	local bl_pat_b = pat_num_BLJ236.A_B;
+	
+	local vec_keep = 0;
+	
+	local set_vec = 0;
+	
+	local ComboLimit = DEF_BS_CL_Skill00;
+	
 	switch( param.type )
 	{
 	case "A":
 		pos.x = 100;
 		pos.y = -200;
+		
 		bl_pat_n = pat_num_BLJ236.A;
 		bl_pat_b = pat_num_BLJ236.A_B;
+		
 		break;
 	case "B":
 		pos.x = 120;
 		pos.y = -190;
+		
 		bl_pat_n = pat_num_BLJ236.A;
 		bl_pat_b = pat_num_BLJ236.A_B;
+		
+		ComboLimit = DEF_BS_CL_Skill01;
+		
 		break;
 	case "C":
 		pos.x = 140;
 		pos.y = -180;
-		bl_pat_n = pat_num_BLJ236.A;
-		bl_pat_b = pat_num_BLJ236.A_B;
+		
+		bl_pat_n = "BLJ236C";
+		bl_pat_b = "BLJ236C_B";
+		
+		//vec_keep = 1;
+		set_vec = { x=3500, y=2500, addx=0, addy=250, flags=_Vector_Normal };
+		
+		ComboLimit = DEF_BS_CL_Skill02;
+		
 		break;
 	case "EX":
 		pos.x = 160;
 		pos.y = -170;
 		bl_pat_n = pat_num_BLJ236.EX;
 		bl_pat_b = pat_num_BLJ236.EX_B;
+		
+		
+		
 		break;
 	}
 	
-	
-	ret_tmpl.FrameUpdate_After <- function() : (pos, bl_pat_n, bl_pat_b, func_BL)
+	ret_tmpl.Init_After <- function() : (vec_keep,ComboLimit)
 	{
+		local vec = BMvTbl.GetVector( { flags=_Vector_Normal } );
+		BMvTbl.SetVector( { x=vec.x, y=vec.y, addx=vec.addx, addy=vec.addy, flags=_Vector_Keep } );
+		
+		BMvTbl.SetVector( { x=0, y=0, addx=0, addy=0, flags=_Vector_Normal } );
+		
+		BMvTbl.SetComboLimit(ComboLimit);
+	}
+	ret_tmpl.FrameUpdate_After <- function() : (pos, bl_pat_n, bl_pat_b, func_BL, vec_keep, set_vec)
+	{
+		//func_BL.SetPos();
+		
+		func_BL.ModeBlue_SkillToSkill();
+		func_BL.ModeBlue_HalveGuardDamage();
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
 			local mode_red = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 1 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 			local bl_pat = (mode_red)? bl_pat_b : bl_pat_n;
-
-			func_BL.Call( { pat=bl_pat, x=pos.x, y=pos.y, Kezuri=1 } ); // 呼び出し
+			
+			local epos = Battle_Std.GetEnemyPosition();
+			local p_pos = BMvTbl.GetPosition( 0 );
+			
+			local y_off = 0;
+			
+			if( epos.y < p_pos.y )
+			{
+				local y_max = ( Battle_Std.CheckEnemyisDamage() )? -600 : -200
+				local y_dif = epos.y - p_pos.y;
+				y_off = y_dif/128;
+				
+				//Battle_Std.DrawDebugAttackInfo( "D "+y_dif+ " off "+y_off );
+				
+				if( y_off < y_max ) y_off = y_max;
+			}
+			
+			
+			func_BL.Call( { pat=bl_pat, x=pos.x, y=pos.y, Kezuri=1, mvname="Mv_BLSkill_J214" } ); // 呼び出し
 			break;
 		case 200:
+			local vec = BMvTbl.GetVector( { flags=_Vector_Keep } );
+			local x_boost = 2500;
+			local y_boost = 1500;
+			if( vec_keep ) BMvTbl.SetVector( { x=vec.x+x_boost, y=vec.y, addx=vec.addx, addy=vec.addy, flags=_Vector_Normal } );
+			if( set_vec ) BMvTbl.SetVector( set_vec );
+			
 			Battle_Std.CreateObject.CommonEffect.SupecialMoveRing( { x=-150, y=-300 } );
 			break;
 		}
@@ -753,6 +1111,8 @@ local maketmpl_Skill214 = function( param={} ) : (func_BL)
 	local bl_mv = "Mv_BLSkill_214A";
 	local pos = { x=150, y=-220, ex=500, ey=-300 }; // 出現座標と追加の出現座標（移動先）
 	
+	local ComboLimit = DEF_BS_CL_Skill03;
+	
 	switch( param.type )
 	{
 	case "A":
@@ -768,6 +1128,8 @@ local maketmpl_Skill214 = function( param={} ) : (func_BL)
 		pos.y = -220;
 		pos.ex = 510;
 		pos.ey = -350;
+		
+		ComboLimit = DEF_BS_CL_Skill04;
 		break;
 	case "C":
 		bl_mv = "Mv_BLSkill_214C";
@@ -775,6 +1137,8 @@ local maketmpl_Skill214 = function( param={} ) : (func_BL)
 		pos.y = -250;
 		pos.ex = 520;
 		pos.ey = -500;
+		
+		ComboLimit = DEF_BS_CL_Skill05;
 		break;
 	case "EX":
 		bl_mv = "Mv_BLSkill_214EX";
@@ -782,27 +1146,41 @@ local maketmpl_Skill214 = function( param={} ) : (func_BL)
 		pos.y = -220;
 		pos.ex = 530;
 		pos.ey = -450;
+		
+		ComboLimit = DEF_BS_CL_Skill06;
 		break;
 	}
 	
-	ret_tmpl.Init_After <- function() : (pos)
+	ret_tmpl.Init_After <- function() : (pos, ComboLimit)
 	{
 		_dp("\n BL座標セット:"+pos.ex+", "+pos.ey );
 		BMvTbl.SetLP(0,pos.ex); // BLのX座標
 		BMvTbl.SetLP(1,pos.ey); // BLのY座標	
 		BMvTbl.SetLP(2,0); // BLが攻撃の絵まで進んだかどうか
+		
+		 BMvTbl.SetComboLimit(ComboLimit);
 	}
 	
 	ret_tmpl.FrameUpdate_After <- function() : (bl_mv, func_BL, pos)
 	{
+		func_BL.ModeBlue_SkillToSkill();
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
-			func_BL.Call( { mvname=bl_mv, x=pos.x, y=pos.y, kezuri=1 } ); // 呼び出し
+			local eff = func_BL.Call( { mvname=bl_mv, x=pos.x, y=pos.y, kezuri=1 } ); // 呼び出し
+			if( eff.push() )
+			{
+				local spos = BMvTbl.GetPosition( 0 );
+				eff.pop();
+				
+				BMvTbl.SetLP(0,spos.x); // BLのX座標
+				BMvTbl.SetLP(1,spos.y); // BLのY座標	
+			}
 			break;
 		}
 		// 地上版は無しです
-		// func_BL.ModeBlue_JumpCancel(); // モードブルーの時にジャンプキャンセル可能にする
+		func_BL.ModeBlue_JumpCancel(); // モードブルーの時にジャンプキャンセル可能にする
 	}
 	
 	ret_tmpl.HitInterrupt_After <- function()
@@ -820,6 +1198,8 @@ local maketmpl_SkillJ214 = function( param={} ) : (func_BL)
 	local bl_mv = "Mv_BLSkill_J214A";
 	local pos = { x=150, y=-220, ex=500, ey=-300 };
 	
+	local ComboLimit = DEF_BS_CL_Skill08;
+	
 	switch( param.type )
 	{
 	case "A":
@@ -835,6 +1215,8 @@ local maketmpl_SkillJ214 = function( param={} ) : (func_BL)
 		pos.y = -220;
 		pos.ex = 510;
 		pos.ey = -350;
+		
+		ComboLimit = DEF_BS_CL_Skill09;
 		break;
 	case "C":
 		bl_mv = "Mv_BLSkill_J214C";
@@ -842,6 +1224,8 @@ local maketmpl_SkillJ214 = function( param={} ) : (func_BL)
 		pos.y = -220;
 		pos.ex = 520;
 		pos.ey = -450;
+		
+		ComboLimit = DEF_BS_CL_Skill10;
 		break;
 	case "EX":
 		bl_mv = "Mv_BLSkill_J214EX";
@@ -852,16 +1236,22 @@ local maketmpl_SkillJ214 = function( param={} ) : (func_BL)
 		break;
 	}
 	
-	ret_tmpl.Init_After <- function() : (pos)
+	ret_tmpl.Init_After <- function() : (pos,ComboLimit)
 	{
 		_dp("\n BL座標セット:"+pos.ex+", "+pos.ey );
 		BMvTbl.SetLP(0,pos.ex); // BLのX座標
 		BMvTbl.SetLP(1,pos.ey); // BLのY座標	
 		BMvTbl.SetLP(2,0); // BLが攻撃の絵まで進んだかどうか
+		
+		BMvTbl.SetComboLimit(ComboLimit);
 	}
 	
 	ret_tmpl.FrameUpdate_After <- function() : (bl_mv, func_BL, pos)
 	{
+		func_BL.ModeBlue_SkillToSkill();
+
+		func_BL.ModeBlue_HalveGuardDamage();
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
@@ -901,8 +1291,11 @@ t.Mv_Obj_214Dummy <-
 	function Init_After()
 	{
 	}
-	function FrameUpdate_After()
+	function FrameUpdate_After() : (func_BL)
 	{
+		Battle_Std.AddXPos_CheckFrontStage(0,0);
+		func_BL.SetPos();
+		
 		local mvs = BMvTbl.GetMvStatus();
 		local player = BMvCore.GetPlayerCharaData();
 		
@@ -960,11 +1353,13 @@ t.Mv_Obj_214Dummy_Fin <-
 	function Init_After()
 	{
 		BMvTbl.JumpFrameID( 100 );
+		
+		//Battle_Std.AddXPos_CheckFrontStage(0,0);
 	}
 }
 
 
-local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
+local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214,func_BL)
 {
 	local retmv = {};
 	
@@ -1056,6 +1451,8 @@ local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
 	
 	retmv.Init <- function() : (bl_pat_n, bl_pat_b)
 	{
+		//Battle_Std.AddXPos_CheckFrontStage(0,0);
+		
 		local mode_blue = ( BMvTbl.GetPP( def_PP_Kur_OverDriveType ) == 3 )? 1 : 0; // 0:黒 1:赤 2:緑 3:青
 		if( mode_blue )
 		{
@@ -1097,6 +1494,8 @@ local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
 			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } ); //_ObjFlags_EraseParentPatChange
 			BMvTbl.SetLP(0,mvs.DataPattern);
 			
+			//Battle_Std.AddXPos_CheckFrontStage(0,0);
+			
 			eff.pop();
 		}
 		local eff = BMvEff.CreateObject( { start_pat=pat_num_BL214.ActFlash } );
@@ -1104,6 +1503,9 @@ local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
 		{
 			BMvTbl.SetAngle( { angle_float=move_angle } );
 			BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround } );
+			
+			//Battle_Std.AddXPos_CheckFrontStage(0,0);
+			
 			eff.pop();
 		}
 		
@@ -1125,8 +1527,14 @@ local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
 		}	
 	}
 	
-	retmv.FrameUpdate_After <- function() : (move, move_angle_n, move_angle_b, move_pow_n, move_pow_b, set_KurCancelTiming)
+	retmv.FrameUpdate_After <- function() : (func_BL,move, move_angle_n, move_angle_b, move_pow_n, move_pow_b, set_KurCancelTiming)
 	{
+					
+		func_BL.ModeBlue_SkillToSkill();
+		func_BL.ModeBlue_HalveGuardDamage();
+		
+		//Battle_Std.AddXPos_CheckFrontStage(0,0);
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
@@ -1148,6 +1556,8 @@ local makemv_Skill214_BL = function( param={} ) : (pat_num_BL214)
 			set_KurCancelTiming( 1 ); // 黒雪姫に派生だしていい状態なのをLP2で伝える
 			break;
 		}
+		
+		//func_BL.SetPos();
 	}
 	
 	retmv.HitInterrupt_After <- function() : (set_KurCancelTiming)
@@ -1269,14 +1679,20 @@ t.Mv_Skill_214_AddA <- {
 	{
 		// BMvTbl.SetLP(0,-500); // BLのX座標
 		// BMvTbl.SetLP(1,-300); // BLのY座標
+		
+		//BMvTbl.SetComboLimit(DEF_BS_CL_Skill11);
 	}
 	function FrameUpdate_After() : (func_BL)
 	{
+		func_BL.ModeBlue_SkillToSkill();
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
 			BMvTbl.SetMuki( _Direction_Reverse );
-			func_BL.Call( { mvname="Mv_BLSkill_214_AddA", x=-BMvTbl.GetLP(0)-175, y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
+			local pos = func_BL.RetPos();
+			func_BL.Call( { mvname="Mv_BLSkill_214_AddA", setx=pos.x, sety=pos.y, Kezuri=1 } ); // 呼び出し
+			
 			BMvTbl.SetMuki( _Direction_Reverse );
 			break;
 		}	
@@ -1289,14 +1705,21 @@ t.Mv_Skill_214_AddB <- {
 	{
 		// BMvTbl.SetLP(0,-500); // BLのX座標
 		// BMvTbl.SetLP(1,-300); // BLのY座標
+		
+		//BMvTbl.SetComboLimit(DEF_BS_CL_Skill12);
 	}
 	function FrameUpdate_After() : (func_BL)
 	{
+		func_BL.ModeBlue_SkillToSkill();
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
 			BMvTbl.SetMuki( _Direction_Reverse );
-			func_BL.Call( { mvname="Mv_BLSkill_214_AddB", x=-BMvTbl.GetLP(0)-175, y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
+			
+			local pos = func_BL.RetPos();
+			func_BL.Call( { mvname="Mv_BLSkill_214_AddB", setx=pos.x, sety=pos.y, Kezuri=1 } ); // 呼び出し
+			
 			BMvTbl.SetMuki( _Direction_Reverse );
 			break;
 		}	
@@ -1313,11 +1736,17 @@ t.Mv_Skill_214_AddC <- {
 	}
 	function FrameUpdate_After() : (func_BL)
 	{
+		func_BL.ModeBlue_SkillToSkill();
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
 			BMvTbl.SetMuki( _Direction_Reverse );
-			func_BL.Call( { mvname="Mv_BLSkill_214_AddC", x=-BMvTbl.GetLP(0)-175, y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
+			
+			local pos = func_BL.RetPos();
+			
+			func_BL.Call( { mvname="Mv_BLSkill_214_AddC", setx=pos.x, sety=pos.y, Kezuri=1 } ); // 呼び出し
+			
 			BMvTbl.SetMuki( _Direction_Reverse );
 			break;
 		}	
@@ -1333,11 +1762,14 @@ t.Mv_Skill_J214_JAddA <- {
 	}
 	function FrameUpdate_After() : (func_BL)
 	{
+		func_BL.ModeBlue_SkillToSkill();
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
 			BMvTbl.SetMuki( _Direction_Reverse );
-			func_BL.Call( { mvname="Mv_BLSkill_214_AddA", x=-BMvTbl.GetLP(0), y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
+			local pos = func_BL.RetPos();
+			func_BL.Call( { mvname="Mv_BLSkill_214_AddA", setx=pos.x, sety=pos.y, Kezuri=1 } ); // 呼び出し
+			
 			BMvTbl.SetMuki( _Direction_Reverse );
 			break;
 		}	
@@ -1352,11 +1784,14 @@ t.Mv_Skill_J214_JAddB <- {
 	}
 	function FrameUpdate_After() : (func_BL)
 	{
+		func_BL.ModeBlue_SkillToSkill();
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
 			BMvTbl.SetMuki( _Direction_Reverse );
-			func_BL.Call( { mvname="Mv_BLSkill_214_JAddB", x=-BMvTbl.GetLP(0), y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
+			local pos = func_BL.RetPos();
+			func_BL.Call( { mvname="Mv_BLSkill_214_JAddB", setx=pos.x, sety=pos.y, Kezuri=1 } ); // 呼び出し
+			
 			BMvTbl.SetMuki( _Direction_Reverse );
 			break;
 		}	
@@ -1372,11 +1807,14 @@ t.Mv_Skill_J214_JAddC <- {
 	}
 	function FrameUpdate_After() : (func_BL)
 	{
+		func_BL.ModeBlue_SkillToSkill();
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
 			BMvTbl.SetMuki( _Direction_Reverse );
-			func_BL.Call( { mvname="Mv_BLSkill_214_JAddC", x=-BMvTbl.GetLP(0), y=BMvTbl.GetLP(1), Kezuri=1 } ); // 呼び出し
+			local pos = func_BL.RetPos();
+			func_BL.Call( { mvname="Mv_BLSkill_214_JAddC", setx=pos.x, sety=pos.y, Kezuri=1 } ); // 呼び出し
+			
 			BMvTbl.SetMuki( _Direction_Reverse );
 			break;
 		}	
@@ -2056,7 +2494,7 @@ t.Mv_Obj_0202InitObj <-
 	}
 }
 
-local maketmpl_Skill0202 = function( param={} ) : (func_BL, pat_num_BL236, pat_num_BLKirifuda, pat_num_BLKirifudaFin, pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B, pat_num_BLODFin_R, pat_num_BLODFin_G, pat_num_BLODFin_B)
+local maketmpl_Skill0202 = function( param={} ) : (func_BL, pat_num_BL236, pat_num_BLKirifuda, pat_num_BLKirifudaFin, pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B, pat_num_BLODFin_R, pat_num_BLODFin_G, pat_num_BLODFin_B,chrFunc)
 {
 	local ret_tmpl = {};
 	
@@ -2064,6 +2502,7 @@ local maketmpl_Skill0202 = function( param={} ) : (func_BL, pat_num_BL236, pat_n
 	{
 		use_pat = "0202x",
 		od_type = 0, //1 = red, 2 = green, 3 = blue
+		stoptime = 30,
 	}
 	
 	switch( param.type )
@@ -2082,66 +2521,98 @@ local maketmpl_Skill0202 = function( param={} ) : (func_BL, pat_num_BL236, pat_n
 		break;
 	}
 	
-	ret_tmpl.Init_After <- function() : (func_BL, mvparam, pat_num_BLKirifuda, pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B)
+	ret_tmpl.Init_After <- function() : (func_BL, mvparam, pat_num_BLKirifuda, pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B, chrFunc)
 	{
 		BMvTbl.SetPattern( "0202x" );
-		
-		BMvTbl.SetLP(0,0); // オーバードライブ予約 0:黒 1:赤 2:緑 3:青
-		BMvTbl.SetLP(2,0); // ランダムで選ばれたオーバードライブかどうか
-
-		local aura_pat = [0, pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B];
-
-		local voice_type = [0, "Mv_Skill_Kirifuda_R_Init", "Mv_Skill_Kirifuda_G_Init", "Mv_Skill_Kirifuda_B_Init"];
-	
-		
-		local eff = func_BL.Call( { pat=pat_num_BLKirifuda, mvname="Mv_Obj_0202InitObj", x=200, y=-250 } );
-		if( eff.push() )
-		{
-			BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } ); // このMvでのみ有効
-			
-			if( mvparam.od_type ) // 0:黒以外
-			{
-				local aura = BMvEff.CreateObject( { start_pat=aura_pat[mvparam.od_type] } ); // オーラ設定
-				if( aura.push() )
-				{
-					BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_FromParentStop|_ObjFlags_ToParentStop|_ObjFlags_ParentMove } );
-					aura.pop();
-				}
-			}
-			eff.pop();
-			Battle_Std.TypeSE_Play({ type=voice_type[mvparam.od_type] }); // ボイス再生
-		}
 	}
 	
-	ret_tmpl.FrameUpdate_After <- function() : (mvparam, func_BL, pat_num_BLKirifudaFin, pat_num_BLODFin_R, pat_num_BLODFin_G, pat_num_BLODFin_B )
+	ret_tmpl.FrameUpdate_After <- function() : (mvparam, chrFunc, func_BL, pat_num_BLKirifudaFin, pat_num_BLODFin_R, pat_num_BLODFin_G, pat_num_BLODFin_B, pat_num_BLKirifuda,pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B )
 	{
-		local aura_pat = [0, pat_num_BLODFin_R, pat_num_BLODFin_G, pat_num_BLODFin_B];
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.MvCount == 2 && mvs.CallCount == 0 ) //gotta to this to account for 22ex doujicancel
+		{
+			local od_state = BMvTbl.GetPP( def_PP_Kur_OverDriveType );
+			local use_od = ( od_state == mvparam.od_type )? 0 : mvparam.od_type;
+			local oya_ismoveable = BMvTbl.GetLP(5);
+			
+			if( Battle_Std.CheckEnemyisDamage() && !oya_ismoveable && use_od > 0 ) 
+			{
+				BMvEff.CutInProc_Set({ time=[3,mvparam.stoptime,10], cutin_mv="", erasetype=2, bgtype=1 }); 
+				BMvEff.SetStopTime( { time=mvparam.stoptime, stopme=0 } );
+			}
+			
+			BMvTbl.SetLP(0,use_od); // オーバードライブ予約 0:黒 1:赤 2:緑 3:青
+			BMvTbl.SetLP(2,0); // ランダムで選ばれたオーバードライブかどうか
+			
+			local lp_od = BMvTbl.GetLP(0);
+
+			local aura_pat = [0, pat_num_BLOD_R, pat_num_BLOD_G, pat_num_BLOD_B];
+
+			local voice_type = ["Mv_Skill_Kirifuda_N_Init", "Mv_Skill_Kirifuda_R_Init", "Mv_Skill_Kirifuda_G_Init", "Mv_Skill_Kirifuda_B_Init"];
+		
+			local eff = func_BL.Call( { pat=pat_num_BLKirifuda, mvname="Mv_Obj_0202InitObj", x=200, y=-250 } );
+			if( eff.push() )
+			{
+				BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseChangeParentMv } ); // このMvでのみ有効
+				
+				if( lp_od ) // 0:黒以外
+				{
+					local aura = BMvEff.CreateObject( { start_pat=aura_pat[lp_od] } ); // オーラ設定
+					if( aura.push() )
+					{
+						BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_FromParentStop|_ObjFlags_ToParentStop|_ObjFlags_ParentMove } );
+						aura.pop();
+					}
+				}
+				
+				eff.pop();
+				Battle_Std.TypeSE_Play({ type=voice_type[lp_od] }); // ボイス再生
+			}
+		}
+		
+		local lp_od = BMvTbl.GetLP(0);
+		
+		local aura_pat = [pat_num_BLODFin_R, pat_num_BLODFin_R, pat_num_BLODFin_G, pat_num_BLODFin_B];
 		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:
-			if( mvparam.od_type ) // 0:黒以外
+			if( 1 ) // 0:黒以外
 			{
 				local eff = func_BL.Call( { pat=pat_num_BLKirifudaFin, x=200, y=-250 } );
 				if( eff.push() )
 				{
-					BMvEff.SetPaletteSlot( mvparam.od_type, 0 );
+					BMvEff.SetPaletteSlot( lp_od, 0 );
 					
 					//BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll } );
 					
-					local aura = BMvEff.CreateObject( { start_pat=aura_pat[mvparam.od_type] } ); // オーラ設定
+					local aura = BMvEff.CreateObject( { start_pat=aura_pat[lp_od] } ); // オーラ設定
 					if( aura.push() )
 					{
+						if( lp_od == 0 ) 
+						{
+							BMvEff.SetCharaColor( { color = 0x0000FF, type = 0, time = 60 } );				
+						}
+						else
+						{
+							chrFunc.AddHeat(1000);
+						}
+						
 						BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_PatChangeNoLanding|_ObjFlags_FromParentStop|_ObjFlags_ToParentStop|_ObjFlags_ParentMove } ); //_ObjFlags_MoveTimeStopAll
 						aura.pop();
 					}
 					eff.pop();
 				}
-				
-				BMvTbl.SetPP( def_PP_Kur_OverDriveType, mvparam.od_type ); 
+
+				BMvTbl.SetPP( def_PP_Kur_OverDriveType, lp_od ); 
 			}
 			break;
 		}
+	}
+	
+	ret_tmpl.LastUpdate_After <- function()
+	{
+		BMvTbl.SetCommandLongDelay(1);
 	}
 	
 	return ret_tmpl;

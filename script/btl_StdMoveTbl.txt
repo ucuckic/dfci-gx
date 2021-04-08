@@ -362,6 +362,29 @@ local val_AirDash_F_AirJumpCount = chrparam.Get( { type="‹ó’†ƒ_ƒbƒVƒ…‚Å‚Ì‚Q’iƒWƒ
 	chrparam.Param[type] <- array(CHRMAX, [105,115,105, 129,154,129, 155,205,155] );// 0 0 0 , ’Êí1A‘ŠŽèƒ}ƒbƒ`ƒ‰ƒEƒ“ƒh1AŽ©•ª‚à‘ŠŽèƒ}ƒbƒ`ƒ‰ƒEƒ“ƒh1 ’Êí2A‘ŠŽèƒ}ƒbƒ`ƒ‰ƒEƒ“ƒh2AŽ©•ª‚à‘ŠŽèƒ}ƒbƒ`ƒ‰ƒEƒ“ƒh2
 }
 
+//•à‚«‚âƒ_ƒbƒVƒ…‚Ì‘«‰¹‚r‚d’è‹`
+{
+	//Param0‚ª10‚Ìƒ^ƒCƒ~ƒ“ƒO‚Å‚`¨‚a¨‚`¨‚a‚ÆÄ¶‚³‚ê‚é
+	//’è‹`‚ª-1‚¾‚ÆÄ¶‚³‚ê‚È‚¢
+	// st[170] =	{  file=path+"SE170_Walk_ShoesA", type=-1  }; // •à‚«
+	// st[171] =	{  file=path+"SE171_Walk_ShoesB", type=-1  }; // •à‚«
+	// st[172] =	{  file=path+"SE172_Walk_BootsA", type=-1  }; // •à‚«
+	// st[173] =	{  file=path+"SE173_Walk_BootsB", type=-1  }; // •à‚«
+	// st[174] =	{  file=path+"SE174_Walk_HeelsA", type=-1  }; // •à‚«
+	// st[175] =	{  file=path+"SE175_Walk_HeelsB", type=-1  }; // •à‚«
+	local _FSST_Shoes = 171;
+	local _FSST_Boots = 173;
+	local _FSST_Heels = 175;
+	
+	local typeA = "‘«‰¹‚`_‚r‚d”Ô†";
+
+	chrparam.Param[typeA] <- array(CHRMAX, _FSST_Shoes);
+
+	local typeB = "‘«‰¹‚a_‚r‚d”Ô†";
+	
+	chrparam.Param[typeB] <- array(CHRMAX, _FSST_Shoes+1);
+}
+
 {	// “Á’èƒTƒ|[ƒg“oê’è‹`
 	// timeline”z—ñ‚Ì—v‘f‚ð‚P‚Â‚Ã‚Âi‚ñ‚Å‚¢‚Á‚ÄÅŒã‚Ü‚Å‚¢‚Á‚½‚çI‚í‚é
 	// delay’è‹`‚ª‚ ‚é‚ÆA‚»‚Ì•ª‘Ò‚Á‚Ä‚©‚çŽŸ‚Éi‚Þ
@@ -3676,6 +3699,99 @@ Std_MoveTable.Mv_BoundWall <-
 local pat_num_Eff_AdvGuard = BMvEff.GetPatternNum( { datatype=1, pat="Eff_AdvGuard" } ); // ƒpƒ^[ƒ“•¶Žš—ñ‚Ìƒpƒ^[ƒ“”Ô†‚ðŽ–‘OŽæ“¾
 local pat_num_Eff_AdvGuardMiss = BMvEff.GetPatternNum( { datatype=1, pat="Eff_AdvGuardMiss" } ); // ƒpƒ^[ƒ“•¶Žš—ñ‚Ìƒpƒ^[ƒ“”Ô†‚ðŽ–‘OŽæ“¾
 
+Std_MoveTable.Mv_Null_ExGuardCheck <-
+{
+	function Init()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_NoRender | _ObjFlags_MoveTimeStopAll } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );		
+		BMvTbl.SetPosition( {y=1024, flags=_Position_CaptureShift } );
+		
+		BMvTbl.SetLP(0,0);
+		BMvTbl.SetLP(1,0); //last cmd
+	}
+	function Update()
+	{
+
+	}
+	function FrameUpdate()
+	{
+		local ExGuard = BMvTbl.GetPP(def_PP_ExGuardOK);
+		if( ExGuard == 2 ) 
+		{
+			BMvTbl.SetLP(0,0); //if guardEX has occured in Mv_Guard reset LP cooldown counter
+			
+		}
+		else
+		{
+			//Battle_Std.DrawDebugAttackInfo("hcc" );
+		}
+		
+		local mvs = BMvTbl.GetMvStatus();
+		if( mvs.CallCount==0 )
+		{
+			if( BMvTbl.GetLP(0)==0 )
+			{
+				local player = BMvCore.GetPlayerCharaData();
+				if( player.push() )
+				{
+					local command = BMvTbl.CheckCommandString( { command=[ "<", ">" ] } );
+					local p_mvn = BMvTbl.GetMvName();
+					
+					player.pop();
+					
+					if( ExGuard == 1 && ExGuard != 2 )  //duration has elapsed but ExGuard has not returned success (2)
+					{
+						if( p_mvn == "Mv_Guard" ) //if my ex guard input was attempted during blockstun
+						{
+							BMvTbl.SetPP(def_PP_ExGuardOK,0);
+							BMvTbl.SetLP(0,60);
+							
+							if( player.push() )
+							{
+								BMvEff.SetCharaFlash( { color = 0xff0000, type = 0, time = 10, intime = 0 } );
+								player.pop();
+							}
+						}
+						else
+						{
+							BMvTbl.SetPP(def_PP_ExGuardOK,0);
+						}
+					}
+					else
+					{
+						BMvTbl.SetPP(def_PP_ExGuardOK,0);
+					}
+					
+					if( command != BMvTbl.GetLP(1) )
+					{
+						switch( command )
+						{
+							case 1:
+								BMvTbl.SetPP(def_PP_ExGuardOK,1);
+								BMvTbl.SetLP(0,10);
+								break;
+							case 2:
+								BMvTbl.SetPP(def_PP_ExGuardOK,0);
+								BMvTbl.SetLP(0,10);
+								break;
+							default:
+								BMvTbl.SetPP(def_PP_ExGuardOK,0);
+								break;
+						}
+					}
+					
+					BMvTbl.SetLP(1,command);
+				}
+			}
+			else
+			{
+				BMvTbl.AddLP(0,-1);
+			}
+		}
+	}
+}
+
 Std_MoveTable.Mv_Guard <- 
 {
 	function Init_Std() // 
@@ -3816,13 +3932,17 @@ Std_MoveTable.Mv_Guard <-
 			if( isAutoSPGuard && Battle_Std.ChangeMoveCodeEx_CheckFlag(1,def_MC1_GenFlag) && BMvTbl.ChangeMv_GetMvName()=="Mv_Guard" )
 			{
 				// Ž©“®‚ÅƒV[ƒ‹ƒhó‘Ô‚É‚·‚é
-				_dp("\n Ž©“®ƒV[ƒ‹ƒhƒZƒbƒg");
+				_dp("\n Ž©“®ƒV[ƒ‹ƒhƒZƒbƒg");1
 				BMvEff.GuardSP_Set( { val=1 } ); // ƒV[ƒ‹ƒhó‘Ô
 				Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_GenFlag ); // Mv_Guard + def_MC1_GenFlag = ƒAƒhƒoMv(BMvEff.GuardSP_Set‚µ‚½Mv)	
 				
 				BMvEff.AttackInfoString_Set( { word=def_AISW_AutoAdvanceGuard } ); // ƒAƒiƒEƒ“ƒX’Ç‰Á
 			}
 		}
+		
+		local ex_guard = BMvTbl.GetPP(def_PP_ExGuardOK);
+		if( ex_guard==2 ) BMvEff.SetBoundSt( { addtime = -3 } );
+		
 	}
 	function Update_Std() : (pat_num_Eff_AdvGuard, pat_num_Eff_AdvGuardMiss)
 	{
@@ -4431,6 +4551,75 @@ Std_MoveTable.Mv_Neutral <- // ƒjƒ…[ƒgƒ‰ƒ‹‘Ò‹@
 	}
 }
 
+local footstepA_senum = chrparam.Get( { type="‘«‰¹‚`_‚r‚d”Ô†", chrnum=_ChrNo } );
+local footstepB_senum = chrparam.Get( { type="‘«‰¹‚a_‚r‚d”Ô†", chrnum=_ChrNo } );
+
+//Param0‚ª10‚ÌŽž‘«‰¹‚ðÄ¶‚·‚é
+Std_MoveTable.Mv_Null_PlayFootstepSE <- 
+{
+	function Init_Std()
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_ParentMove|_ObjFlags_NoRender|_ObjFlags_EraseParentPatChange } );
+		BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseParentNull|_ObjProcFlags_EraseChangeParentMv } );
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		BMvTbl.SetLP(0,0);
+		
+		//ƒfƒoƒbƒO—pŠÔŠu•\Ž¦
+		BMvTbl.SetLP(1,0);
+	}
+	function FrameUpdate_Std() : ( footstepA_senum, footstepB_senum)
+	{
+		local my_st = BMvTbl.GetMvStatus();
+		if( my_st.CallCount!=0 )
+		{
+			return;
+		}
+		
+		local player = BMvCore.GetPlayerCharaData();
+		if( player.isdone() )
+		{
+			local playtiming = 0;
+			if( player.push() )
+			{
+				if( Battle_Std.GetUpdateParam0() == 10 )
+				{
+					playtiming = 1;
+				}
+				player.pop();
+			}
+
+			if( playtiming==1 )
+			{
+				Battle_Std.DrawDebugAttackInfo("ssfu "+BMvTbl.GetLP(0)  ); 
+				
+				local setype = BMvTbl.GetLP(0);
+				BMvTbl.SetLP(0, 1-setype ); // 0 1 0 1 ...
+				switch( setype )
+				{
+				case 0:
+					if( footstepA_senum != -1 ) BSound.SE_Play( { type=_SeType_Normal, num=footstepA_senum } );
+					break;
+				case 1:
+					if( footstepB_senum != -1 ) BSound.SE_Play( { type=_SeType_Normal, num=footstepB_senum } );
+					break;
+				}
+				// ƒfƒoƒbƒO
+				local mvs = BMvTbl.GetMvStatus();
+				local aida = mvs.MvCount - BMvTbl.GetLP(1);
+				BMvTbl.SetLP(1,mvs.MvCount);
+				if( aida != 0 )
+				{
+					// print("\n‚r‚dŠÔŠuF"+aida+" setype:"+setype+" mvs.MvCount:"+mvs.MvCount);
+				}
+			}
+		}
+	}
+	function Finalize_Std()
+	{
+		BMvTbl.SetDeleteMoveTable();
+	}
+}
+
 Std_MoveTable.Mv_Walk_F <- // ‘Oi
 {
 	function Init_Std() // 
@@ -4438,6 +4627,8 @@ Std_MoveTable.Mv_Walk_F <- // ‘Oi
 		BMvTbl.SetMuki(_Direction_Auto);
 		BMvTbl.SetPattern(def_PAT_Walk_F);
 		Battle_Std.MoveCode.AddFlag( def_MC_PositiveAction ); // s“®ƒR[ƒh(ƒ|ƒWƒeƒBƒu)‚ðÝ’è
+		
+		Battle_Std.Call_FootStepSE(); // //‘«‰¹Ä¶ŠÄŽ‹ƒIƒuƒWƒFƒNƒg
 	}
 	function FrameUpdate_Std()
 	{
@@ -4475,6 +4666,8 @@ Std_MoveTable.Mv_Walk_B <- // Œã‘Þ
 		BMvTbl.SetPattern(def_PAT_Walk_B);
 
 		Battle_Std.MoveCode.AddFlag( def_MC_NegativeAction ); // s“®ƒR[ƒh(ƒlƒKƒeƒBƒu)‚ðÝ’è
+		
+		Battle_Std.Call_FootStepSE(); // //‘«‰¹Ä¶ŠÄŽ‹ƒIƒuƒWƒFƒNƒg
 	}
 	function FrameUpdate_Std() // 
 	{
@@ -6583,6 +6776,8 @@ Std_MoveTable.Mv_Dash_F <- // ‘Oƒ_ƒbƒVƒ…ˆÚ“®•”•ª
 		Battle_Std.MoveCode.AddFlag( def_MC_PositiveAction ); // s“®ƒR[ƒh(ƒ|ƒWƒeƒBƒu)‚ðÝ’è
 		
 		BMvTbl.SetLP(9,0); // ”½‘Î‚ÉŒü‚©‚Á‚Äƒ_ƒbƒVƒ…‚µ‚Ä‚¢‚éŽžŠÔ
+		
+		Battle_Std.Call_FootStepSE(); // //‘«‰¹Ä¶ŠÄŽ‹ƒIƒuƒWƒFƒNƒg
 	}
 	function Update_Std() : (dashstop_frame)
 	{
@@ -7676,6 +7871,8 @@ Std_MoveTable.Mv_Startup <- //ŠJ–‹‚©‚Ü‚¹Eâ‘Î’Ê‚é‚æ‚¤‚É‚È‚Á‚½
 	function Init_Std() : (duetparam, sptstandbyparam)
 	{
 		Battle_Std.GuardGauge.CreateGaugeObject();
+		BMvEff.CreateObject( { mvname="Mv_Null_ExGuardCheck" } );
+		
 		
 		if( Def_Dbg_LocalDebugMode ) //ƒ[ƒJƒ‹ŠÂ‹«‚Å‚ÌƒfƒoƒbƒOŽž
 		{
@@ -15914,6 +16111,10 @@ Std_MoveTable.Mv_Obj_GuardCrushRect <-
 			enemy.pop();			
 		}
 		
+		if( Battle_Std.CheckDamageTiming() ) 
+		{
+			BMvEff.ComboView_Clear();
+		}
 	}
 	function Finalize()
 	{
@@ -15925,7 +16126,7 @@ Std_MoveTable.Mv_Obj_GuardGaugeBar <-
 {
 	function Init()
 	{
-		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll|_ObjFlags_NoRenderBlackOut } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
 		
 		local p_side = BMvTbl.GetPlayerSide();
 		local pos_x = ( p_side )? 53 : -58;
@@ -15935,6 +16136,14 @@ Std_MoveTable.Mv_Obj_GuardGaugeBar <-
 		BMvTbl.SetLP(0,0); //guard gauge cooldown
 		
 		BMvTbl.SetPrio( _CharaPrio_GaugeHP_P1 );
+	}
+	function Update()
+	{
+		local guard_ex = BMvTbl.GetPP( def_PP_ExGuardOK ); 
+		if( guard_ex==2 ) 
+		{
+			BMvEff.SetCharaColor( { color=0xFFDD00, time=10, type=0 } );
+		}
 	}
 	function FrameUpdate()
 	{
@@ -15973,9 +16182,36 @@ Std_MoveTable.Mv_Obj_GuardGaugeBar <-
 			
 			if( gauge_value == GuardGauge_Max ) Battle_Std.GuardGauge.DelFlags( def_PP_GF_Broken );
 		}
+		
+		Battle_Std.SetNoRender_CockpitView();
 	}
 }
 
+Std_MoveTable.Mv_Obj_GuardGaugeBG <-
+{
+	function Init()
+	{
+		Battle_Std.GuardGauge.Clear();
+		
+		BMvTbl.SetMuki( _Direction_Right );
+		
+		local p_side = BMvTbl.GetPlayerSide();
+		local pos_x = ( p_side )? 130 : -125;
+		
+		BMvTbl.SetPosition( { x=pos_x*128, y=-500*128, flags=0 } );
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll } );
+		
+		BMvTbl.SetHan6LayerMask( { val=(1<<p_side) } );
+		
+		//BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBar", start_pat="dbg_rect2opaque", datatype=1 } );
+		
+		BMvTbl.SetPrio( _CharaPrio_GaugeHP_P1 );
+	}
+	function FrameUpdate()
+	{
+		Battle_Std.SetNoRender_CockpitView();
+	}
+}
 
 Std_MoveTable.Mv_Null_GuardGaugeObject <-
 {
@@ -15996,29 +16232,6 @@ Std_MoveTable.Mv_Null_GuardGaugeObject <-
 		BMvTbl.SetDeleteMoveTable();
 	}
 
-}
-
-
-Std_MoveTable.Mv_Obj_GuardGaugeBG <-
-{
-	function Init()
-	{
-		Battle_Std.GuardGauge.Clear();
-		
-		BMvTbl.SetMuki( _Direction_Right );
-		
-		local p_side = BMvTbl.GetPlayerSide();
-		local pos_x = ( p_side )? 130 : -125;
-		
-		BMvTbl.SetPosition( { x=pos_x*128, y=-500*128, flags=0 } );
-		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoCamera|_ObjFlags_MoveTimeStopAll|_ObjFlags_NoRenderBlackOut } );
-		
-		BMvTbl.SetHan6LayerMask( { val=(1<<p_side) } );
-		
-		//BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBar", start_pat="dbg_rect2opaque", datatype=1 } );
-		
-		BMvTbl.SetPrio( _CharaPrio_GaugeHP_P1 );
-	}
 }
 
 //e‚ÌMv‚ª•Ï‰»or“Á’èƒtƒŒ[ƒ€‚Å“Š‚°‘®«‚ðÁ‹Ž‚·‚é

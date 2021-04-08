@@ -268,6 +268,7 @@ const Def_ChrNo_Yuk		= 18;
 const Def_ChrNo_Ako		= 20;
 
 const Def_ChrNo_Naoto	= 21;
+const Def_ChrNo_Aka	= 22;
 
 
 
@@ -1066,6 +1067,9 @@ const def_PP_PlayerStatus			= 57; //汎用ステータスとか？
 	
 
 const Def_Rule_AdvanceGuardGGCost = -2500; // アドバのコスト
+const Def_Rule_ExGuardGaugeAdd		 = 1000; // アドバのコスト
+
+const Def_Rule_ExGuardSPAdd = 450; // アドバのコスト
 
 const GuardGauge_Max 			= 10000; 	// maximum gauge value
 
@@ -1075,6 +1079,7 @@ const GuardGauge_RegenSpeed 	= 30; 		// gauge val restored per frame
 const GuardGauge_SPGuardCost	= 2000;
 
 const def_PP_AirGuarded 			= 65; //has airguarded an attack
+const def_PP_ExGuardOK 				= 66; //ex guard will be accepted
 
 	
 const def_PP_GuardGaugeVal 			= 70; //guard meter value

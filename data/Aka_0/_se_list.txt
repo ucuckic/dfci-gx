@@ -1,0 +1,389 @@
+print("\n>>_se_list");
+
+__dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
+
+local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local btlpath = "./se_new/battle_se/";
+local chrpath = btlpath + "Aka/";
+
+SeList_Table <-
+{
+	TableNum = 1, // SEセレクトとかでのプログラム側参照用、テーブル最大値を入れておく
+	UseTable = 0, // 何番目のテーブルを使うか
+	Path = [],	// パス設定簡略化用
+	Status = [],	// 実際に再生時に使われる配列
+};
+
+SeList_Table.Path.append( path ); //Path[0]
+SeList_Table.Path.append( chrpath ); //Path[1]
+SeList_Table.Path.append( btlpath ); //Path[2]
+
+SeList_Table.Status.resize(650); // 確保
+local st = SeList_Table.Status; // 登録しやすいように省略
+
+st[10] = { volumetype=0, path=2, file="SE_BigBomb_Short", type=1, category=-1, }; //神風とどめ爆発
+
+st[15] = { volumetype=0, path=0, file="SE011", type=1, category=-1, }; // ビリビリ
+
+st[20] = { volumetype=0, path=0, file="SE220", type=1, category=-1, }; // 飛び道具発射音
+st[22] = { volumetype=0, path=0, file="SE011", type=1, category=-1, }; // 飛び道具着地とかヒットの爆発
+
+st[25] = { volumetype=0, path=0, file="SE193_GuardShieldInit", type=1, category=-1, }; // 攻勢防御発動音
+st[30] = { volumetype=0, path=0, file="SE011", type=1, category=-1, }; // 対空防御ビリビリＳＥ
+
+st[50] = { volumetype=0, path=0, file="SE011", type=1, category=-1, }; // IWE地面ゆれ
+st[51] = { volumetype=0, path=2, file="SE_BigBomb_Short", type=1, category=-1, }; // IWE発動落雷
+st[52] = { volumetype=0, path=2, file="SE_ChargeUp", type=1, category=-1, }; // IWE発動落雷ビリビリ
+st[55] = { volumetype=0, path=2, file="SE_EarthQuake", type=1, category=-1, }; // IWE崩壊
+st[56] = { volumetype=0, path=2, file="SE_VanishDiscBall", type=1, category=-1, }; // アップアカツキ念力集中
+
+
+
+// 登場
+st[100] = { volumetype=1, path=1, file="Aka00_2000", type=0, category=1, };	// 我、死すとも死せず！
+st[101] = { volumetype=1, path=1, file="Aka00_2001", type=0, category=1, };  // 願わくば我に七難八苦を与えたまえ！
+st[102] = { volumetype=1, path=1, file="Aka00_2002_s0", type=0, category=1, };  // 憂き事の、尚この上に積もれかし。 (限りある身の、力試さん！)
+
+// 勝利
+st[110] = { volumetype=1, path=1, file="Aka00_2100", type=0, category=1, };  // 我は雷神、絶対不敗なり！
+st[111] = { volumetype=1, path=1, file="Aka00_2101", type=0, category=1, };  // 我が身は死して護国の鬼となりぬ！
+
+// ラウンド勝利
+st[120] = { volumetype=1, path=1, file="Aka00_2110", type=0, category=1, };  // セイッ！ （腰を落として拳を構える決めポーズ）
+st[121] = { volumetype=1, path=1, file="Aka00_2111", type=0, category=1, };  // 不甲斐ない、立て！
+st[122] = { volumetype=1, path=1, file="Aka00_2112", type=0, category=1, };  // もう終わりか！
+
+// 判定負け
+// st[130] = { volumetype=1, path=1, file="Aka00_2200", type=0, category=1, };  // やるな！（苦しそうに）
+// st[131] = { volumetype=1, path=1, file="Aka00_2201", type=0, category=1, };  // かはぁっ！（苦しそうに）
+st[132] = { volumetype=1, path=1, file="Aka00_2202", type=0, category=1, };  // 不覚…！
+st[133] = { volumetype=1, path=1, file="Aka00_2203", type=0, category=1, };  // 一時撤退する…！
+
+// 攻撃（弱）
+st[140] = { volumetype=1, path=1, file="Aka00_2300_b", type=0, category=1, };  // ふっ
+st[141] = { volumetype=1, path=1, file="Aka00_2300_a", type=0, category=1, };  // しっ
+st[142] = { volumetype=1, path=1, file="Aka00_2301_a", type=0, category=1, };  // はっ
+st[143] = { volumetype=1, path=1, file="Aka00_2302", type=0, category=1, };  // やっ
+
+// 攻撃（中）
+st[150] = { volumetype=1, path=1, file="Aka00_2303", type=0, category=1, };  // セイッ！
+st[151] = { volumetype=1, path=1, file="Aka00_2400", type=0, category=1, };  // イヤッ！
+st[152] = { volumetype=1, path=1, file="Aka00_2401", type=0, category=1, };  // フンッ！
+st[153] = { volumetype=1, path=1, file="Aka00_2402", type=0, category=1, };  // ハァッ！
+st[154] = { volumetype=1, path=1, file="Aka00_2403", type=0, category=1, };  // テヤッ！
+st[155] = { volumetype=1, path=1, file="Aka00_2404", type=0, category=1, };  // ハァッ！
+st[156] = { volumetype=1, path=1, file="Aka00_2405", type=0, category=1, };  // ゼッ！
+// st[157] = { volumetype=1, path=1, file="Aka00_2406", type=0, category=1, };  // シュッ！
+st[158] = { volumetype=1, path=1, file="Aka00_2407", type=0, category=1, };  // タァッ！
+
+// 攻撃（強）
+st[160] = { volumetype=1, path=1, file="Aka00_2500", type=0, category=1, };  // テイッ！
+st[161] = { volumetype=1, path=1, file="Aka00_2501", type=0, category=1, };  // デェイ！
+// st[162] = { volumetype=1, path=1, file="Aka00_2502", type=0, category=1, };  // ジャッ！
+st[163] = { volumetype=1, path=1, file="Aka00_2503_a", type=0, category=1, };  // セェイッ！
+// st[164] = { volumetype=1, path=1, file="Aka00_2505", type=0, category=1, };  // タァーッ！
+// st[165] = { volumetype=1, path=1, file="Aka00_2506", type=0, category=1, };  // イヤァッ！
+st[166] = { volumetype=1, path=1, file="Aka00_2507", type=0, category=1, };  // セイヤッ！
+st[167] = { volumetype=1, path=1, file="Aka00_2508", type=0, category=1, };  // テイヤッ！
+
+// 攻撃（中～強で特殊なもの）
+st[170] = { volumetype=1, path=1, file="Aka00_2600", type=0, category=1, };  // 顎割り　（あぎとわり）
+st[171] = { volumetype=1, path=1, file="Aka00_2601", type=0, category=1, };  // 吹ッ飛べ！
+st[172] = { volumetype=1, path=1, file="Aka00_2602", type=0, category=1, };  // 兜割り！
+st[173] = { volumetype=1, path=1, file="Aka00_2603", type=0, category=1, };  // 滅砕！（めっさい）
+// st[174] = { volumetype=1, path=1, file="Aka00_2604", type=0, category=1, };  // フン！
+st[175] = { volumetype=1, path=1, file="Aka00_2605", type=0, category=1, };  // フンッ！（強）
+st[176] = { volumetype=1, path=1, file="Aka00_2606_b", type=0, category=1, };  // 南無三！
+// st[177] = { volumetype=1, path=1, file="Aka00_2607", type=0, category=1, };  // 瓦割り！
+st[178] = { volumetype=1, path=1, file="Aka00_2608", type=0, category=1, };  // ホァー！
+st[179] = { volumetype=1, path=1, file="Aka00_2609", type=0, category=1, };  // ズェアー！
+// st[180] = { volumetype=1, path=1, file="Aka00_2610", type=0, category=1, };  // 腑抜けが！
+// st[181] = { volumetype=1, path=1, file="Aka00_2611", type=0, category=1, };  // 惰弱！（だじゃく）
+// st[182] = { volumetype=1, path=1, file="Aka00_2612", type=0, category=1, };  // なまくらが！
+// st[183] = { volumetype=1, path=1, file="Aka00_2613", type=0, category=1, };  // 邪魔だ！
+// st[184] = { volumetype=1, path=1, file="Aka00_2614", type=0, category=1, };  // 舐めるな！
+// st[185] = { volumetype=1, path=1, file="Aka00_2615", type=0, category=1, };  // ぬるい！
+// st[186] = { volumetype=1, path=1, file="Aka00_2620", type=0, category=1, };  // 飛べっ！
+// st[187] = { volumetype=1, path=1, file="Aka00_2621", type=0, category=1, };  // 砕けよ！
+// st[188] = { volumetype=1, path=1, file="Aka00_2622", type=0, category=1, };  // 散れ！
+// st[189] = { volumetype=1, path=1, file="Aka00_2623", type=0, category=1, };  // 迂闊！
+
+// 投げ（相手を掴んで電撃攻撃）
+st[190] = { volumetype=1, path=1, file="Aka00_2700", type=0, category=1, };  // これに耐えられるか！
+st[191] = { volumetype=1, path=1, file="Aka00_2701", type=0, category=1, };  // １番２番開放！
+// st[192] = { volumetype=1, path=1, file="Aka00_2702", type=0, category=1, };  // 捕えた！（とらえた）
+st[193] = { volumetype=1, path=1, file="Aka00_2703", type=0, category=1, };  // 覚悟はいいか！
+// st[194] = { volumetype=1, path=1, file="Aka00_2704", type=0, category=1, };  // 放電開始！
+
+// 空中投げ（相手を掴んで肘鉄で叩き落す）
+st[200] = { volumetype=1, path=1, file="Aka00_2710", type=0, category=1, };  // 落ちよッ！
+st[201] = { volumetype=1, path=1, file="Aka00_2711", type=0, category=1, };  // 砕けよッ！
+// st[202] = { volumetype=1, path=1, file="Aka00_2712", type=0, category=1, };  // 捕らえた！
+// st[203] = { volumetype=1, path=1, file="Aka00_2713", type=0, category=1, };  // 食らえィ！
+
+// 投げ失敗（相手を掴み損ねる）
+st[210] = { volumetype=1, path=1, file="Aka00_2800", type=0, category=1, };  // しまった！
+// st[211] = { volumetype=1, path=1, file="Aka00_2801", type=0, category=1, };  // なにっ
+st[212] = { volumetype=1, path=1, file="Aka00_2802", type=0, category=1, };  // くっ
+
+
+// 投げ抜け（掴まれたのを押し返す、掴まれた手を振りほどく動作です）
+st[220] = { volumetype=1, path=1, file="Aka00_2900", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };  // 遅い！
+st[221] = { volumetype=1, path=1, file="Aka00_2901", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };  // 放せ！
+st[222] = { volumetype=1, path=1, file="Aka00_2902", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };  // どけ！
+st[223] = { volumetype=1, path=1, file="Aka00_2903", type=0, category=1, prio=Def_SEP_ThrowTech, check=1 };  // 笑止！
+
+// 振り向き
+// st[230] = { volumetype=1, path=1, file="Aka00_3000", type=0, category=1, };  // む
+st[231] = { volumetype=1, path=1, file="Aka00_3001", type=0, category=1, };  // ふん
+
+// 挑発（立ち待機）
+st[240] = { volumetype=1, path=1, file="Aka00_3100", type=0, category=1, };  // 手加減無用！
+st[241] = { volumetype=1, path=1, file="Aka00_3101_c", type=0, category=1, };  // ハァー！（演舞）
+
+// ジャンプ
+st[250] = { volumetype=1, path=1, file="Aka00_3200", type=0, category=1, };  // やっ
+st[251] = { volumetype=1, path=1, file="Aka00_3201", type=0, category=1, };  // はっ
+// st[252] = { volumetype=1, path=1, file="Aka00_3202", type=0, category=1, };  // しっ
+// st[253] = { volumetype=1, path=1, file="Aka00_3203", type=0, category=1, };  // 上か！
+// st[254] = { volumetype=1, path=1, file="Aka00_3204", type=0, category=1, };  // 行くぞ！
+
+// ダッシュ（相手に向かい、一気に間合いを詰める動作です）
+st[260] = { volumetype=1, path=1, file="Aka00_3300", type=0, category=1, };  // ふっ
+st[261] = { volumetype=1, path=1, file="Aka00_3301", type=0, category=1, };  // 前進！
+// st[262] = { volumetype=1, path=1, file="Aka00_3302", type=0, category=1, };  // 今だ
+// st[263] = { volumetype=1, path=1, file="Aka00_3303", type=0, category=1, };  // 突進！
+// st[264] = { volumetype=1, path=1, file="Aka00_3304", type=0, category=1, };  // はっ
+
+
+
+// バックステップ（相手から距離を置く、逃げる、様子見的な動作です）
+// st[270] = { volumetype=1, path=1, file="Aka00_3400", type=0, category=1, };  // ふっ
+st[271] = { volumetype=1, path=1, file="Aka00_3401", type=0, category=1, };  // ぐっ
+// st[272] = { volumetype=1, path=1, file="Aka00_3402", type=0, category=1, };  // くわばら
+st[273] = { volumetype=1, path=1, file="Aka00_3403", type=0, category=1, };  // 後退！
+// st[274] = { volumetype=1, path=1, file="Aka00_3404", type=0, category=1, };  // 殺気…
+
+// ガード（小）
+// st[280] = { volumetype=1, path=1, file="Aka00_3500", type=0, category=1, prio=Def_SEP_GuardLv1, check=1, };  // ふ…
+st[281] = { volumetype=1, path=1, file="Aka00_3501", type=0, category=1, prio=Def_SEP_GuardLv1, check=1, };  // く…
+st[282] = { volumetype=1, path=1, file="Aka00_3502", type=0, category=1, prio=Def_SEP_GuardLv1, check=1, };  // ふん
+st[283] = { volumetype=1, path=1, file="Aka00_3503", type=0, category=1, prio=Def_SEP_GuardLv1, check=1, };  // 弱い
+// st[284] = { volumetype=1, path=1, file="Aka00_3504", type=0, category=1, prio=Def_SEP_GuardLv1, check=1, };  // 効かぬ
+
+// ガード（中）
+st[290] = { volumetype=1, path=1, file="Aka00_3600", type=0, category=1, prio=Def_SEP_GuardLv2, check=1, };  // ぐっ
+st[291] = { volumetype=1, path=1, file="Aka00_3601", type=0, category=1, prio=Def_SEP_GuardLv2, check=1, };  // ちっ
+st[292] = { volumetype=1, path=1, file="Aka00_3602", type=0, category=1, prio=Def_SEP_GuardLv2, check=1, };  // ぬるい
+// st[293] = { volumetype=1, path=1, file="Aka00_3603", type=0, category=1, prio=Def_SEP_GuardLv2, check=1, };  // 甘い
+st[294] = { volumetype=1, path=1, file="Aka00_3604", type=0, category=1, prio=Def_SEP_GuardLv2, check=1, };  // 足りぬ
+
+// ガード（大）
+// st[300] = { volumetype=1, path=1, file="Aka00_3700_e", type=0, category=1, prio=Def_SEP_GuardLv3, check=1, };  // ぐうっ
+st[301] = { volumetype=1, path=1, file="Aka00_3701", type=0, category=1, prio=Def_SEP_GuardLv3, check=1, };  // やるな…！
+st[302] = { volumetype=1, path=1, file="Aka00_3702", type=0, category=1, prio=Def_SEP_GuardLv3, check=1, };  // 中々…！
+st[303] = { volumetype=1, path=1, file="Aka00_3703", type=0, category=1, prio=Def_SEP_GuardLv3, check=1, };  // そんなものか！
+st[304] = { volumetype=1, path=1, file="Aka00_3704_b", type=0, category=1, prio=Def_SEP_GuardLv3, check=1, };  // これはっ…！
+
+
+// ジャストガード（余裕のあるガード、丸わかりだぜその攻撃、というガード）
+st[310] = { volumetype=1, path=1, file="Aka00_3800", type=0, category=1, prio=Def_SEP_NiceGuard, check=1, };  // 見えた
+// st[311] = { volumetype=1, path=1, file="Aka00_3801", type=0, category=1, prio=Def_SEP_NiceGuard, check=1, };  // 読めた
+st[312] = { volumetype=1, path=1, file="Aka00_3802", type=0, category=1, prio=Def_SEP_NiceGuard, check=1, };  // 他愛ない…
+// st[313] = { volumetype=1, path=1, file="Aka00_3803", type=0, category=1, prio=Def_SEP_NiceGuard, check=1, };  // 通じぬ
+// st[314] = { volumetype=1, path=1, file="Aka00_3804", type=0, category=1, prio=Def_SEP_NiceGuard, check=1, };  // 甘い
+
+// ガード失敗
+st[320] = { volumetype=1, path=1, file="Aka00_3900", type=0, category=1, prio=Def_SEP_GuardMiss, check=1, };  // 馬鹿なっ！？
+st[321] = { volumetype=1, path=1, file="Aka00_3901", type=0, category=1, prio=Def_SEP_GuardMiss, check=1, };  // まさかっ！？
+// st[322] = { volumetype=1, path=1, file="Aka00_3902", type=0, category=1, prio=Def_SEP_GuardMiss, check=1, };  // なんだと！？
+
+// 受け身（攻撃で吹き飛ばされたあと、空中及び地上で体制を立て直す動作です）
+st[330] = { volumetype=1, path=1, file="Aka00_4000", type=0, category=1, prio=Def_SEP_Recover };  // はっ
+st[331] = { volumetype=1, path=1, file="Aka00_4001", type=0, category=1, prio=Def_SEP_Recover };  // すわっ！
+// st[332] = { volumetype=1, path=1, file="Aka00_4002", type=0, category=1, prio=Def_SEP_Recover };  // しゃっ
+st[333] = { volumetype=1, path=1, file="Aka00_4003", type=0, category=1, prio=Def_SEP_Recover };  // ほう
+// st[334] = { volumetype=1, path=1, file="Aka00_4004", type=0, category=1, prio=Def_SEP_Recover };  // 惜しいな
+st[335] = { volumetype=1, path=1, file="Aka00_4005", type=0, category=1, prio=Def_SEP_Recover };  // 終わりか？
+// st[336] = { volumetype=1, path=1, file="Aka00_4006", type=0, category=1, prio=Def_SEP_Recover };  // やるなっ
+// st[337] = { volumetype=1, path=1, file="Aka00_4007", type=0, category=1, prio=Def_SEP_Recover };  // 転機…！
+// st[338] = { volumetype=1, path=1, file="Aka00_4008", type=0, category=1, prio=Def_SEP_Recover };  // まだだ！
+// st[339] = { volumetype=1, path=1, file="Aka00_4009", type=0, category=1, prio=Def_SEP_Recover };  // くわばらくわばら
+
+// シールド発動（攻撃の受け止めが可能なシールドを軽く展開し、防御を固める動作です）
+st[340] = { volumetype=1, path=1, file="Aka00_4100", type=0, category=1, };  // 来るか
+st[341] = { volumetype=1, path=1, file="Aka00_4101", type=0, category=1, };  // ふっ
+// st[342] = { volumetype=1, path=1, file="Aka00_4102", type=0, category=1, };  // そこっ
+// st[343] = { volumetype=1, path=1, file="Aka00_4103", type=0, category=1, };  // そんなものか
+
+// シールド受け止め（シールドで攻撃を受け止めるのに成功した瞬間です）
+// st[350] = { volumetype=1, path=1, file="Aka00_4201", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };  // はぁっ！
+// st[351] = { volumetype=1, path=1, file="Aka00_4202", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };  // ここだっ！
+st[352] = { volumetype=1, path=1, file="Aka00_4203_a", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };  // 南無八幡！
+st[353] = { volumetype=1, path=1, file="Aka00_4204_a", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };  // やはりな
+// st[354] = { volumetype=1, path=1, file="Aka00_4205", type=0, category=1, prio=Def_SEP_ShieldSuccess, check=1 };  // そんなものか
+
+// ダメージ（小）
+st[360] = { volumetype=1, path=1, file="Aka00_4300", type=0, category=1, prio=Def_SEP_DamageLv1 };  // うっ
+st[361] = { volumetype=1, path=1, file="Aka00_4301", type=0, category=1, prio=Def_SEP_DamageLv1 };  // くっ
+st[362] = { volumetype=1, path=1, file="Aka00_4302", type=0, category=1, prio=Def_SEP_DamageLv1 };  // ぬっ
+st[363] = { volumetype=1, path=1, file="Aka00_4303", type=0, category=1, prio=Def_SEP_DamageLv1 };  // ちっ
+
+// ダメージ（中）
+st[370] = { volumetype=1, path=1, file="Aka00_4400", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };  // やるな！（苦しそうに）
+st[371] = { volumetype=1, path=1, file="Aka00_4401", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };  // ぐうあ！
+st[372] = { volumetype=1, path=1, file="Aka00_4402", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };  // 迂闊！
+st[373] = { volumetype=1, path=1, file="Aka00_4403", type=0, category=1, prio=Def_SEP_DamageLv2, check=1 };  // おのれ！
+
+// ダメージ（大）
+st[380] = { volumetype=1, path=1, file="Aka00_4500", type=0, category=1,prio=Def_SEP_DamageLv3, check=1  };  // うおぉっ！（吐きそうな感じ）
+st[381] = { volumetype=1, path=1, file="Aka00_4501", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };  // ぐはあっ！
+st[382] = { volumetype=1, path=1, file="Aka00_4502", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };  // ぬかった！
+st[383] = { volumetype=1, path=1, file="Aka00_4503", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };  // がぁっ！？
+st[384] = { volumetype=1, path=1, file="Aka00_4504", type=0, category=1, prio=Def_SEP_DamageLv3, check=1 };  // いかん！
+
+// ダウンを奪われる（１回目の敗北、ポイントを摂られる。絶叫ではないが、一端事切れる感じ）
+st[390] = { volumetype=1, path=1, file="Aka00_4600", type=0, category=1, prio=Def_SEP_KO };  // ぬああーーっ！※１～２秒程度の絶叫でお願いします
+st[391] = { volumetype=1, path=1, file="Aka00_4601", type=0, category=1, prio=Def_SEP_KO };  // くあああぁぁー！
+st[392] = { volumetype=1, path=1, file="Aka00_4602", type=0, category=1, prio=Def_SEP_KO };  // まだ…戦えるぞ…（断末魔、苦しそうに）
+st[393] = { volumetype=1, path=1, file="Aka00_4603", type=0, category=1, prio=Def_SEP_KO };  // 舐めるな…！！
+
+// 敗北（１回目の敗北後、起き上がってからのセリフ）
+st[400] = { volumetype=1, path=1, file="Aka00_4650", type=0, category=1, prio=Def_SEP_KO };  // …敵、侮りがたし
+st[401] = { volumetype=1, path=1, file="Aka00_4651", type=0, category=1, prio=Def_SEP_KO };  // …我、死しても退かじ
+// st[402] = { volumetype=1, path=1, file="Aka00_4652", type=0, category=1, prio=Def_SEP_KO };  // …前進あるのみ！
+
+// ノックアウト（２回目の敗北　その試合における敗北の決定　断末魔的に）
+st[410] = { volumetype=1, path=1, file="Aka00_4700", type=0, category=1, prio=Def_SEP_KO };  // ぐああああぁぁぁぁ――――――っ ※２秒程度の絶叫でお願いします
+st[411] = { volumetype=1, path=1, file="Aka00_4701", type=0, category=1, prio=Def_SEP_KO };  // ぬわあぁぁぁーーーーーーーっ！※２秒程度の絶叫でお願いします
+st[412] = { volumetype=1, path=1, file="Aka00_4702", type=0, category=1, prio=Def_SEP_KO };  // 負けるわけにはいかんのだ！（断末魔、苦しそうに）
+
+// 起きあがり（通常時 ちょっと転んだが、まだまだやれるぜ、というものです）
+// st[420] = { volumetype=1, path=1, file="Aka00_4800", type=0, category=1, };  // やるな…
+st[421] = { volumetype=1, path=1, file="Aka00_4801", type=0, category=1, };  // まだ行ける…！
+// st[422] = { volumetype=1, path=1, file="Aka00_4802", type=0, category=1, };  // ふん！
+st[423] = { volumetype=1, path=1, file="Aka00_4803", type=0, category=1, };  // 損害軽微！
+st[424] = { volumetype=1, path=1, file="Aka00_4804", type=0, category=1, };  // 傷は浅い！
+st[425] = { volumetype=1, path=1, file="Aka00_4805", type=0, category=1, };  // 次だ
+
+// 起きあがり（瀕死時", type=0, category=1, };  // 瀕死なので疲れている、負けそう、というニュアンスを多分にお願いします）
+st[430] = { volumetype=1, path=1, file="Aka00_4900", type=0, category=1, };  // くっ…！
+st[431] = { volumetype=1, path=1, file="Aka00_4901", type=0, category=1, };  // 効いたぞ！
+st[432] = { volumetype=1, path=1, file="Aka00_4902", type=0, category=1, };  // 不退転！
+
+
+// ヴェールオフ（制限を解き放ち、最大の力を全力解放する動作です）
+st[440] = { volumetype=1, path=1, file="Aka00_5000_a", type=0, category=1, };  // 南無八幡神！
+st[441] = { volumetype=1, path=1, file="Aka00_5001_a", type=0, category=1, };  // もはや許さじ！
+st[442] = { volumetype=1, path=1, file="Aka00_5002_a", type=0, category=1, };  // 電光機関出力最大！
+// st[443] = { volumetype=1, path=1, file="Aka00_5003_a", type=0, category=1, };  // うおおおぉ！！
+// st[444] = { volumetype=1, path=1, file="Aka00_5004_a", type=0, category=1, };  // 仇敵殲滅！！
+// st[445] = { volumetype=1, path=1, file="Aka00_5005_a", type=0, category=1, };  // 邪魔をするな！！
+
+// チェインシフト（攻撃の継続のために一瞬の気合いを入れる動作です）
+st[450] = { volumetype=1, path=1, file="Aka00_5100_a", type=0, category=1, };  // 連撃！
+st[451] = { volumetype=1, path=1, file="Aka00_5101", type=0, category=1, };  // まだまだ！
+// st[452] = { volumetype=1, path=1, file="Aka00_5102", type=0, category=1, };  // はぁっ
+st[453] = { volumetype=1, path=1, file="Aka00_5103", type=0, category=1, };  // ぬうんっ
+// st[454] = { volumetype=1, path=1, file="Aka00_5104", type=0, category=1, };  // 追撃っ！
+
+// コンセントレーション（精神的な力を時間をかけ高める動作です。パワーを溜める）
+st[460] = { volumetype=1, path=1, file="Aka00_5200", type=0, category=1, };  // はあぁぁぁーっ（静かに）
+// st[461] = { volumetype=1, path=1, file="Aka00_5201", type=0, category=1, };  // コォォォォォ（息吹、※無声音）
+st[462] = { volumetype=1, path=1, file="Aka00_5202_a", type=0, category=1, };  // 大悟徹底…（たいごてってい）
+st[463] = { volumetype=1, path=1, file="Aka00_5203_a", type=0, category=1, };  // 無念無想…
+
+// バースト（相手の一方的な攻撃に対し、力任せに振り払う動作。いい加減にしろー！的な）
+// st[470] = { volumetype=1, path=1, file="Aka00_5300", type=0, category=1, };  // かあーっ！！
+// st[471] = { volumetype=1, path=1, file="Aka00_5301", type=0, category=1, };  // 散れィ！！
+// st[472] = { volumetype=1, path=1, file="Aka00_5302", type=0, category=1, };  // だあああーーっ！
+// st[473] = { volumetype=1, path=1, file="Aka00_5303", type=0, category=1, };  // 失せよ！
+// st[474] = { volumetype=1, path=1, file="Aka00_5304", type=0, category=1, };  // 緊急離脱！！
+
+// 必殺技１：電光弾 手から弾を発射
+st[480] = { volumetype=1, path=1, file="Aka00_6000", type=0, category=1, };  // てーッ！
+st[481] = { volumetype=1, path=1, file="Aka00_6001", type=0, category=1, };  // 発射！
+st[482] = { volumetype=1, path=1, file="Aka00_6002", type=0, category=1, };  // 電光弾！
+
+// 必殺技２：電光弾ＥＸ 手から弾を連続発射
+// st[490] = { volumetype=1, path=1, file="Aka00_6050", type=0, category=1, };  // （発動）必中！
+st[491] = { volumetype=1, path=1, file="Aka00_6051", type=0, category=1, };  // （攻撃）てぇーッ！（先の6000より強くお願いします）
+// st[492] = { volumetype=1, path=1, file="Aka00_6052", type=0, category=1, };  // （発動）前方点射ッ！
+// st[493] = { volumetype=1, path=1, file="Aka00_6053", type=0, category=1, };  // （攻撃）撃ちてし止まん！
+
+// 必殺技３：人間迫砲 飛び上がりつつのアッパーカット
+st[500] = { volumetype=1, path=1, file="Aka00_6100", type=0, category=1, };  // 対空防禦ッ！
+st[501] = { volumetype=1, path=1, file="Aka00_6101", type=0, category=1, };  // 邀撃！（ようげき）
+st[502] = { volumetype=1, path=1, file="Aka00_6102", type=0, category=1, };  // 吶喊！（とっかん）
+
+// 必殺技４：人間迫砲ＥＸ 飛び上がりつつアッパーカットからの乱舞
+// st[510] = { volumetype=1, path=1, file="Aka00_6151", type=0, category=1, };  // （発動）必中！
+st[511] = { volumetype=1, path=1, file="Aka00_6152", type=0, category=1, };  // （攻撃）対空防禦ォッ！！
+// st[512] = { volumetype=1, path=1, file="Aka00_6153", type=0, category=1, };  // （発動）特攻！
+// st[513] = { volumetype=1, path=1, file="Aka00_6154", type=0, category=1, };  // （発動）目にも見よ！
+// st[514] = { volumetype=1, path=1, file="Aka00_6155", type=0, category=1, };  // （発動）高射用意！！
+// st[515] = { volumetype=1, path=1, file="Aka00_6156", type=0, category=1, };  // （発動）撃滅！！
+// st[516] = { volumetype=1, path=1, file="Aka00_6157", type=0, category=1, };  // （発動）もらった！
+// st[517] = { volumetype=1, path=1, file="Aka00_6158", type=0, category=1, };  // （攻撃）人間迫砲！
+st[518] = { volumetype=1, path=1, file="Aka00_6159_a", type=0, category=1, };  // （攻撃）せやぁー！
+
+// 必殺技５：徹甲脚 回し蹴り蹴り上げ叩きつけの３段攻撃
+st[520] = { volumetype=1, path=1, file="Aka00_6200", type=0, category=1, };  // （１段のみ）フンッ！
+st[521] = { volumetype=1, path=1, file="Aka00_6201", type=0, category=1, };  // （１段のみ）セイッ！
+st[522] = { volumetype=1, path=1, file="Aka00_6202", type=0, category=1, };  // （１段目）フンッ！
+st[523] = { volumetype=1, path=1, file="Aka00_6203", type=0, category=1, };  // （２段目）フンッ！
+st[524] = { volumetype=1, path=1, file="Aka00_6204", type=0, category=1, };  // （とどめ）チェストー！
+// st[525] = { volumetype=1, path=1, file="Aka00_6205", type=0, category=1, };  // （とどめ）砕け散れィ！
+
+// 必殺技６：徹甲脚ＥＸ 回し蹴り６回からの蹴り上げ
+st[530] = { volumetype=1, path=1, file="Aka00_6250", type=0, category=1, };  // （発動）必中！
+// st[531] = { volumetype=1, path=1, file="Aka00_6251", type=0, category=1, };  // （連続蹴り）セイセイセイ！※２回に１回セイ
+st[532] = { volumetype=1, path=1, file="Aka00_6252_b", type=0, category=1, };  // （連続蹴り）セイセイセイセイセイセイ！
+st[533] = { volumetype=1, path=1, file="Aka00_6253_a", type=0, category=1, };  // （とどめ）チェーストォー！！
+// st[534] = { volumetype=1, path=1, file="Aka00_6254", type=0, category=1, };  // （発動）特攻！
+// st[535] = { volumetype=1, path=1, file="Aka00_6255", type=0, category=1, };  // （とどめ）徹甲脚！！
+
+// 必殺技７：攻性防禦 攻撃を受け止めて反撃
+st[540] = { volumetype=1, path=1, file="Aka00_6300", type=0, category=1, };  // （防御）来い！
+st[541] = { volumetype=1, path=1, file="Aka00_6301", type=0, category=1, };  // （反撃）トァーッ！（勢い重視で）
+st[542] = { volumetype=1, path=1, file="Aka00_6302", type=0, category=1, };  // （防御）ここか！
+// st[543] = { volumetype=1, path=1, file="Aka00_6303", type=0, category=1, };  // （反撃）反転攻勢！
+
+// インフィニットワース（超必殺技）
+st[550] = { volumetype=1, path=1, file="Aka00_6600", type=0, category=1, };  // （発動）電光機関解放！
+st[551] = { volumetype=1, path=1, file="Aka00_6601", type=0, category=1, };  // （とどめ）歯を食いしばれィ！
+
+// 覚醒必殺技（インフィニットワースイグジスト）
+// ※落雷を手に受け雷を溜めた電撃チョップで相手を止め一閃パンチ
+// ※電撃チョップがヒットすると成立となります
+
+// （発動）
+st[560] = { volumetype=1, path=1, file="Aka00_6800", type=0, category=1, };  // 雷轟招来！！（らいごうしょうらい）
+st[561] = { volumetype=1, path=1, file="Aka00_6810_a", type=0, category=1, };  // ぬおぉぉ……！（力を溜める）
+
+// （成立）
+st[570] = { volumetype=1, path=1, file="Aka00_6810_b", type=0, category=1, };  // 護国の華と散り果てん！（構え）
+st[571] = { volumetype=1, path=1, file="Aka00_6811_d", type=0, category=1, };  // セイヤァァァァァァァ！（突進）
+st[572] = { volumetype=1, path=1, file="Aka00_6812", type=0, category=1, };  // （貫き終えた状態）悪鬼敗滅！真・桜花！
+
+// （相手を倒した場合 →別れの言葉）
+// st[580] = { volumetype=1, path=1, file="Aka00_6820", type=0, category=1, };  // 兵よ、眠れかし……。
+
+// （相手が生きてる場合 →驚愕、敬意）
+// st[590] = { volumetype=1, path=1, file="Aka00_6830", type=0, category=1, };  // ぬっ！？これで倒れぬとは……！
+
+// 他汎用ボイス
+// st[600] = { volumetype=1, path=1, file="Aka00_7000
+
+// 対キャラ別の呼びかけ ※汎用性を意識したセリフ。中～強攻撃のイメージです。行くぞ！ 少年！
+// st[610] = { volumetype=1, path=1, file="Aka00_7100", type=0, category=1, }; // 少年 （対ハイド等若者）
+// st[611] = { volumetype=1, path=1, file="Aka00_7101", type=0, category=1, }; // 娘 （対リンネ等若者）
+// st[612] = { volumetype=1, path=1, file="Aka00_7102", type=0, category=1, }; // 小童 （対バティスタ等子供）（こわっぱ）
+// st[613] = { volumetype=1, path=1, file="Aka00_7103", type=0, category=1, }; // ご老体 （対ワレン等）
+// st[614] = { volumetype=1, path=1, file="Aka00_7104", type=0, category=1, }; // 貴公 （対ゴルドー等男性汎用）
+// st[615] = { volumetype=1, path=1, file="Aka00_7105", type=0, category=1, }; // 男 （対男性キャラ汎用） 
+// st[616] = { volumetype=1, path=1, file="Aka00_7106", type=0, category=1, }; // 女 （対オリエ等女性汎用）
+// st[617] = { volumetype=1, path=1, file="Aka00_7107", type=0, category=1, }; // 化物 （対メルカヴァ） 
+// st[618] = { volumetype=1, path=1, file="Aka00_7110", type=0, category=1, }; // 小娘 （対リンネ等若者）
+// st[619] = { volumetype=1, path=1, file="Aka00_7111", type=0, category=1, }; // ご婦人 （対オリエ等女性汎用）
+

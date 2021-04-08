@@ -1494,7 +1494,32 @@ Battle_Std.DamageImpact_StdFunc <- function(info) : (set_DefenseMissEffect, set_
 	local is_broken = guard_gauge.flags;
 	
 	if( info.type&_HitType_Guard )
-	{
+	{	
+		local ex_guard = BMvTbl.GetPP(def_PP_ExGuardOK);
+		if( ex_guard==1 && !is_broken )
+		{
+			Battle_Std.GuardGauge.Add( Def_Rule_ExGuardGaugeAdd );
+			Battle_Std.TypeSE_Play({ type="シールド成功" });
+			
+			BMvEff.SetCharaFlash( { color = 0xFFEA22, type = 0, time = 10, intime = 0 } );
+			
+			BSound.SE_Play( { type=_SeType_Normal, num=30 } );
+			local eff = BMvEff.CreateObject( { datatype=1, start_pat="Eff_AdvGuard", y=-200*128 } );
+			if( eff.push() )
+			{
+				BMvEff.SetCharaColor( { color=0xFFEA22, time=1000, type=0 } );
+				eff.pop();
+			}
+			
+			//BMvEff.SetBoundSt( { addtime = -3 } );
+			
+			BMvTbl.SetPP(def_PP_ExGuardOK,2);
+			
+			BMvEff.SetSpGauge( { value=Def_Rule_ExGuardSPAdd } );
+			
+			BMvEff.AttackInfoString_Set({ word=def_AISW_FaultGuard } );	
+		}
+		else
 		if( !is_broken )
 		{
 			Battle_Std.GuardGauge.Add( -damage_val );
@@ -4993,6 +5018,18 @@ Battle_Std.DrawBladeEffect <- function( tbl={} ) : (get)
 	Battle_Std.CreateObjectEX( { x=get(tbl,"x"), y=get(tbl,"y"), pat=tbl.pat, flags=_Position_ToolShift,
 	objectflags=_ObjFlags_ParentMove|_ObjFlags_EraseParentPatChange|_ObjFlags_NoGround
 	} );
+}
+
+// Param0 == 10 の時SEを再生するオブジェクトを呼び出す関数
+Battle_Std.Call_FootStepSE <- function()
+{
+	local eff = BMvEff.CreateObject( { datatype=1, mvname="Mv_Null_PlayFootstepSE" } ); //足音再生監視オブジェクト
+	if( eff.push() )
+	{
+		BMvEff.ObjProcFlags_Set( { flags=_ObjProcFlags_EraseParentNull|_ObjProcFlags_EraseChangeParentMv } );
+		
+		eff.pop();
+	}
 }
 
 Battle_Std.CreateObject <- {};
@@ -9437,6 +9474,19 @@ Battle_Std.DrawHitBoxes_Outlined <- function()
 
 
 //////////not boxes
+
+Battle_Std.SetNoRender_CockpitView <- function()
+{
+	local cpv = BMvEff.Cockpit_SetView({ mode=-1 });
+	if( !cpv )
+	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoRender } );
+	}
+	else
+	{
+		BMvEff.EraseObjectFlags( { flags=_ObjFlags_NoRender } );
+	}
+}
 
 Battle_Std.GuardGauge <- {};
 

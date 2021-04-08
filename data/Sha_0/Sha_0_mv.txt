@@ -780,7 +780,7 @@ t.Mv_Atk_StdA <-
 		//BMvEff.CreateObject( { start_pat="BladeEff_SPJumpWing" } );
 						
 		//BMvEff.CreateObject( { mvname="Mv_Null_GenHandExplosion" } );
-		//Battle_Std.CreateObject.Blade( { x=220, y=0, start_pat="Eff_236Danzai" } );
+		
 		/*
 		
 		Battle_Std.DrawDebugAttackInfo("emk "+bgm_array_array.len() );
@@ -849,9 +849,7 @@ t.Mv_Atk_StdB <-
 {
 	function Init_After()
 	{
-		//BMvEff.BGM_Set({ num=250 });
-		
-		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_FireBall, time=254, flag=_ClearFlag_ChangeMv } );
+		//BMvEff.Cockpit_SetView( { mode=-1 } );
 	}
 	function FrameUpdate_After() : (func_CreateBlade, pat_num)
 	{
@@ -929,6 +927,7 @@ t.Mv_Atk_CroB <-
 {
 	function Init_After()
 	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function FrameUpdate_After() : (func_CreateBlade, pat_num)
 	{
@@ -2852,6 +2851,8 @@ t.Mv_Skill_63214SP <-
 		Battle_Std.AddBlast_SPSkill(); // 発動によるブラスト回復
 		
 		BMvTbl.SetLP(1,0); // 最低空っぽく入力したか ※ヒットかどうかは不明
+		
+		Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_DoubleGuardDamage );
 	}
 	function FrameUpdate_After() : (pat_num_Eff_HaraiUde1, pat_num_Eff_HaraiFire, pat_num_Eff_Hien, pat_num_Eff_SinpanLock, pat_num_Eff_SinStartFire, pat_num_Eff_Danzai, pat_num_Eff_DanzaiMini)
 	{

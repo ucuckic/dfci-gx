@@ -9,24 +9,148 @@ local t =
 	MultiJumpCancel_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
 	MultiJumpCancel_N = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
 	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
-
-	Skill_0202A = {},
-	Skill_0202B = {},
-	Skill_0202C = {},
 	
-	Skill_236A = {},
-	Skill_236B = {},
-	Skill_236C = {},
+	
+
+	Skill_0202A_EX = 
+	{	
+		function CmdBeforeStdFunc()
+		{
+			if( Battle_Std.CancelCheck_EXSpecialSkill() == 0 ) return 0;
+			return 1;
+		},
+		
+		function CmdBeforeFunc()
+		{
+			local gauge_status = BMvTbl.GetPP( CDef_Kur_PP_HeatGauge );
+			if( gauge_status < 0 ) return 0;
+		}
+		function CmdAfterFunc()
+		{
+			local Moveable = BCMDTbl.CheckCancel( _SkillType_None );
+			BMvTbl.SetLP(5,Moveable);
+		}
+		
+		num = def_CN_Skill_0202A, name = "Cmd_Skill_0202A", command = "0202@N,255@A",	
+		CmdCheck = { SkillType = "ExSpecial", MvCheck={ SkillFail="Mv_Skill_0202A" }, CommandButton = def_PP_CBS_ButtonA },
+		UpdateTable = { name = "Mv_Skill_0202A", }
+	},
+	Skill_0202B_EX = 
+	{
+		function CmdBeforeStdFunc()
+		{
+			if( Battle_Std.CancelCheck_EXSpecialSkill() == 0 ) return 0;
+			return 1;
+		},
+		
+		function CmdBeforeFunc()
+		{
+			local gauge_status = BMvTbl.GetPP( CDef_Kur_PP_HeatGauge );
+			if( gauge_status < 0 ) return 0;
+		}
+		function CmdAfterFunc()
+		{
+			local Moveable = BCMDTbl.CheckCancel( _SkillType_None );
+			BMvTbl.SetLP(5,Moveable);
+		}
+		
+		num = def_CN_Skill_0202B, name = "Cmd_Skill_0202B", command = "0202@N,255@B",	
+		CmdCheck = { SkillType = "ExSpecial", MvCheck={ SkillFail="Mv_Skill_0202B" }, CommandButton = def_PP_CBS_ButtonB },
+		UpdateTable = { name = "Mv_Skill_0202B", }
+	},
+	Skill_0202C_EX = 
+	{
+		function CmdBeforeStdFunc()
+		{
+			if( Battle_Std.CancelCheck_EXSpecialSkill() == 0 ) return 0;
+			return 1;
+		},
+		
+		function CmdBeforeFunc()
+		{
+			local gauge_status = BMvTbl.GetPP( CDef_Kur_PP_HeatGauge );
+			if( gauge_status < 0 ) return 0;
+		}
+		
+		function CmdAfterFunc()
+		{
+			local Moveable = BCMDTbl.CheckCancel( _SkillType_None );
+			BMvTbl.SetLP(5,Moveable);
+		}
+		
+		num = def_CN_Skill_0202C, name = "Cmd_Skill_0202C", command = "0202@N,255@C",	
+		CmdCheck = { SkillType = "ExSpecial", MvCheck={ SkillFail="Mv_Skill_0202C" }, CommandButton = def_PP_CBS_ButtonC },
+		UpdateTable = { name = "Mv_Skill_0202C", }
+	},
+	
+	Skill_236A = { 
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill06 } 
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
+	Skill_236B = {
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill07 } 
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
+	Skill_236C = { 
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill08 } 
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
 	Skill_236EX = {},
 
-	Skill_J236A = {},
-	Skill_J236B = {},
-	Skill_J236C = {},
+	Skill_J236A = {
+		CmdCheck = { ComboLimit = DEF_BS_CL_Skill00 } 
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
+	Skill_J236B = {
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill01 }
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
+	
+	Skill_J236C = { 
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill02 } 
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
 	Skill_J236EX = {},
 	
-	Skill_214A = {},
-	Skill_214B = {},
-	Skill_214C = {},
+	Skill_214A = {
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill03 } 
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
+	Skill_214B = {
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill04 } 
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
+	Skill_214C = {
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill05 }
+	function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}	
+	},
 	Skill_214EX = {},
 
 	Skill_214_AddA =
@@ -42,6 +166,8 @@ local t =
 			SkillType = "AddCommand"
 			MvCheck = { Only = ["Mv_Skill_214A","Mv_Skill_214B","Mv_Skill_214C"] },
 			SpGaugePlus = 0, //”­“®Žž‚ÌƒQ[ƒW‘‰Á—ÊŠ„‡(100‚Å1.0)
+			
+			//ComboLimit = DEF_BS_CL_Skill11,
 		},
 		function CmdAfterFunc()
 		{
@@ -160,6 +286,7 @@ local t =
 		}
 		UpdateTable = { name = "Mv_Skill_J214_JAddC", },
 	},	
+	/*
 	Skill_214AddC_JAddA =
 	{
 		num = def_CN_Skill_AddCommand7, command = "A",
@@ -211,10 +338,29 @@ local t =
 		},
 		UpdateTable = { name = "Mv_Skill_214AddC_JAddC", },
 	},		
+	*/
 	
-	Skill_J214A = {},
-	Skill_J214B = {},
-	Skill_J214C = {},
+	Skill_J214A = { 
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill08 }
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
+	Skill_J214B = { 
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill09 }
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
+	Skill_J214C = { 
+	CmdCheck = { ComboLimit = DEF_BS_CL_Skill10 } 
+		function CmdBeforeFunc()
+		{
+			 if( BCMDTbl.CheckComboLimit( CmdCheck.ComboLimit ) ) return 0;
+		}
+	},
 	Skill_J214EX = {},	
 
 	Skill_Sousai = {},

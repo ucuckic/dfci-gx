@@ -442,6 +442,10 @@ t.Mv_Atk_CroB <-
 
 t.Mv_Atk_CroC <-
 {
+	function Init_After()
+	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
+	}
 	function FrameUpdate_After() : (func_CreateBlade)
 	{
 		local mvs = BMvTbl.GetMvStatus();

@@ -613,6 +613,8 @@ t.Mv_Atk_CroC <-
 		// 各種補正は最初の１ヒットのみ
 		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
 		Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_CharaFlag3 ); // メテオブレイクでキャンセル可能な技
+		
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function FrameUpdate_After()
 	{

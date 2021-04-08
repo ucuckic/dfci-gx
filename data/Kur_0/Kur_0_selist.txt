@@ -281,8 +281,10 @@ se["Mv_Skill_Sousai4_Add_Init"] <-
 // ※Mvではなくスクリプトで直接よんでいる
 se["Mv_Skill_Kirifuda_N_Init"] <- 
 {
-	selist = { common = [560], }
+	//selist = { common = [560], }
+	selist = { common = [173], }
 }
+
 se["Mv_Skill_Kirifuda_R_Init"] <- 
 {
 	selist = { common = [562], }

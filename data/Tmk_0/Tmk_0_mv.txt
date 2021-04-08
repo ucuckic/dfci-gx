@@ -582,6 +582,10 @@ t.Mv_CallSupport <-
 	}
 }
 
+local footstepA_senum = 171;
+local footstepB_senum = 172;
+
+
 
 //-----------------------------------------------------------------------------
 // ’Êí‹Z
@@ -590,6 +594,8 @@ t.Mv_Atk_StdA <-
 {
 	function Init_After()
 	{
+		//BMvTbl.SetPP(0,12);
+		
 	}
 	function FrameUpdate_After()
 	{
@@ -600,9 +606,11 @@ t.Mv_Atk_StdB <-
 {
 	function Init_After()
 	{
+		//BMvTbl.SetPP(12,12);
 	}
 	function FrameUpdate_After()
 	{
+		//BMvTbl.AddPP( 80, 12 );
 	}
 }
 
@@ -611,6 +619,9 @@ t.Mv_Atk_StdC <-
 {
 	function FrameUpdate_After()
 	{
+		//BMvTbl.AddPP( 0, 12 );
+		//Battle_Std.DrawDebugAttackInfo("ssfu "+BMvTbl.GetPP(0)  ); 
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 100:

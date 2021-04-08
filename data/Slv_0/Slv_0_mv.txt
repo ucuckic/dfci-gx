@@ -210,9 +210,15 @@ local pat_num_StdC = BMvEff.GetPatternNum( { datatype=0, pat="StdC" } ); // パタ
 
 t.Mv_Atk_StdC <-
 {
+	function Init_After()
+	{
+		Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_DoubleGuardDamage );
+	}
 	function FrameUpdate_After() : (pat_num_StdC)
 	{
-		Battle_Std.SetPattern_NotHoldButton( { ButtonMask=(1<<2), CheckFrameID=50, SetPattern=pat_num_StdC } ); // ボタンホールドしてなかったらパターンジャンプ
+		local no_hold = Battle_Std.SetPattern_NotHoldButton( { ButtonMask=(1<<2), CheckFrameID=50, SetPattern=pat_num_StdC } ); // ボタンホールドしてなかったらパターンジャンプ
+		
+		if( no_hold==1 ) Battle_Std.MoveCodeEx.DelFlag( 2, def_MC2_DoubleGuardDamage );
 	}
 }
 
@@ -1611,7 +1617,7 @@ t.Mv_FireBall_Kirifuda <-
 			}
 		}
 				
-		Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_HalveGuardDamage );
+		//Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_HalveGuardDamage );
 	}
 	function HitInterrupt_After()
 	{
