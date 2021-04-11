@@ -594,8 +594,6 @@ t.Mv_Atk_StdA <-
 {
 	function Init_After()
 	{
-		//BMvTbl.SetPP(0,12);
-		
 	}
 	function FrameUpdate_After()
 	{
@@ -606,7 +604,6 @@ t.Mv_Atk_StdB <-
 {
 	function Init_After()
 	{
-		//BMvTbl.SetPP(12,12);
 	}
 	function FrameUpdate_After()
 	{
@@ -644,6 +641,7 @@ t.Mv_Atk_CroB <-
 	function Init_After()
 	{
 		Battle_Std.MoveCode.DelFlag( def_MC_NoJumpCansel ); // 「通常ＣでもＪＣ不可」を消す
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function FrameUpdate_After()
 	{
@@ -672,10 +670,150 @@ t.Mv_Atk_AirB <-
 	}
 }
 
+
+
+
+
 t.Mv_Atk_AirC <-
 {
 	function FrameUpdate_After()
 	{
+	}
+	function LastUpdate_After()
+	{
+	}
+}
+
+
+
+
+t.Mv_Obj_ThrowGoal <- 
+{
+	function Init_After()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } );
+		BMvTbl.SetPattern( "GoalWait" ); // ゴール見た目は共通
+	}
+	function FrameUpdate_After()
+	{
+		local hanteiobj = BMvEff.CCheckRect(); // オブジェクト作成
+
+		// 設定
+		hanteiobj.SetPlayer(); //プレイヤー情報設定
+		hanteiobj.SetSrc( [ _Hantei_Etc, 0, 1 ] ); //自分の情報設定
+		hanteiobj.SetDst( [ _Hantei_Etc, 0, 1 ] ); //相手の情報設定
+		hanteiobj.SetFlags( _HC_FavourPc ); //検索条件設定
+
+		while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
+		{
+			//Battle_Std.DrawDebugAttackInfo("etc push"  ); 
+			
+			local tmk = hanteiobj.GetCharaData(); // 見つかったオブジェクト取得
+			if( tmk.push() )
+			{
+				local p_mvn_check = BMvTbl.GetMvName()== "Mv_Throw_A_Hit";
+				if( p_mvn_check ) 
+				{
+					BMvTbl.JumpFrameID( 100 );
+					BMvEff.ThrowParam( { x=150, y=-250, pattern=342 } );
+				}
+				
+				tmk.pop();
+
+				if( p_mvn_check ) // 一致したボールだった
+				{
+					BMvTbl.SetFinalize(100);
+				}
+			}
+		}
+	}
+	function Finalize()
+	{
+		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // 共通で減らしておくとか？
+		Battle_Std.SwitchNextMoveTable( "", [100,"Mv_Obj_Throw_A_Hit_GoalAtk"], [300,"Mv_Obj_GoalMiss"] ); 
+	}
+}
+
+t.Mv_Obj_Throw_A_Hit_GoalAtk <- {
+	function Init_After()
+	{
+		BSound.SE_Play( { type=_SeType_Player, num=[770,780,790,800], avg=30 } );
+		local hit_sidou = BMvTbl.GetLP(0);
+
+		if( !hit_sidou ) BMvTbl.SetPattern( "Throw_A_Hit_GoalAtk_Sidou" );
+	}
+}
+
+t.Mv_Throw_A_Hit <-
+{
+	function Init_After() : (func_EnemyChangeBall)
+	{
+		local used_flag = Battle_Std.EnemyDamageFlag_Check(def_DF_CharaFlag1);
+		
+		Battle_Std.PassHitMoveCodes();
+		Battle_Std.InitVector();
+		
+		local eff = BMvEff.CreateObject( { x=40, y=-250, datatype=1, start_pat=55, flags=_Position_ToolShift } );
+		if( eff.push() )
+		{
+			BMvEff.SetObjectFlags( { flags=_ObjFlags_MoveTimeStopAll|_ObjFlags_NoGround } );
+			eff.pop();
+		}
+		
+		local sidou = Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_SidouHitSkill );
+		
+		BMvTbl.SetPrio( _CharaPrio_Far );
+		
+		func_EnemyChangeBall( 40, -250, 15 ); // 敵ボール化 X座標, Y座標, 停止時間
+		local eff = BMvEff.CreateObject( { mvname="Mv_Obj_ThrowGoal", x=230*128, y=-100*128 } );
+		if( eff.push() )
+		{
+			Battle_Std.AddXPos_CheckFrontStage( 0, 0 )
+			BMvTbl.SetLP(0,used_flag);
+			
+			local pos = BMvTbl.GetPosition( 0 );
+			
+			local min_height = -328*128;
+			if( pos.y > min_height ) BMvTbl.SetPosition( { y=min_height } );
+			
+			pos = BMvTbl.GetPosition( 0 );
+			eff.pop();
+			
+			BMvTbl.SetLP(0,pos.x);
+			BMvTbl.SetLP(1,pos.y);
+		}
+	}
+	function FrameUpdate_After()
+	{
+		switch( Battle_Std.GetUpdateFrameID() )
+		{
+		case 2:
+			BMvTbl.SetPrio( _CharaPrio_Near );
+			BMvEff.ThrowParam( { x=-50, y=-320 } );
+			break;
+		case 5:
+			BMvTbl.SetPrio( _CharaPrio_Near );
+			BMvEff.ThrowParam( { x=-59, y=-305 } );
+			break;
+		case 100: // 放る
+			//BMvTbl.SetHitStop( 20, _ValSet );
+			BMvEff.ThrowParam( { x=50, y=0, pattern=342 } );
+			
+			local eff = BMvEff.CreateObject( { start_pat=110, x=0<<7, y=200<<7 } );
+			BMvEff.ThrowRelease( { type="無声ダウン", flags = _ThrowRelease_NoGroundRecover } );	
+
+			// 発光しつつ開放
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				BMvEff.SetCharaFlash( { color = 0xFFFFFF, type = 3, time = 6, intime = 0 } );
+				enemy.pop();
+			}
+			
+			Battle_Std.EnemyDamageFlag_Add( def_DF_CharaFlag1 );
+			
+			break;
+		}
 	}
 }
 
@@ -881,13 +1019,24 @@ t.Mv_FireBall_236 <-
 		BMvTbl.SetPattern( "BallGrp236" );
 		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
 	}
+	function FrameUpdate_After()
+	{
+		Battle_Std.CheckSousai();
+		local sousai_check = Battle_Std.MoveCode.CheckFlag( def_MC_Sousai_EnemySubSuccess );
+		
+		if( sousai_check ) BMvTbl.SetFinalize(100);
+	}
+	function Finalize()
+	{
+		Battle_Std.SwitchNextMoveTable( "...", [100,"Mv_FireBall_236_Blocked"] );
+	}
 	function LastUpdate_After()
 	{
 		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
 	}
 }
 
-t.Mv_FireBall_236_Hit <-
+t.Mv_FireBall_236_Blocked <-
 {
 	function Init_After()
 	{
@@ -896,8 +1045,8 @@ t.Mv_FireBall_236_Hit <-
 	}
 }
 
-t.Mv_FireBall_236_Blocked <- t.Mv_FireBall_236_Hit;
-t.Mv_FireBall_236_Sousai  <- t.Mv_FireBall_236_Hit;
+//t.Mv_FireBall_236_Blocked <- t.Mv_FireBall_236_Hit;
+//t.Mv_FireBall_236_Sousai  <- t.Mv_FireBall_236_Blocked;
 
 t.Mv_FireBall_236EX <-
 {
@@ -906,13 +1055,24 @@ t.Mv_FireBall_236EX <-
 		BMvTbl.SetPattern( "BallGrp236EX" );
 		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
 	}
+	function FrameUpdate_After()
+	{
+		Battle_Std.CheckSousai();
+		local sousai_check = Battle_Std.MoveCode.CheckFlag( def_MC_Sousai_EnemySubSuccess );
+		
+		if( sousai_check ) BMvTbl.SetFinalize(100);
+	}
+	function Finalize()
+	{
+		Battle_Std.SwitchNextMoveTable( "...", [100,"Mv_FireBall_236_Blocked"] );
+	}
 	function LastUpdate_After()
 	{
 		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
 	}
 }
 
-t.Mv_FireBall_236EX_Hit <-
+t.Mv_FireBall_236EX_Blocked <-
 {
 	function Init_After()
 	{
@@ -921,8 +1081,10 @@ t.Mv_FireBall_236EX_Hit <-
 	}
 }
 
+/*
 t.Mv_FireBall_236EX_Blocked <- t.Mv_FireBall_236EX_Hit;
 t.Mv_FireBall_236EX_Sousai  <- t.Mv_FireBall_236EX_Hit;
+*/
 
 //236EX本体がヒットした時の投げ判定ボール
 //投げの親なのでFireBallは使わない
@@ -1128,18 +1290,41 @@ t.Mv_Obj_MahoSakiGoalAtk <- {
 	function Init_After()
 	{
 		// 各種補正は最初の１ヒットのみ
-		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );	
+
+		local used_pat = BMvTbl.HitPat_Check( { num = -1 } );
+		if( used_pat )
+		{
+			BMvTbl.SetPattern( "MahoSakiGoalAtk_Repeat" );
+		}		
 
 		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=1, type=_ValAdd } ); // ゴールでてる間まほだせないように
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=1, type=_ValAdd } ); // ゴールでてる間サキだせないように
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=1, type=_ValAdd } ); // ゴールでてる間まほだせないように
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=1, type=_ValAdd } ); // ゴールでてる間サキだせないように
 		BMvEff.EraseObjectFlags( { flags=_ObjFlags_NoGround } ); // 地面判定復活
+	}
+	function FrameUpdate_After()
+	{
+		local up_FrameID = Battle_Std.GetUpdateFrameID();
+		if( up_FrameID == 100 )
+		{
+			BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
+			//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } ); // まほ回復
+			//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } ); // サキ回復
+		}
+	}
+	function HitInterrupt_After()
+	{
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
+		{
+			Battle_Std.SetPosition_DamageHanteiRect( { power=50 } );
+		}
 	}
 	function LastUpdate_After()
 	{
 		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } ); // まほ回復
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } ); // サキ回復
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } ); // まほ回復
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Saki, val=-1, type=_ValAdd } ); // サキ回復
 	}
 };
 // 214C＞Cのゴール
@@ -1152,16 +1337,29 @@ t.Mv_Obj_MahoHinaGoalAtk <- {
 	{
 		// 各種補正は最初の１ヒットのみ
 		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+		
+		local used_pat = BMvTbl.HitPat_Check( { num = -1 } );
+		if( used_pat )
+		{
+			BMvTbl.SetPattern( "MahoHinaGoalAtk_Repeat" );
+		}
 
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=1, type=_ValAdd } ); // ゴールでてる間まほだせないように
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=1, type=_ValAdd } ); // ゴールでてる間ひなだせないように
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=1, type=_ValAdd } ); // ゴールでてる間ゴールだせないように
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=1, type=_ValAdd } ); // ゴールでてる間まほだせないように
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=1, type=_ValAdd } ); // ゴールでてる間ひなだせないように
+	}
+	function HitInterrupt_After()
+	{
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
+		{
+			Battle_Std.SetPosition_DamageHanteiRect( { power=50 } );
+		}
 	}
 	function LastUpdate_After()
 	{
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } ); // まほ回復
-		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=-1, type=_ValAdd } ); // ひな回復
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Goal, val=-1, type=_ValAdd } ); // ゴール回復
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Maho, val=-1, type=_ValAdd } ); // まほ回復
+		//BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Hina, val=-1, type=_ValAdd } ); // ひな回復
 	}
 };
 
@@ -1767,13 +1965,24 @@ t.Mv_FireBall_214Saki <-
 		BMvTbl.SetPattern( "BallGrp214Saki" );
 		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=1, type=_ValAdd } );
 	}
+	function FrameUpdate_After()
+	{
+		Battle_Std.CheckSousai();
+		local sousai_check = Battle_Std.MoveCode.CheckFlag( def_MC_Sousai_EnemySubSuccess );
+		
+		if( sousai_check ) BMvTbl.SetFinalize(100);
+	}
+	function Finalize()
+	{
+		Battle_Std.SwitchNextMoveTable( "...", [100,"Mv_FireBall_236_Blocked"] );
+	}
 	function LastUpdate_After()
 	{
 		BMvTbl.TobiParam_Func( { slot=def_BLS_Tmk_Ball, val=-1, type=_ValAdd } );
 	}
 }
 
-t.Mv_FireBall_214Saki_Hit <- 
+t.Mv_FireBall_214Saki_Blocked <- 
 {
 	function Init_After()
 	{
@@ -1782,7 +1991,12 @@ t.Mv_FireBall_214Saki_Hit <-
 	}
 }
 
+/*
+
+
 t.Mv_FireBall_214Saki_Sousai <- t.Mv_FireBall_214Saki_Hit;
+
+*/
 
 t.Mv_Obj_214SakiDmg <-
 {
@@ -2425,22 +2639,6 @@ t.Mv_BallSousaiAdd <-
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 t.Mv_Skill_Sousai2 <-
 {
 	flags = def_TmplFlags_DoujiCancelOK, // 同時押しでキャンセル可にする
@@ -2456,7 +2654,8 @@ t.Mv_Skill_Sousai2 <-
 	}
 	function FrameUpdate_After()
 	{
-		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
 	}
 	function HitInterrupt_After()
 	{

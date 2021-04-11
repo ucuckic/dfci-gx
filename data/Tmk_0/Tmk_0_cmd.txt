@@ -54,6 +54,8 @@ local t =
 	Skill_Kirifuda = {},
 	Skill_41236SP = {},
 	Skill_63214SP = {},	
+	
+	Atk_Std6B = {},
 
 }
 

@@ -3745,7 +3745,7 @@ Std_MoveTable.Mv_Null_ExGuardCheck <-
 						if( p_mvn == "Mv_Guard" ) //if my ex guard input was attempted during blockstun
 						{
 							BMvTbl.SetPP(def_PP_ExGuardOK,0);
-							BMvTbl.SetLP(0,60);
+							BMvTbl.SetLP(0,ExGuard_FailTime);
 							
 							if( player.push() )
 							{
@@ -3769,11 +3769,11 @@ Std_MoveTable.Mv_Null_ExGuardCheck <-
 						{
 							case 1:
 								BMvTbl.SetPP(def_PP_ExGuardOK,1);
-								BMvTbl.SetLP(0,10);
+								BMvTbl.SetLP(0,ExGuard_ActiveTime);
 								break;
 							case 2:
 								BMvTbl.SetPP(def_PP_ExGuardOK,0);
-								BMvTbl.SetLP(0,10);
+								BMvTbl.SetLP(0,ExGuard_CoolTime);
 								break;
 							default:
 								BMvTbl.SetPP(def_PP_ExGuardOK,0);
@@ -4590,8 +4590,6 @@ Std_MoveTable.Mv_Null_PlayFootstepSE <-
 
 			if( playtiming==1 )
 			{
-				Battle_Std.DrawDebugAttackInfo("ssfu "+BMvTbl.GetLP(0)  ); 
-				
 				local setype = BMvTbl.GetLP(0);
 				BMvTbl.SetLP(0, 1-setype ); // 0 1 0 1 ...
 				switch( setype )
@@ -6064,10 +6062,10 @@ Std_MoveTable.Mv_Atk_AirC_Throw <-
 		Battle_Std.GS_AddFlag( def_PP_GS_ThrowStdC );
 
 		// 投げ扱いのＣなので投げ成立先を予約
-		BMvCore.CallEntryBCCachePreTransfer( { pat=def_PAT_Throw_A_TechWait, frame=0, rest=2 } ); // 投げつかみ分岐先予約		
-		BMvCore.CallEntryBCCachePreTransfer( { pat=def_PAT_Throw_A_Hit, frame=0, rest=6 } ); // 投げ成立先予約
+		//BMvCore.CallEntryBCCachePreTransfer( { pat=def_PAT_Throw_A_TechWait, frame=0, rest=2 } ); // 投げつかみ分岐先予約		
+		//BMvCore.CallEntryBCCachePreTransfer( { pat=def_PAT_Throw_A_Hit, frame=0, rest=6 } ); // 投げ成立先予約
 		
-		Battle_Std.DrawDebugAttackInfo("pxdmg");
+		//Battle_Std.DrawDebugAttackInfo("pxdmg");
 	}
 	function Finalize_Std()
 	{
@@ -11956,8 +11954,6 @@ Std_MoveTable.Mv_Throw_A_Hit <-
 	{
 		//Battle_Std.InitVector(); // ベクトル初期化(一応)
 		
-		
-		
 		Battle_Std.MvAction.AddFlag( def_MC_Throw ); // 行動コード(投げ)を設定
 		//Battle_Std.ThrowTech.SetMuteki(); //つかみ中は自分も相手も無敵にする	
 		//Battle_Std.PlayerSE_StopLastPlaySound(); //直前に再生した音声を停止
@@ -13438,7 +13434,7 @@ Std_MoveTable.Mv_BoundBlast <-
 		local use_pat = ( Battle_Std.CheckSubSupportType( 2 ) )? 748 : 688; // 0:パワー 1:コンボ 2:エスケープ
 		BMvEff.CreateObject( { datatype=1, start_pat=use_pat, mvname="Mv_EscBlastShockwave", x=0, y=-200*128 } );
 
-		BMvEff.SetPlayerTimer( { muteki_dage=1, muteki_dageX=1, muteki_nage=0, muteki_nageX=0 } );
+		BMvEff.SetPlayerTimer( { muteki_dage=3, muteki_dageX=3, muteki_nage=0, muteki_nageX=0 } );
 		
 		tDDC.Blast_SetParam( { blasttime=0 } );
 		tDDC.Blast_Use( 1 ); // 0 パワーアップブラスト 1 バウンドブラスト 2 コンボブラスト
@@ -13577,10 +13573,20 @@ Std_MoveTable.Mv_ComboBlastShockwave <-
 {
 	function Init_Std()
 	{
+		BMvTbl.SetLP(3,0);
 	}
 	function HitInterrupt_Std()
 	{
 		local player = BMvCore.GetPlayerCharaData();
+		
+		if( Battle_Std.CheckDamageTiming_OnlyDown() ) 
+		{
+			local enemy = BMvCore.GetEnemyCharaData();
+			BMvEff.CapturePlayer( { target = enemy } );
+			
+			BMvEff.ThrowRelease( { type=222, airrecover=0 } );
+			Battle_Std.SetEnemyHitStop(12);
+		}
 		
 		// ヒットしたらゲージ１つ増やす
 		if( Battle_Std.CheckDamageTiming_ExceptDown() )
@@ -13601,7 +13607,7 @@ Std_MoveTable.Mv_ComboBlastShockwave <-
 		}
 		
 	}
-	function FrameUpdate_After()
+	function FrameUpdate_Std()
 	{	
 		if( Battle_Std.CheckPlayerisDamage() ) BMvTbl.CalcHitValue(-100);
 	}
@@ -16130,10 +16136,12 @@ Std_MoveTable.Mv_Obj_GuardGaugeBar <-
 		
 		local p_side = BMvTbl.GetPlayerSide();
 		local pos_x = ( p_side )? 53 : -58;
+		local use_muki = ( p_side )? _Direction_Left : _Direction_Right;
 		
+		BMvTbl.SetMuki( use_muki );
 		BMvTbl.SetPosition( { x=pos_x*128,y=2*128, flags=_Position_Add } );
-		
-		BMvTbl.SetLP(0,0); //guard gauge cooldown
+
+		//Battle_Std.DrawDebugAttackInfo( "bgbar oyalp"+Battle_Std.GetOyaLP(0) );
 		
 		BMvTbl.SetPrio( _CharaPrio_GaugeHP_P1 );
 	}
@@ -16149,13 +16157,16 @@ Std_MoveTable.Mv_Obj_GuardGaugeBar <-
 	{
 		local mvs = BMvTbl.GetMvStatus();
 		local rs = BMvTbl.GetMvRoundStatus();
+		local init_rnd = BMvTbl.GetLP(0);
+		
+		//Battle_Std.DrawDebugAttackInfo( "bg ggbar oyalp"+init_rnd );
 		
 		local guard_gauge = Battle_Std.GuardGauge.Check();
 		
 		local gauge_value = guard_gauge.guard_val;
 		local gauge_cool = guard_gauge.cool_time;
 		
-		if( rs.TimeUpdate )
+		if( rs.TimeUpdate || ( rs.CharaMoveMode==1 && mvs.CallCount==0 && init_rnd==127 ) )
 		{
 			if( gauge_cool )
 			{
@@ -16163,7 +16174,9 @@ Std_MoveTable.Mv_Obj_GuardGaugeBar <-
 			}
 			else
 			{
-				Battle_Std.GuardGauge.Add( GuardGauge_RegenSpeed );
+				local r_speed = ( rs.CharaMoveMode==1 )? 400 : GuardGauge_RegenSpeed;
+				
+				Battle_Std.GuardGauge.Add( r_speed );
 			}
 		}
 		
@@ -16191,8 +16204,20 @@ Std_MoveTable.Mv_Obj_GuardGaugeBG <-
 {
 	function Init()
 	{
-		Battle_Std.GuardGauge.Clear();
+		local init_rnd = BMvTbl.GetLP(0);
 		
+		//Battle_Std.DrawDebugAttackInfo( "bg oyalp"+init_rnd );
+		
+		if( init_rnd == 127 )
+		{
+			Battle_Std.GuardGauge.Set(-4000);
+		}
+		else if( init_rnd != -256 )
+		{
+			Battle_Std.GuardGauge.Clear();
+			BMvTbl.JumpFrameID( 100 );
+		}
+
 		BMvTbl.SetMuki( _Direction_Right );
 		
 		local p_side = BMvTbl.GetPlayerSide();
@@ -16217,21 +16242,58 @@ Std_MoveTable.Mv_Null_GuardGaugeObject <-
 {
 	function Init_After()
 	{
+		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_NoRender } );//これは時間停止の影響を受けます
+		BMvEff.SetExist( { level = _Exist_NoHantei } );
+		
 		local p_side = BMvTbl.GetPlayerSide();
 		local pos_x = ( p_side )? 130 : -125;
 		
 		BMvTbl.SetPosition( { x=pos_x*128, y=-500*128, flags=0 } );
 		
-		BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBar", start_pat="dbg_rect2opaque", datatype=1 } );
-		BMvEff.CreateObject( { mvname="Mv_Obj_GuardGaugeBG", start_pat="GuardGaugePattern", datatype=1 } );
+		local rs = BMvTbl.GetMvRoundStatus();
+		BMvTbl.SetLP(0,-1);
+		BMvTbl.SetLP(1,0);
 		
-		BMvTbl.SetFinalize(0);
+		BMvTbl.SetLP( 0,rs.Round );
+		
+		if( rs.Round != 127 )
+		{
+			if( rs.Round > 0 || rs.Round == -1 )
+			{
+				Battle_Std.CreateObjectEX( { mvname="Mv_Obj_GuardGaugeBar", pat="dbg_rect2opaque", datatype=1 } );
+				Battle_Std.CreateObjectEX( { mvname="Mv_Obj_GuardGaugeBG", pat="GuardGaugePattern", datatype=1 } );
+				
+				//Battle_Std.DrawDebugAttackInfo( "post start" );
+				
+				BMvTbl.SetFinalize(0);
+			}
+		}
+	}
+	function FrameUpdate()
+	{
+		local s = BMvTbl.GetMvStatus();	
+		local rs = BMvTbl.GetMvRoundStatus();
+		
+		local init_rnd = BMvTbl.GetLP(0);
+		
+		// && rs.CharaMoveMode==1
+		if( init_rnd==127 )
+		{
+			if( rs.CharaMoveMode==1 )
+			{
+				Battle_Std.CreateObjectEX( { mvname="Mv_Obj_GuardGaugeBar", pat="dbg_rect2opaque", datatype=1, LP={ slot=0, val=init_rnd } } );
+				Battle_Std.CreateObjectEX( { mvname="Mv_Obj_GuardGaugeBG", pat="GuardGaugePattern", datatype=1, LP={ slot=0, val=init_rnd } } );
+				
+				//Battle_Std.DrawDebugAttackInfo( "start" );
+				
+				BMvTbl.SetFinalize(0);
+			}
+		}
 	}
 	function Finalize()
 	{
 		BMvTbl.SetDeleteMoveTable();
 	}
-
 }
 
 //親のMvが変化or特定フレームで投げ属性を消去する

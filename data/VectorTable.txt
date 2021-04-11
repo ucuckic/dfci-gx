@@ -8486,9 +8486,9 @@ vectmpl.add({
 	wallbound_vector = 900, //壁ヒット時に移行するベクトル番号
 	Finalize_Hit = "Mv_Modori_Down",
 
-	hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
-	hitflag_check = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
-	hitflag_vector = 133, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
+	//hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_check = 20, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_vector = 137, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
 
 	tblcount = 2, // テーブル数
 	tbl = 
@@ -8530,8 +8530,8 @@ vectmpl.add({
 	wallbound_vector = 900, //壁ヒット時に移行するベクトル番号
 	Finalize_Hit = "Mv_Modori_Down",
 
-	hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
-	hitflag_check = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	//hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_check = 20, // 「当たった時」に壁バウンドがセットされてるかチェック
 	hitflag_vector = 133, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
 
 	tblcount = 2, // テーブル数
@@ -8574,9 +8574,9 @@ vectmpl.add({
 	wallbound_vector = 901, //壁ヒット時に移行するベクトル番号
 	Finalize_Hit = "Mv_Modori_Down",
 
-	hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
-	hitflag_check = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
-	hitflag_vector = 133, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
+	//hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_check = 21, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_vector = 137, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
 
 	tblcount = 2, // テーブル数
 	tbl = 
@@ -8619,8 +8619,8 @@ vectmpl.add({
 	wallbound_vector = 900, //壁ヒット時に移行するベクトル番号
 	Finalize_Hit = "Mv_Modori_Down",
 
-	hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
-	hitflag_check = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_set = 20, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_check = 20, // 「当たった時」に壁バウンドがセットされてるかチェック
 	hitflag_vector = 133, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
 
 	tblcount = 2, // テーブル数
@@ -8714,7 +8714,7 @@ vectmpl.add({
 	prio_vector = 999, // ベクトル優先度
 	ko_vector = 0, // KO時のベクトル修正 0 だと修正しない
 
-	//hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_set = 20, // 「当たった時」に壁バウンドがセットされてるかチェック
 	//hitflag_check = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
 	//hitflag_vector = 133, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
 
@@ -8756,7 +8756,7 @@ vectmpl.add({
 	prio_vector = 999, // ベクトル優先度
 	ko_vector = 0, // KO時のベクトル修正 0 だと修正しない
 
-	//hitflag_set = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
+	hitflag_set = 21, // 「当たった時」に壁バウンドがセットされてるかチェック
 	//hitflag_check = 22, // 「当たった時」に壁バウンドがセットされてるかチェック
 	//hitflag_vector = 133, // hitflag_check が有効だった場合に移行するベクトルテーブル番号
 

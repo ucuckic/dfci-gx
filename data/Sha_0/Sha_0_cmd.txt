@@ -23,13 +23,16 @@ local t =
 	MultiJumpCancel_B = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},	
 	
 	Skill_236A = {},
-	Skill_236B = {},
+	Skill_236B = {}
+
+
 	Skill_236C = {},
 	Skill_236EX = {},
 
-	Skill_J236A = {},
-	Skill_J236B = {},
-	Skill_J236C = {},
+	Skill_J236A = { CmdCheck = { MvCheck={ SkillFail=["Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C"] } }, },
+	Skill_J236B = { CmdCheck = { MvCheck={ SkillFail=["Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C"] } }, },
+	Skill_J236C = { CmdCheck = { MvCheck={ SkillFail=["Mv_Skill_236B","Mv_Skill_236C","Mv_Skill_J236A","Mv_Skill_J236B","Mv_Skill_J236C"] } }, },
+
 	Skill_J236EX = {},
 
 	Skill_214A = {},

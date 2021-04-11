@@ -268,6 +268,69 @@ if( _DevVITA )
 // イベント
 //-----------------------------------------------------------------------------
 
+t.Mv_Null_DownLaunchCheck <-
+{
+	function Init_After()
+	{
+		//BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_ParentMove|_ObjFlags_ParentMuki } );
+		//BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround | _ObjFlags_NoRender } );	
+		//BMvEff.SetExist( { level = _Exist_NoHantei } );
+	}
+	function FrameUpdate_After()
+	{
+		local mvs = BMvTbl.GetMvStatus();
+		//if( mvs.CallCount != 0 ) return;
+		//Battle_Std.DrawDebugAttackInfo( "ht" );
+		
+		local all_check = BMvEff.CCheckRect(); // オブジェクト作成
+
+		// 設定
+		all_check.SetPlayer(); //プレイヤー情報設定
+		all_check.SetSrc( [ _Hantei_Etc, 0, -1 ] ); //自分の情報設定
+		all_check.SetDst( [ _Hantei_Attack, 0, -1 ] ); //相手の情報設定
+		all_check.SetFlags( _HC_FavourPc | _HC_FavourObj | _HC_WithoutNoHanteiFlagObj  ); //検索条件設定
+		
+		while( all_check.Check() != 0 )
+		{
+			local char = all_check.GetCharaData(); 
+			if( char.push() )
+			{
+				//Battle_Std.DrawDebugAttackInfo("P"+BMvTbl.GetMvName() );
+				
+				local hanteiobj = BMvEff.CCheckRect(); // オブジェクト作成
+				local atk = BMvEff.IsAttackRect()==2;
+				local ignore_down = Battle_Std.MoveCodeEx.CheckFlag( 2, def_MC2_IgnoreDownStatus );
+				// 設定
+				hanteiobj.SetPlayer(); //プレイヤー情報設定
+				hanteiobj.SetSrc( [ _Hantei_Attack, 0, -1 ] ); //自分の情報設定
+				hanteiobj.SetDst( [ _Hantei_Kurai, 0, -1 ] ); //相手の情報設定
+				hanteiobj.SetFlags( _HC_EnemyObj | _HC_EnemyPc | _HC_WithoutNoHanteiFlagObj ); //検索条件設定
+				
+
+				while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
+				{
+					//Battle_Std.DrawDebugAttackInfo("mc2 "+ignore_down+" atk "+atk );
+					local enemy = hanteiobj.GetCharaData(); 
+					if( enemy.push() )
+					{
+						//Battle_Std.DrawDebugAttackInfo("mc2 "+ignore_down+" atk "+atk );
+						if( atk && ignore_down ) 
+						{
+							//Battle_Std.DrawDebugAttackInfo("P "+igd);
+							BMvTbl.SetDownStatus(0);
+						}
+						
+						enemy.pop();
+					}
+				}
+				
+				char.pop();
+			}
+		}
+
+	}
+}
+
 t.Mv_Startup <-
 {
 	function Init_After()
@@ -276,6 +339,10 @@ t.Mv_Startup <-
 		if( _DevVITA == 0 ) BMvEff.CreateObject( { x=0, y=0, mvname="Mv_Eff_KamiHikari" } );
 		
 		//Battle_Std.GuardGauge.CreateGaugeObject();
+		
+		//Battle_Std.DrawDebugAttackInfo("srtup" );
+		
+		//BMvEff.CreateObject( { mvname="Mv_Null_DownLaunchCheck", start_pat=997, datatype=1 } );
 	}
 }
 
@@ -284,6 +351,8 @@ t.Mv_Standby <-
 	function Init_After()
 	{
 		//Battle_Std.DrawDebugAttackInfo("stndby" );
+		
+		
 	}
 	function FrameUpdate_After()
 	{
@@ -766,10 +835,27 @@ t.Mv_Obj_GuardGaugeObject <-
 }
 */
 
+
+local CheckHanCross_SetDownStatus = function()
+{		
+	if( BMvEff.IsAttackRect()==2 ) // 攻撃が出現し、残りHIT数が０でない状態
+	{
+		local enemy = BMvEff.CheckHantei( { src=[ _Hantei_Attack, 0, -1 ], dst=[ _Hantei_Kurai , 0, -1 ], flags=_HC_EnemyPc } );
+		if( enemy.push() ) // 触れていない
+		{
+			BMvTbl.SetDownStatus(0);
+			enemy.pop();
+		}
+	}	
+}
+
 t.Mv_Atk_StdA <-
 {
 	function Init_After() : (bgm_array_array,draw_Effect)
 	{
+		local rs = BMvTbl.GetMvRoundStatus();
+		//Battle_Std.DrawDebugAttackInfo("emk "+rs.Round );
+		
 		//Battle_Std.GuardGauge.CreateGaugeObject();
 		
 		//BMvEff.SetPaletteSlot( 1, 0 );
@@ -825,7 +911,10 @@ t.Mv_Atk_StdA <-
 		//BMvTbl.SetPattern( def_PAT_AirDash_F );
 		//Battle_Std.DrawDebugAttackInfo( BMvTbl.CheckPattern( def_PAT_AirDash_F ) );
 	}
-	function FrameUpdate_After() : (func_CreateBlade, pat_num)
+	function Update_After()
+	{
+	}
+	function FrameUpdate_After() : (func_CreateBlade, pat_num, CheckHanCross_SetDownStatus)
 	{
 		local mvs = BMvTbl.GetMvStatus();
 		if( mvs.isFrameUpdate )
@@ -833,13 +922,25 @@ t.Mv_Atk_StdA <-
 			switch( mvs.FrameID )
 			{
 			case 100:
+				//CheckHanCross_SetDownStatus();
 				func_CreateBlade( { x=0, y=0, start_pat=pat_num }, { grp_angle=4500, vec_angle=0.75, vec_speed=200 } );
 				break;
 			}
 		}
+
 	}
 	function HitInterrupt_After()
 	{
+		if( Battle_Std.CheckDamageTiming() )
+		{	
+			local enemy = BMvCore.GetEnemyCharaData();
+			if( enemy.push() )
+			{
+				//Battle_Std.DrawDebugAttackInfo("emk "+BMvTbl.AddUkemiTime(-10000) ); 
+				enemy.pop();
+			}
+		}
+
 	}
 }
 
@@ -866,6 +967,13 @@ t.Mv_Atk_StdB <-
 			}
 		}
 	}
+	function HitInterrupt_After()
+	{
+		
+		local bs = Battle_Std.GetEnemyBoundStatus();
+		//Battle_Std.DrawDebugAttackInfo("stdb "+bs.IsDown() );
+
+	}
 }
 
 pat_num = BMvEff.GetPatternNum( { datatype=0, pat="BladeEff_AtkStdC" } ); // パターン文字列のパターン番号を事前取得
@@ -875,6 +983,8 @@ t.Mv_Atk_StdC <-
 	function Init_After()
 	{
 		//BMvEff.BGM_Set({ num=1 });
+		
+		//Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_IgnoreDownStatus );
 	}
 	function FrameUpdate_After() : (func_CreateBlade, pat_num)
 	{
@@ -905,6 +1015,12 @@ t.Mv_Atk_CroA <-
 {
 	function Init_After()
 	{
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			BMvTbl.AddUkemiTime(20);
+			enemy.pop();
+		}
 	}
 	function FrameUpdate_After() : (func_CreateBlade, pat_num)
 	{
@@ -1747,7 +1863,7 @@ local maketmpl_Skill214 = function( tbl={} ) : (pat_num_BladeJ214EX, pat_num_Bla
 		if( vec.y > max_y_vec ) BMvTbl.SetVector( { y=max_y_vec, addy=0, flags=_Vector_Normal } );
 		
 		
-		if( mypos.y + vec.y + vec.addy >= attack_height && BMvTbl.GetLP(1)==0 && vec.y > attack_vec )
+		if( mypos.y + vec.y + vec.addy >= attack_height && BMvTbl.GetLP(1)==0 && vec.y > attack_vec && mvs.Param3 )
 		{
 			//Battle_Std.DrawDebugAttackInfo("emk "+mypos.y/128+" vec "+vec.y/128+" combo "+(mypos.y + vec.y + vec.addy )/128 );
 			
@@ -1782,47 +1898,9 @@ local pat_num_Eff_HaraiFire = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Harai
 
 t.test <- function( info=0 )
 {
-	Battle_Std.DrawDebugAttackInfo("shtestfnc "+info.counterhit);
+	//Battle_Std.DrawDebugAttackInfo("shtestfnc "+info.counterhit);
 }
 
-t.Mv_Obj_HanTest <-
-{
-	function Init_After()
-	{
-		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoGround|_ObjFlags_EraseParentPatChange|_ObjFlags_ParentMove|_ObjFlags_ParentMuki } );
-	}
-	function FrameUpdate_After()
-	{
-		//Battle_Std.DrawDebugAttackInfo( "ht" );
-		
-		local player = BMvCore.GetPlayerCharaData();
-		local hanteiobj = BMvEff.CCheckRect(); // オブジェクト作成
-        // 設定
-        hanteiobj.SetPlayer(); //プレイヤー情報設定
-        hanteiobj.SetSrc( [ _Hantei_Kurai, 0, -1 ] ); //自分の情報設定
-        hanteiobj.SetDst( [ _Hantei_Attack, 0, -1 ] ); //相手の情報設定
-        hanteiobj.SetFlags( _HC_EnemyObj | _HC_EnemyPc  ); //検索条件設定
-
-        while( hanteiobj.Check() != 0 ) // 見つかっている間ループ
-        {
-			Battle_Std.DrawDebugAttackInfo( "obj collide with atk" );
-			
-			if( player.push() ) 
-			{
-				
-				Battle_Std.ImpactSkill_FrameUpdate();
-				player.pop();
-			}
-			
-			local enemy = hanteiobj.GetCharaData(); // 見つかったオブジェクト取得
-			if( enemy.push() )
-			{
-				//BMvTbl.CalcHitValue(-100);
-				enemy.pop();
-			}
-        }
-	}
-}
 
 t.Mv_Skill_Sousai2 <-
 {
@@ -2593,7 +2671,7 @@ t.Mv_Skill_Sousai4 <-
 		
 		BMvTbl.SetLP(7,0);
 		
-		Battle_Std.DrawDebugAttackInfo("init" );
+		//Battle_Std.DrawDebugAttackInfo("init" );
 	}
 	function FrameUpdate_After()
 	{

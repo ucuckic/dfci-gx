@@ -253,12 +253,41 @@ local maketmpl_Skill236 = function( param={} )
 {
 	local ret_tmpl = {};
 	
-	ret_tmpl.Init_After <- function()
+	local mvparam = 
 	{
+		double_gd = 1,
+	};
+	
+	switch( param.type )
+	{
+	case "A":
+		mvparam.double_gd = 0;
+		break;
+	case "B":
+		break;
+	case "C":
+		mvparam.double_gd = 0;
+		break;
+	case "EX":
+		break;
+	}
+	
+	
+	ret_tmpl.Init_After <- function() : (mvparam)
+	{
+		if( mvparam.double_gd ) Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_DoubleGuardDamage );
 	}
 	
 	ret_tmpl.FrameUpdate_After <- function()
 	{
+	}
+	
+	ret_tmpl.HitInterrupt_After <- function()
+	{
+		if( Battle_Std.CheckDamageTiming_ExceptDownFrameID() )
+		{
+			Battle_Std.SetPosition_DamageHanteiRect( { power=50 } );		
+		}
 	}
 	
 	return ret_tmpl;
@@ -266,32 +295,24 @@ local maketmpl_Skill236 = function( param={} )
 }
 
 t.Mv_Skill_236A <- maketmpl_Skill236( { type="A" } );
-t.Mv_Skill_236B <- 
+t.Mv_Skill_236B <- maketmpl_Skill236( { type="B" } );
+
+t.Mv_Skill_236B.FrameUpdate_After <- function()
 {
-	function FrameUpdate_After()
+	// ループするのアレなので２回目以降は弱いのにする
+	local mvs = BMvTbl.GetMvStatus();
+	if( mvs.FrameID == 100 )
 	{
-		// ループするのアレなので２回目以降は弱いのにする
-		local mvs = BMvTbl.GetMvStatus();
-		if( mvs.FrameID == 100 )
+		if( BMvTbl.HitPat_Check( { num = -1 } ) )
 		{
-			if( BMvTbl.HitPat_Check( { num = -1 } ) )
-			{
-				BMvTbl.JumpFrameID( 120 );
-			}
+			BMvTbl.JumpFrameID( 120 );
 		}
 	}
+	
 }
+
 t.Mv_Skill_236C <- maketmpl_Skill236( { type="C" } );
-t.Mv_Skill_236EX <- 
-{
-	function HitInterrupt_After()
-	{
-		if( Battle_Std.CheckDamageTiming_ExceptDownFrameID() )
-		{
-			Battle_Std.SetPosition_DamageHanteiRect( { power=50 } );		
-		}
-	}
-}
+t.Mv_Skill_236EX <- maketmpl_Skill236( { type="EX" } );
 
 t.Mv_FireBall_236 <- {};
 t.Mv_FireBall_236_Land <- {};
@@ -585,6 +606,8 @@ t.Mv_Skill_214C <-
 	function FrameUpdate_After()
 	{
 		Battle_Std.SetPattern_NotHoldButton( { ButtonMask=(1<<2), CheckFrameID=50, EndFrameID=60, SetPattern=195 } ); // ボタンホールドしてなかったらパターンジャンプ
+		
+		if( Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_ExtendAction ) ) Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_DoubleGuardDamage );
 	}
 	function HitInterrupt_After() : (func_CheckExtendCounter)
 	{

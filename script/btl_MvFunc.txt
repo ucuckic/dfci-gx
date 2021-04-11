@@ -890,6 +890,59 @@ Battle_Std.AttackImpact_StdFunc <- function(info)
 			// _dp("\n カウンターヒット回数加算");
 			tDDC.Jem_AddCount( _JemCheckType_Ex + Def_PTNT_CounterHit ); // カウンターヒット回数加算
 		}
+		
+		local nageHitDageki = ( !Nage && Battle_Std.CheckEnemyisCapture() );
+		if( info.type & _HitType_Damage && !nageHitDageki )
+		{
+			_dp("\n 始動でヒットした");
+			Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_SidouHitSkill ); // 始動であてた技フラグをたてる
+			
+			// 孫まで見る（無限は怖いので、かつ軽くしたいので適当でいいよ）
+			local oya = BMvCore.GetParentCharaData();
+			if( oya.isdone() )
+			{
+				_dp("\n 親がいるので飛び道具とかのヒット");
+				
+				if( BMvTbl.CheckMvUniqueID( { datatype=_DataType_Player  } ) != 0 )
+				{
+					local player = BMvCore.GetPlayerCharaData();
+					if( player.push() )
+					{
+						_dp("\n プレイヤーが自分自身発生させた行動中");
+						Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_SidouHitSkill ); // 始動であてた技フラグをたてる
+						
+						player.pop();
+					}
+				}
+				else if( BMvTbl.CheckMvUniqueID( { datatype=_DataType_Parent } ) != 0 )
+				{
+					if( oya.push() )
+					{
+						Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_SidouHitSkill ); // 始動であてた技フラグをたてる
+						
+						if( !oya.isPlayer() )
+						{
+							local sofubo = BMvCore.GetParentCharaData();
+							if( sofubo.isdone() )
+							{
+								_dp("\n さらに親がいるので飛び道具とかのヒット");
+								
+								if( BMvTbl.CheckMvUniqueID( { datatype=_DataType_Parent } ) != 0 )
+								{
+									if( sofubo.push() )
+									{
+										Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_SidouHitSkill ); // 始動であてた技フラグをたてる
+										
+										sofubo.pop();
+									}
+								}
+							}
+						}
+						oya.pop();
+					}
+				}
+			}
+		}
 	}
 	
 	if( GRDBreak )
@@ -1058,7 +1111,7 @@ Battle_Std.DamageImpact_StdFunc <- function(info) : (set_DefenseMissEffect, set_
 	local GuardOK = ( StdGuard || AirGuard || CroGuard );
 	
 	local Guard = ((info.flags&_ImpactFlag_IsGuard)!=0);
-	local Yarare = (((info.flags&_ImpactFlag_IsBound)!=0)&&!Guard);
+	local Yarare = (((info.flags&_ImpactFlag_IsBound)!=0)&&!Guard); //Def_ImpactFlag_IsBound_Old
 
 	local Syodan = (!Yarare);
 	local SyodanGuard = (!Guard);
@@ -6831,7 +6884,7 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 				// あってもややシビアなレベル
 				BMvTbl.SetCommandLongDelay(2); //受付時間増加（先行入力用）
 				
-				if( NoCan_Clash ) BMvTbl.SetAsStatusFlag( { normal=_CancelFlag_None, special=_CancelFlag_None, time=254, flag=_ClearFlag_ChangeMv } );
+				//if( NoCan_Clash ) BMvTbl.SetAsStatusFlag( { normal=_CancelFlag_None, special=_CancelFlag_None, time=254, flag=_ClearFlag_ChangeMv } );
 				
 				enemy.pop();
 			}
@@ -6845,12 +6898,12 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 			local hitstop_f = 24; // 両者が止まる時間停止（ヒットストップのようなもの）
 			local pride_win = 0; // 得意属性に打ち勝ったかどうか
 			
-			local eff_color = 0;
+			local eff_color = 0x008000;
 			
 			if( NoCan_Clash )
 			{
 				pride_win = 1;
-				eff_color = 0xff0000;
+				//eff_color = 0xff0000;
 			}
 			
 
@@ -6896,7 +6949,9 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 				
 				if( pride_win )
 				{
-					if( !NoCan_Clash ) eff_color = 0x008000;
+					//if( !NoCan_Clash ) eff_color = 0x008000;
+					
+					eff_color = 0x008000;
 					// 相手のヒットストップを増やす
 					if( enemy.push() )
 					{
@@ -6906,6 +6961,7 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 					}
 					
 					BMvEff.AttackInfoString_Set({ word="PRIDE WIN" } );
+					BMvTbl.SetMuki( _Direction_Auto ); //unbalanced
 				}
 			}
 			
@@ -9477,7 +9533,11 @@ Battle_Std.DrawHitBoxes_Outlined <- function()
 
 Battle_Std.SetNoRender_CockpitView <- function()
 {
+	local rs = BMvTbl.GetMvRoundStatus();
 	local cpv = BMvEff.Cockpit_SetView({ mode=-1 });
+	
+	//Battle_Std.DrawDebugAttackInfo("rnd "+rs.CharaMoveMode  ); 
+	
 	if( !cpv )
 	{
 		BMvEff.SetObjectFlags( { flags=_ObjFlags_NoRender } );
@@ -9639,6 +9699,21 @@ Battle_Std.SetEnemyBoundMuteki <- function(_bsnum, _flag)
 		
 		eff.pop();
 	}
+}
+
+
+Battle_Std.GetOyaLP <- function(_slot)
+{
+	local p = BMvCore.GetParentCharaData(); // 親の情報を得る
+	if( p.push() )
+	{
+		local ret_lp = BMvTbl.GetLP(_slot); // ステータス取得
+		p.pop();
+		
+		return ret_lp;
+	}
+		
+	return -256;
 }
 
 
