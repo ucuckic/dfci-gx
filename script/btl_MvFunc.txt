@@ -9701,6 +9701,17 @@ Battle_Std.SetEnemyBoundMuteki <- function(_bsnum, _flag)
 	}
 }
 
+Battle_Std.AddEnemyUkemiTime <- function(_time)
+{
+	local enemy = BMvCore.GetNearEnemyCharaData();
+	if( enemy.push() )
+	{
+		BMvTbl.AddUkemiTime( _time );
+		
+		enemy.pop();
+	} 
+}
+
 
 Battle_Std.GetOyaLP <- function(_slot)
 {

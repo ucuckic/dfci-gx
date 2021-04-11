@@ -313,10 +313,10 @@ t.Mv_Null_DownLaunchCheck <-
 					local enemy = hanteiobj.GetCharaData(); 
 					if( enemy.push() )
 					{
-						//Battle_Std.DrawDebugAttackInfo("mc2 "+ignore_down+" atk "+atk );
+						Battle_Std.DrawDebugAttackInfo("mc2 "+ignore_down+" atk "+atk );
 						if( atk && ignore_down ) 
 						{
-							//Battle_Std.DrawDebugAttackInfo("P "+igd);
+							Battle_Std.DrawDebugAttackInfo("P "+igd);
 							BMvTbl.SetDownStatus(0);
 						}
 						
@@ -853,9 +853,6 @@ t.Mv_Atk_StdA <-
 {
 	function Init_After() : (bgm_array_array,draw_Effect)
 	{
-		local rs = BMvTbl.GetMvRoundStatus();
-		//Battle_Std.DrawDebugAttackInfo("emk "+rs.Round );
-		
 		//Battle_Std.GuardGauge.CreateGaugeObject();
 		
 		//BMvEff.SetPaletteSlot( 1, 0 );
@@ -932,13 +929,9 @@ t.Mv_Atk_StdA <-
 	function HitInterrupt_After()
 	{
 		if( Battle_Std.CheckDamageTiming() )
-		{	
-			local enemy = BMvCore.GetEnemyCharaData();
-			if( enemy.push() )
-			{
-				//Battle_Std.DrawDebugAttackInfo("emk "+BMvTbl.AddUkemiTime(-10000) ); 
-				enemy.pop();
-			}
+		{
+			
+
 		}
 
 	}
@@ -1015,12 +1008,7 @@ t.Mv_Atk_CroA <-
 {
 	function Init_After()
 	{
-		local enemy = BMvCore.GetEnemyCharaData();
-		if( enemy.push() )
-		{
-			BMvTbl.AddUkemiTime(20);
-			enemy.pop();
-		}
+
 	}
 	function FrameUpdate_After() : (func_CreateBlade, pat_num)
 	{
@@ -1555,6 +1543,13 @@ t.Mv_Obj_236Bakuha <-
 		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );
 		Battle_Std.SetPos_MarkingEnemy();
 	}
+	function HitInterrupt_After()
+	{
+		if( Battle_Std.CheckDamageTiming() )
+		{
+			//Battle_Std.AddEnemyUkemiTime(12000);
+		}
+	}
 }
 
 
@@ -1863,7 +1858,7 @@ local maketmpl_Skill214 = function( tbl={} ) : (pat_num_BladeJ214EX, pat_num_Bla
 		if( vec.y > max_y_vec ) BMvTbl.SetVector( { y=max_y_vec, addy=0, flags=_Vector_Normal } );
 		
 		
-		if( mypos.y + vec.y + vec.addy >= attack_height && BMvTbl.GetLP(1)==0 && vec.y > attack_vec && mvs.Param3 )
+		if( mypos.y + vec.y + vec.addy >= attack_height && BMvTbl.GetLP(1)==0 && vec.y > attack_vec )
 		{
 			//Battle_Std.DrawDebugAttackInfo("emk "+mypos.y/128+" vec "+vec.y/128+" combo "+(mypos.y + vec.y + vec.addy )/128 );
 			
@@ -1898,7 +1893,7 @@ local pat_num_Eff_HaraiFire = BMvEff.GetPatternNum( { datatype=0, pat="Eff_Harai
 
 t.test <- function( info=0 )
 {
-	//Battle_Std.DrawDebugAttackInfo("shtestfnc "+info.counterhit);
+	Battle_Std.DrawDebugAttackInfo("shtestfnc "+info.counterhit);
 }
 
 
@@ -1998,6 +1993,13 @@ t.Mv_Skill_Sousai2Add_Hit <-
 		local cap_chara = BMvCore.GetCaptureCharaData();
 		if( cap_chara.isdone() )
 		{
+			local f_dist;
+			if( cap_chara.push() )
+			{
+				f_dist = Battle_Std.GetBackCornerDistance();
+				cap_chara.pop();
+			}
+			
 			local posst = BMvEff.GetPointStatus( { target=cap_chara } );
 			posst.distance_x -= (99<<7); // 手の位置から開始なので距離を減らす
 			if( posst.distance_x < 16384 ) posst.distance_x = 16384;
@@ -2008,6 +2010,8 @@ t.Mv_Skill_Sousai2Add_Hit <-
 			vec.y = vec.y * ( posst.distance_x / vec.x );
 			vec.x = posst.distance_x;
 			local pos = { x=99+(vec.x>>7), y=-277+(vec.y>>7)+200 };
+			
+			//if( f_dist <= 16384 ) pos.x -= 128
 			
 			//掴む座標記憶
 			BMvTbl.SetLP(0, pos.x );
@@ -2670,8 +2674,6 @@ t.Mv_Skill_Sousai4 <-
 		BMvTbl.SetVirtualGuardFlag( { val=15, time=30, flag=_ClearFlag_ChangeMv } ); // 特殊判定15を空振りガード判定にする
 		
 		BMvTbl.SetLP(7,0);
-		
-		//Battle_Std.DrawDebugAttackInfo("init" );
 	}
 	function FrameUpdate_After()
 	{
