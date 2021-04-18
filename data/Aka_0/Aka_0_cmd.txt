@@ -238,6 +238,8 @@ local t =
 
 	
 	Atk_Std6C = { num = def_CN_Atk_StdC-1 },
+	Std_AirDash_F = 0,
+	Std_AirDash_B = 0,
 	
 	Std_Throw_F = { command = ["4+C"] },
 	
@@ -309,12 +311,22 @@ local ar =
 	},
 	{
 		CheckMoveName="Mv_Atk_StdC",
-		UpdateMoveName="Mv_Skill_Sousai",
-		ResetTmplName="Std_Atk_StdC",
+		UpdateMoveName="Mv_Atk_CroC",
+		ResetTmplName="Std_Atk_StdB"
+	},
+	{
+		CheckMoveName="Mv_Atk_CroC",
+		UpdateMoveName="Mv_Atk_Std6C",
+		ResetTmplName="Mv_Atk_CroC"
+	},
+	{
+		CheckMoveName="Mv_Atk_Std6C",
+		UpdateMoveName="Mv_Skill_214C",
+		ResetTmplName="Mv_Atk_Std6C",
 		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
 	},
 	{
-		CheckMoveName="Mv_Skill_Sousai",
+		CheckMoveName="Mv_Skill_214C",
 		UpdateMoveName="Mv_Skill_214EX",
 		ResetTmplName="Skill_Sousai",
 		CmdCheck = 
@@ -322,7 +334,7 @@ local ar =
 			SkillType = "ExSpecial",
 			HitStatus="Damage",
 			Cost = { ComboGauge = 10000 },
-			FrameIDCheck = { Only = [300,400] },
+			//FrameIDCheck = { Only = [300,400] },
 		}
 	},
 ]
@@ -342,12 +354,22 @@ local ar =
 	},	
 	{
 		CheckMoveName="Mv_Atk_StdC",
-		UpdateMoveName="Mv_Skill_Sousai",
-		ResetTmplName="Std_Atk_StdC",
-		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteerCro, //スマートステアアナウンスの追加
+		UpdateMoveName="Mv_Atk_CroC",
+		ResetTmplName="Std_Atk_StdB"
 	},
 	{
-		CheckMoveName="Mv_Skill_Sousai",
+		CheckMoveName="Mv_Atk_CroC",
+		UpdateMoveName="Mv_Atk_Std6C",
+		ResetTmplName="Mv_Atk_CroC"
+	},
+	{
+		CheckMoveName="Mv_Atk_Std6C",
+		UpdateMoveName="Mv_Skill_214C",
+		ResetTmplName="Mv_Atk_Std6C",
+		CmdTmplFlags=def_CMDFlags_AnnounceSmaetSteer, //スマートステアアナウンスの追加
+	},
+	{
+		CheckMoveName="Mv_Skill_214C",
 		UpdateMoveName="Mv_Skill_214EX",
 		ResetTmplName="Skill_Sousai",
 		CmdCheck = 
@@ -355,9 +377,9 @@ local ar =
 			SkillType = "ExSpecial",
 			HitStatus="Damage",
 			Cost = { ComboGauge = 10000 },
-			FrameIDCheck = { Only = [300,400] },
+			//FrameIDCheck = { Only = [300,400] },
 		}
-	},	
+	},
 ]
 Battle_Std.MakeStdCombo( t, ar, 1 );
 

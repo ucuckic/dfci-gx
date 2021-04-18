@@ -9,4 +9,7 @@ Battle_Status <-
 
 }
 
+	
+Battle_Status.CP_VecMinus_Ground <- [];
+
 Battle_Std.InsertTable( Battle_Status, Battle_Std.GetStd_BattleStatusTable() ); //デフォルト
