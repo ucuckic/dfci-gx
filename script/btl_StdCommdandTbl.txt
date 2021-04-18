@@ -126,7 +126,7 @@ if( Def_Rule_GameSystem == Def_RGS_CLI )
 	{
 		num = def_CN_ComboBlast, name = "Cmd_ComboBlast", command = "A+B+C",
 		flags = [ "lastdelay" ],
-		CmdCheck = { SkillType = "ExSpecialDouji", PosState="Always", MvCheck = { Fail = ["Mv_ComboBlast","Mv_ComboBlastFall"] },
+		CmdCheck = { SkillType = "BlastDouji", PosState="Always", MvCheck = { Fail = ["Mv_ComboBlast","Mv_ComboBlastFall"] },
 		CommandButton = def_PP_CBS_ButtonA|def_PP_CBS_ButtonB|def_PP_CBS_ButtonC },
 		CmdBeforeStdFunc = function()
 		{

@@ -171,6 +171,7 @@ _dp1p("\n[btl_ChrParamFunc] -> end");
 	chrparam.Param[type][Def_ChrNo_Krk] = 0;
 	chrparam.Param[type][Def_ChrNo_Yuk] = 0;
 	chrparam.Param[type][Def_ChrNo_Ako] = 0;
+	chrparam.Param[type][Def_ChrNo_Aka] = 0;
 }
 
 {	// バックダッシュ時によびだすＭｖ定義

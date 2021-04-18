@@ -611,10 +611,11 @@ local maketmpl_Skill623 = function( param={} )
 	
 	local mvparam = 
 	{
-		land_f = 8,
+		land_f = 0,
 		vec_param = { x=1400, y=-3500, addy=300, flags=_Vector_Normal },
 		
 		eff_sety = -170,
+		max_x = 0,
 	}
 	
 	switch( param.type )
@@ -623,10 +624,12 @@ local maketmpl_Skill623 = function( param={} )
 
 		break;
 	case "B":
-		mvparam.vec_param = { x=2700, y=-3800, addy=300, flags=_Vector_Normal };
+		mvparam.vec_param = { x=4000, y=-3800, addy=300, addx=-150, flags=_Vector_Normal };
+		mvparam.max_x = 1500;
 		break;
 	case "C":
 		mvparam.vec_param = { x=1600, y=-4800, addy=250, flags=_Vector_Normal };
+		mvparam.land_f = 8;
 		break;
 	case "EX":
 		mvparam.vec_param = { x=1400, y=-3500, addy=400, flags=_Vector_Normal },
@@ -672,13 +675,6 @@ local maketmpl_Skill623 = function( param={} )
 				}
 			}
 		}
-		
-		if( BMvTbl.GetLP(2)==1 ) 
-		{
-			//BMvTbl.SetMoveableFlag( { move=0, time=mvparam.land_f, flag=_ClearFlag_ChangeMv } );
-			
-			BMvTbl.SetLP(2,2);
-		}
 	}
 	
 	ret_tmpl.FrameUpdate_After <- function() : (mvparam,param)
@@ -691,6 +687,7 @@ local maketmpl_Skill623 = function( param={} )
 			BMvTbl.SetVector( mvparam.vec_param );
 			Battle_Std.CreateObject.CommonEffect.SupecialJump({ x=45, y=-180, });
 			
+			BMvTbl.SetVector_MaxX( mvparam.max_x );
 			break;
 		case 6:
 			Battle_Std.CreateObject.CommonEffect.SupecialGroundDash({ x=-45, y=0, });
@@ -723,10 +720,9 @@ local maketmpl_Skill623 = function( param={} )
 			break;
 		}
 		
-		if( mvs.isLanding ) 
+		if( mvs.isLanding && mvparam.land_f ) 
 		{
-			BMvTbl.SetLP(2,1);
-			
+			BMvTbl.SetMoveableFlag( { move=0, time=mvparam.land_f, flag=_ClearFlag_ChangeMv } );
 		}
 		
 		if( BMvTbl.GetLP(1)==0 && param.type=="EX" )

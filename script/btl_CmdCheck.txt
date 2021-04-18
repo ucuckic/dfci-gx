@@ -127,7 +127,20 @@ function Battle_Std::CmdCheck( t ) : (check_DoujiButton)
 				DoujiCheck_none = 1;
 			}
 		}
-		break;				
+		break;
+	case "BlastDouji":	//EX IWE関係でしか使ってない
+		if( (BMvTbl.GetPP( def_PP_NoneDouji ) == 0) && (BMvTbl.GetPP( def_PP_SpecialDouji ) == 0) && (BMvTbl.GetPP( def_PP_ExSpecialDouji ) == 0) && ( BCMDTbl.CheckCancel( _SkillType_ExSpecial ) == 0 && BCMDTbl.CheckCancel( _SkillType_ChainShift ) == 0 ) ) return 0;
+		if( check_CancelNone == 0 && check_DoujiButton( button_mask ) == 0 && ( BCMDTbl.CheckCancel( _SkillType_ExSpecial ) == 0 && BCMDTbl.CheckCancel( _SkillType_ChainShift ) == 0 ) ) return 0; // 同時押しで強引に出していいボタンのコマンドか
+		if( flag_gen_DoujiCheck )
+		{
+			DoujiCheck_special = 1; //同時押しチェックあります
+			DoujiCheck_exspecial = 1; //同時押しチェックあります	
+			if( check_CancelNone != 0 ) // 通常技以下レベル（行動可能のときだけ可）
+			{
+				DoujiCheck_none = 1;
+			}
+		}
+		break;		
 	case "None":	//無し(キャンセルから出せない技) 行動可能時のみ出せる
 		if( check_CancelNone == 0 ) return 0;
 		DoujiCheck_none = 1; //同時押しチェックあります

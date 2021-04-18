@@ -1,6 +1,8 @@
 //コマンドテーブル skillは格ゲーコマンド表記
 btl_debPrint2("\n[_cmd.txt]");
 
+const CDef_Kur_PP_HeatGauge = 7;
+
 local t =
 {
 	MultiJump_F = { CmdCheck = { HeightLimit = def_POS_AirDashLimitHeight, }	},
@@ -35,6 +37,7 @@ local t =
 		CmdCheck = { SkillType = "ExSpecial", MvCheck={ SkillFail="Mv_Skill_0202A" }, CommandButton = def_PP_CBS_ButtonA },
 		UpdateTable = { name = "Mv_Skill_0202A", }
 	},
+	
 	Skill_0202B_EX = 
 	{
 		function CmdBeforeStdFunc()
@@ -58,6 +61,7 @@ local t =
 		CmdCheck = { SkillType = "ExSpecial", MvCheck={ SkillFail="Mv_Skill_0202B" }, CommandButton = def_PP_CBS_ButtonB },
 		UpdateTable = { name = "Mv_Skill_0202B", }
 	},
+	
 	Skill_0202C_EX = 
 	{
 		function CmdBeforeStdFunc()

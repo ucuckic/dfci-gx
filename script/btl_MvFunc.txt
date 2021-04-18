@@ -6611,11 +6611,13 @@ Battle_Std.UseGRDStock <- function( cost, enemyadd=0 )
 // FrameUpdateで設定する
 Battle_Std.SetHitMuteki <- function( _paramno = 1, _num = 8, _flag=_HitCheckFlag_Head )
 {
-	if( BMvTbl.GetFrameParam( _paramno ) == _num )
+	if( BMvTbl.GetFrameParam( _paramno ) & _num )
 	{
 		// _dp("\n[無敵中です]"+_flag);
 		BMvTbl.SetHitCheckFlag( { type=0, val=_flag , time=16, flag=_ClearFlag_ChangeFrame  } ); // 無敵
+		return 1;
 	}
+	return 0;
 }
 
 
@@ -6786,9 +6788,11 @@ Battle_Std.Sousai.Set <- function( _etcHantei=0, _CheckFlags=0 )
 	// キャラの攻撃出現を0にしておけば大丈夫だけど、リープがダメ（元々これを直すために-1しないようにしたので、現状は×）
 	// 攻撃判定が出ている時の相殺判定を消したので発生しなくなったので解決
 	
-	if( _CheckFlags )
+	local hitcheck = BMvTbl.GetHitCheckFlag(0);
+	
+	if( _CheckFlags && hitcheck&_CheckFlags ) //if our hitmuteki aligns with the checking muteki
 	{
-		BMvTbl.SetAtkCatchFlag( { hantei=_etcHantei, catch_flags=_CatchFlag_AtkAllGuard, success_flags=_CatchSuccess_HitSub|_CatchSuccess_HitSub_Enemy|_CatchSuccess_FlagHit_Enemy, time=1, flag=_ClearFlag_ChangeMv } );
+		BMvTbl.SetAtkCatchFlag( { hantei=_etcHantei, catch_flags=_CatchFlag_AtkAllGuard|_CatchFlag_HitCheckFlag, success_flags=_CatchSuccess_HitSub|_CatchSuccess_HitSub_Enemy|_CatchSuccess_FlagHit_Enemy, time=1, flag=_ClearFlag_ChangeMv } );
 	}
 	else
 	{
@@ -6898,7 +6902,7 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 			local hitstop_f = 24; // 両者が止まる時間停止（ヒットストップのようなもの）
 			local pride_win = 0; // 得意属性に打ち勝ったかどうか
 			
-			local eff_color = 0x008000;
+			local eff_color = 0x000000;
 			
 			if( NoCan_Clash )
 			{
@@ -7012,6 +7016,17 @@ Battle_Std.Sousai.HitInterrupt <- function( param={} ) : (useHP)
 			// 相殺成功状態を消す。これをしないと何度もヒットインタラプト入ってくる
 			BMvTbl.ClearHitStatus(); //ヒット情報初期化（ヒット情報が消えるのでキャンセルとかに影響がある）
 			// BMvTbl.ClearHitInterrupt(); // ヒットインタラプトに入るのだけ無くす(次の相殺や攻撃ヒットはちゃんと入る)
+			
+			if( enemy.push() )
+			{
+				// _dp(" -> 攻撃判定が重なっている" );
+				//BMvEff.SetPlayerTimer( { muteki_nage=2, muteki_dage=2 } );
+				//BMvTbl.SetHitStop( 1, _ValAdd );
+				
+				enemy.pop();
+			}
+			
+			//BMvTbl.CalcHitValue( BMvTbl.GetLP(7) );
 			
 			return mvhs; // ヒットステータスを返す
 		}
@@ -8269,13 +8284,17 @@ Battle_Std.ImpactSkill_Init <- function( _AddSkillCount = 1 )
 	
 	Battle_Std.MoveCodeEx.AddFlag( 1, def_MC1_AtkImpact ); // インパクトスキル
 	
-	if( _AddSkillCount) tDDC.SkillCountPlus(_SkillCount_ImpactSkill); // CLI用履歴カウンタを加算「インパクトスキル」
+	if( _AddSkillCount ) tDDC.SkillCountPlus(_SkillCount_ImpactSkill); // CLI用履歴カウンタを加算「インパクトスキル」
 	
 }
 
 Battle_Std.ImpactSkill_FrameUpdate <- function(_CheckFlags=0)
 {
+	local hv = BMvTbl.CalcHitValue(0);
+	
 	Battle_Std.Sousai.FrameUpdate(0, _CheckFlags); // 相殺回数が残っていたら再度相殺可能状態にする
+	
+	BMvTbl.SetLP(7,hv);
 }
 
 Battle_Std.ImpactSkill_HitInterrupt <- function( _pride = 0 )
@@ -9203,6 +9222,138 @@ Battle_Std.CheckParamFlags <- function( paramNum, checkFlag )
 	}
 	if( useParam&checkFlag ) return 1;
 	return 0;
+}
+
+//壁チェックを無くした超技のあとに使う（超技以外で使うと、ヴォーパルの湯気とか色々ダメだと思う）
+//キャラが行ける限界内にカメラ座標を動かして、両者の座標も相対的に動かす
+//キャラを動かすのでエフェクトとか飛び道具が出ているとダメなので注意
+Battle_Std.SetBothCharaInStagePosition <- function()
+{
+	//向きで判断するんじゃなくて、左右どちらの端が近いかで判断する
+	local pos = BMvTbl.GetPosition(0);
+	local muki = ( pos.x > 0 )? 1 : -1;
+	
+	local crect = BMvEff.GetCameraRect( { flags=_GetPos_TrueCamera } );
+	local stage_corner = ( muki == 1 )? def_POS_GamenHajiX : -def_POS_GamenHajiX;//A
+
+	//def_POS_GamenHajiXはキャラが行ける限界値なので、カメラはもうちょい外にある（def_POS_GamenGaiYuuyoX）
+	local camera_corner = ( muki == 1 )? crect.ex - def_POS_GamenGaiYuuyoX : crect.sx + def_POS_GamenGaiYuuyoX;//B
+	local camera_zure = stage_corner - camera_corner;//これだけキャラが行ける限界座標をカメラが超えている
+	
+	if( camera_zure*muki < 0 )
+	{
+		local cpos = BMvEff.GetCameraPosition( { x=0, y=0, flags=_GetPos_ViewCamera | _GetPos_NoMuki } );
+		
+		BMvEff.SetCamera_Focus( { x=cpos.x+camera_zure, y=cpos.y, time=[0,0,0] } );
+		
+		BMvTbl.SetPosition( { x=camera_zure, flags=_Position_Add } );
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			BMvTbl.SetPosition( { x=camera_zure, flags=_Position_Add } );
+			enemy.pop();
+		}
+		//次のフレームにカメラ位置をリセットする
+		BMvEff.CreateObject( { datatype=1, mvname="Mv_Null_NextFrameResetViewCamera" } );
+	}
+}
+
+//判定の左上座標を取得
+Battle_Std.GetPoint <- function( param={} )
+{
+	local pot = { x=_Hantei_Error, y=_Hantei_Error };
+	local rc = BMvEff.GetHanteiRect( { check=param.rect, flags=0 } );
+	local muki = BMvTbl.GetMuki();
+	
+	if( rc.sx != _Hantei_Error )
+	{
+		pot.x = ( muki == 1 )? rc.sx : rc.ex;
+		pot.y = rc.sy;
+	}
+	return pot;
+}
+
+// ミカの214EXやリンネの63214EXなど
+// 何もしないでもジャンプする技に対して、距離が遠いときに少しジャンプ力を増やしてセットする関数
+// ジャンプ力が減ることはない
+// seachDistance : チェックする距離
+// vec.addy : 
+// vec.x : 
+// flags : (1<<0) : 高さは変えない
+Battle_Std.SetVector_SeachJump <- function( param={} )
+{
+	local flags = ("flags" in param)? param.flags : 0;
+	local min_frame = ("min_frame" in param)? param.min_frame : 8;
+	local max_frame = ("max_frame" in param)? param.max_frame : 20;
+	
+	local edis = Battle_Std.GetEnemyDistance();
+	if( edis > param.seachDistance ) edis = param.seachDistance;
+	local vec = BMvTbl.GetVector();
+	if( vec.addy == 0 ) vec.addy = param.vec.addy; // 適当div0
+	if( vec.x == 0 ) vec.x = param.vec.x; // 適当div0
+	
+	local landFra = -vec.y * 2 / vec.addy;
+	if( landFra <  min_frame ) landFra =  min_frame;
+	if( landFra > max_frame ) landFra = max_frame;
+	
+	local xVec = edis / landFra;
+	local yVec = vec.y;
+	if( xVec > vec.x )
+	{
+		//
+		local jumpPow = xVec * 100 / vec.x; // ジャンプ距離増加倍率
+		// 倍率が多い時はすこしジャンプの高さもあげて、着地までの時間を遅くする？
+		// その分遠くまで飛ぶんだけど、それを補正かけると、今度は境目が微妙では？大丈夫か？
+		
+		local par = 35; // これが0だと着地まで同じ、100だと倍率分遅くなる
+		local jumpParCalc = ( 100 + ((jumpPow-100)*par/100) );
+		if( jumpParCalc == 0 ) jumpParCalc = 1; // div0
+
+		xVec = xVec * 100 / jumpParCalc;
+		if( !(flags&(1<<0)) ) yVec = yVec * jumpParCalc / 100;
+		
+		BMvTbl.SetVector( { x=xVec, y=yVec, flags=_Vector_Normal } );
+		// _dp("\n 着地まで:"+landFra+" Vec:"+xVec+","+yVec+" jumpPow:"+jumpPow );
+	}
+	// 近いからっていってジャンプが弱くなることはない
+}
+
+//キャッチ判定での当身成功時、とったものが飛び道具だったときの処理
+//当身成功後のHitInterrupt内で呼び出す
+//hit_status : 弾と親に伝えるヒットストップ（ BMvTbl.MvHitStatus() ）
+Battle_Std.SetFireBallFlags_InAtemiHitInterrupt <- function( param={} )
+{
+	// 取られ側
+	local ene = BMvCore.GetLastHitCharaData(0); // 当て身で入ってくるのは「LastHitChara」なので注意 0なのでそのまま相手
+	if( ene.push() )
+	{
+		BMvTbl.CalcHitValue(-1); //残りヒット数を１減らす
+		BMvTbl.SetMvHitStatus( param.hit_status ); // ヒットストップとか設定
+		
+		// 飛び道具の時の処理
+		local ets = Battle_Std.GetFireBallStatus(); //飛び道具ステータス取得
+		local e_mvcode = BMvTbl.GetMoveCode();
+		
+		//_dp("\n "+ets.isSousaiObj + ", "+ets.HitCount +", "+ets.isFireBall );
+		if( e_mvcode&def_MC_Sousai && ets.HitCount <= 0 )
+		{
+			if( ets.isFireBall ) //飛び道具なら自動で消滅フラグまで立てる
+			{
+				Battle_Std.SetFireBallFlags(def_BallFlags_Finalize); //次回ファイナライズしてね
+			}
+		}
+		// とったオブジェクトの親が操作親じゃない場合はそれにもヒットストップをかける
+		local oya = BMvCore.GetParentCharaData();
+		if( oya.isdone() && oya.isPlayer()==0 )
+		{
+			if( oya.push() )
+			{
+				BMvTbl.SetMvHitStatus( param.hit_status ); // ヒットストップとか設定
+				oya.pop();
+			}
+		}
+		ene.pop();
+	}
 }
 
 

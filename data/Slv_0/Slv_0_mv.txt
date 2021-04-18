@@ -300,6 +300,8 @@ t.Mv_Atk_CroC <-
 	function Init_After()
 	{
 		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
+		
+		Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_IgnoreDownStatus );
 	}
 	function FrameUpdate_After()
 	{
@@ -860,6 +862,8 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 		} 
 		
 		//Battle_Std.DrawDebugAttackInfo( "ini "+BMvTbl.GetMvName()+" lp "+BMvTbl.GetLP(0) );
+		
+		//Battle_Std.MoveCodeEx.AddFlag( 3, 123 );
 	}
 	
 	local call_WarpZanzou = function() : (mvparam)
@@ -971,6 +975,7 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 			{
 				if( BMvTbl.CheckFurimuki() )
 				{
+					local eff = BMvEff.CreateObject( { mvname="Mv_Null_BackStepEff", x=150, flags=_Position_ToolShift } );
 					
 					BMvTbl.SetMuki( _Direction_Auto );
 					BMvTbl.SetPattern( "J214_End" );
@@ -1006,6 +1011,8 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 		
 		if( Battle_Std.CheckDamageTiming() && mvparam.hit_shift )
 		{
+			Battle_Std.DrawDebugAttackInfo("mvc3 "+BMvTbl.GetMoveCodeEx( 3 ) ); 
+			
 			local epos = Battle_Std.GetEnemyPosition();
 			local s_dist = Battle_Std.GetFrontStageDistance();
 			
@@ -1018,7 +1025,7 @@ local maketmpl_SkillWarpAtk = function( param={} ) : (func_WarpEndFade)
 			
 			local haji_dif = ( abs(epos.x) - def_POS_GamenHajiX )/128
 			
-			Battle_Std.DrawDebugAttackInfo( haji_dif );
+			//Battle_Std.DrawDebugAttackInfo( haji_dif );
 			
 			if( haji_dif <= -320 )
 			{		
@@ -1124,9 +1131,13 @@ local maketmpl_SkillAirWarpAtk = function( param={} ) : (func_WarpEndFade)
 		{
 			if( mvs.isLanding && BMvTbl.CheckFurimuki() )
 			{
+				local eff = BMvEff.CreateObject( { mvname="Mv_Null_BackStepEff", x=150, flags=_Position_ToolShift } );
 				
-				BMvTbl.SetMuki( _Direction_Auto );
+				BMvTbl.SetMuki( _Direction_Reverse );
 				BMvTbl.SetPattern( "J214_End" );
+				
+									
+				//Battle_Std.AddEnemyUkemiTime(15);
 				
 				func_WarpEndFade();
 			}

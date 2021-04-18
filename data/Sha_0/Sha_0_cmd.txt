@@ -101,41 +101,41 @@ local t =
 	Skill_41236SP = {},
 	Skill_63214SP = {},
 	
+	/*
 	Std_AirDash_F =
 	{ //-------------------------------
-		num = def_CN_Assault_Air, name = "Cmd_AirDash_F", command = [ "0606@N,255@@L,10@@D,12@" ], // 0606@N,255@@L,10@@D,12@
-		CmdBeforeStdFunc = function()
+		num = def_CN_Assault_Air, name = "Cmd_AirDash_F", posstatus=_PosState_Air, command = [ "0606@N,255@@L,10@@D,12@" ], // 0606@N,255@@L,10@@D,12@
+		
+		Check = function()
 		{
-			if( BMvTbl.AddAirCount( def_ACS_AirDash, 0 ) > 0 ) return 0; // 空中ダッシュを使ってた
-			if( Battle_Std.GS_CheckFlag( def_PP_GS_NoAct_Move ) ) return 0;
-			if( Battle_Std.CancelCheck_SpecialSkill()==0 ) return 0;
+			local pmvn = BMvTbl.GetMvName();
 			
-			if( BMvTbl.CheckCommandString( [ "236" ] ) )
+			local checktbl1 =
 			{
-				Battle_Std.DrawDebugAttackInfo( "236" );
-				
-				BMvTbl.SetCommandFailTime( { command=def_CN_Assault_Air, time=15 } );
-				
-				if( BMvTbl.CheckCommandString( [ "5656" ] ) ) 
-				{
-					Battle_Std.DrawDebugAttackInfo( "0606 under 236 detected" );
-					return 1;
-				}
-				//BMvTbl.SetCommandFailTime( { command=def_CN_Assault_Air, time=1 } );
-				return 0;
+				MvCheck={ Fail=["Mv_AirDash_F"] },
+				SkillType = "Special", 
+				PosState = "Air",
+			};
+			
+			local checktbl2 =
+			{
+				MvCheck={ Fail="Mv_AirDash_F" },
+				SkillType = "Special",
+			};
+			
+			//BMvTbl.ClearCommand();
+			
+			if( Battle_Std.CmdCheck( checktbl1 ) == 1 ) // 最初の成功
+			{
+				//BMvTbl.SetCommandLongDelay(5);
+				return 1; //成功で抜ける
 			}
 			
-			if( BMvTbl.CheckCommandFailTime( { command=def_CN_Assault_Air } ) ) return 0;
-			
-			return 1;
-		},
-		CmdCheck =
-		{
-			HeightLimit = def_POS_AirDashLimitHeight, SkillType = "Special", PosState = "Air",
-			MvCheck = { Fail = ["Mv_AirDash_F"] }	
-		},
+			return 0; //ここまでくると失敗
+		}
 		UpdateTable = { name = "Mv_AirDash_F", }
 	}
+	*/
 	
 	Atk_Std6C = { num = def_CN_Atk_StdC-1 },
 	

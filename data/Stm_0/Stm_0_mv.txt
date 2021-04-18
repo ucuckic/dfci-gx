@@ -1327,8 +1327,10 @@ t.Mv_Skill_Sousai2 <-
 	}
 	function FrameUpdate_After()
 	{
-		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
+		//Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
 		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
+
+		Battle_Std.ImpactSkill_FrameUpdate();
 		
 		local no_sidou = !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_SidouHitSkill );
 		if( !BMvTbl.GetLP(0) ) 
@@ -1342,7 +1344,7 @@ t.Mv_Skill_Sousai2 <-
 		}
 	}	
 	function HitInterrupt_After()
-	{
+	{	
 		Battle_Std.ImpactSkill_HitInterrupt( def_MC1_AtkLow|def_MC1_AtkJump ); // LP9使用
 		
 		local no_sidou = !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_SidouHitSkill );

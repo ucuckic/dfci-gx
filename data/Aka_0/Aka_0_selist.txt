@@ -412,6 +412,11 @@ se["Mv_Skill_0202B_FU"] <- {
 	selist = { common = [500,501,502], }
 };
 
+se["Mv_Skill_0202C_FU"] <- {
+	Param0=10,
+	selist = { common = [500,501,502], }
+};
+
 se["Mv_Skill_0202EX_FU"] <- {
 	Param0=10,
 	selist = { common = [511], }
@@ -432,6 +437,17 @@ se["Mv_Skill_214A_FU"] <- [
 ]
 
 se["Mv_Skill_214B_FU"] <- [
+	{
+		Param0=10,
+		selist = { common = [522], }
+	},
+	{
+		Param0=20,
+		selist = { common = [523], }
+	},
+]
+
+se["Mv_Skill_214C_FU"] <- [
 	{
 		Param0=10,
 		selist = { common = [522], }

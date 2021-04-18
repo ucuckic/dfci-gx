@@ -2,7 +2,7 @@ print("\n>>_se_list");
 
 __dofile__("./script/btl_SEDefine.txt"); //ＳＥ定数
 
-local path = "./se/normal_se/"; // ファイルパス、登録しやすいように
+local path = "./se_new/normal_se/"; // ファイルパス、登録しやすいように
 local btlpath = "./se_new/battle_se/";
 local chrpath = btlpath + "Aka/";
 

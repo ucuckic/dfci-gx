@@ -30,7 +30,13 @@
 
 //hitcheck def
 const Def_HitCheckFlag_LightLegs = 64; // 下段の弱い攻撃（弱）につく
+
+
+
 const _ImpactFlag_IsCapture = 16; // cap impactflag for attackimpact
+
+
+const _CatchFlag_HitCheckFlag = 256;
 
 // Battle_Std.Val_CheckFlag
 const Def_CAB_Trump = 1;
@@ -210,7 +216,8 @@ const Def_Rule_RunAuraKanri		= 0; // オーラとＧＲＤの管理を行うか
 
 const Def_Rule_ToParentFireBallHitStatus = 1; // FireBall飛び道具のヒットを親に伝えるか
 const Def_Rule_AddComboRateFireBallDamage = 1; // FireBallヒット時にコンボレートを加算するかどうか
-const Def_Rule_CreateHitPar	= 0; // ヒットエフェクトからパーティクルを飛ばすか 0:飛ばさない 1:飛ばす
+
+const Def_Rule_CreateHitPar	= 1; // ヒットエフェクトからパーティクルを飛ばすか 0:飛ばさない 1:飛ばす
 const Def_Rule_SPCutinAura		= 0; // 超技カットイン中にキャラに縁取りオーラをつけるかどうか
 
 // 調整デバッグ用
@@ -683,7 +690,7 @@ const def_MC2_DoubleGuardDamage = 64;
 const def_MC2_HalveGuardDamage = 128;
 const def_MC2_NoGuardDamage = 256;
 
-const def_MC2_IgnoreDownStatus = 16384;
+const def_MC2_IgnoreDownStatus = 16384; //this flag is hard coded
 
 //mvtmplフラグ
 const def_TmplFlags_ChangeStatusOnly		= 1; //状態の移行のみを行う（※他のフラグも入ってるような状態になるよ）
@@ -1265,6 +1272,8 @@ const def_LP_BallFlags				= 6;		// 飛び道具用フラグ集
 	const def_BallFlags_None		= 0;		// いらないけど
 	const def_BallFlags_Finalize	= 1;		// 次回ファイナライズしてね
 	const def_BallFlags_SousaiSubHited	= 2;		// 相殺処理を一度でも行った（相殺でヒット数を減らされた）
+	const def_BallFlags_AddComboRate	= 4;		// コンボレートをかけた
+	const def_BallFlags_NoAddHitComboRate = 8;		// ヒット時にコンボレート足さない飛び道具
 const def_LP_MvType				= 7;		// Mvの属性（飛び道具とかってか飛び道具にしか使ってない）
 	const def_MvType_Normal		= 0;		// Mvの属性：無属性
 	const def_MvType_Ball			= 1;		// Mvの属性：飛び道具

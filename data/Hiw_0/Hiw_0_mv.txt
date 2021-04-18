@@ -276,6 +276,8 @@ t.Mv_Atk_CroB <-
 	function Init_After()
 	{
 		Battle_Std.MoveCode.DelFlag( def_MC_NoJumpCansel ); // u’Êí‚b‚Å‚à‚i‚b•s‰Âv‚ðÁ‚·
+		
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function FrameUpdate_After()
 	{
@@ -284,6 +286,10 @@ t.Mv_Atk_CroB <-
 
 t.Mv_Atk_CroC <-
 {
+	function Init_After()
+	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
+	}
 	function FrameUpdate_After()
 	{
 	}
@@ -833,6 +839,7 @@ local maketmpl_Skill0202 = function( param={} )
 	
 	ret_tmpl.Init_After <- function()
 	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	
 	ret_tmpl.FrameUpdate_After <- function() : (mvparam)

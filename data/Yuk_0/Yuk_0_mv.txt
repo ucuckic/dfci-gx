@@ -10,18 +10,6 @@ const CDef_Yuk_KirifudaCanselHPAdd = -300; // 切り札ジャンプやエクステンド技キャ
 
 local t = {};
 
-t.AttackImpact <- function( info )
-{
-	Battle_Std.DrawDebugAttackInfo( "atkdamagestat "+info.DAMAGE );
-	Battle_Std.AttackImpact_StdFunc(info);
-}
-
-t.DamageImpact <- function( info )
-{
-	Battle_Std.DrawDebugAttackInfo( "e_atkdamagestat "+info.DAMAGE );
-	Battle_Std.DamageImpact_StdFunc(info);
-}
-
 //-----------------------------------------------------------------------------
 // 固有関数
 //-----------------------------------------------------------------------------
@@ -430,6 +418,17 @@ t.Mv_Atk_CroC <-
 		Battle_Std.MoveCode.AddFlag( def_MC_CharaFlag2 ); // 羽をレイヤー０に詰め込んだＭｖ
 		
 		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
+	}
+}
+
+t.Mv_Atk_Std6B <-
+{
+	function HitInterrupt_After()
+	{
+		if( Battle_Std.CheckDamageTiming_ExceptDown() )
+		{
+			Battle_Std.SetPosition_DamageHanteiRect({ power=50, flags=(1<<0) });
+		}
 	}
 }
 
@@ -1028,12 +1027,19 @@ t.Mv_Skill_Sousai <-
 		BMvTbl.SetLP(0,0); // 0:二段目あたってない 1:二段目ヒット 2:ヒット分岐した
 		
 		BMvTbl.SetLP(1,0); // コンボ中の発動だったかどうか
+		
 		if( Battle_Std.CheckEnemyisDamage() )
 		{
 			BMvTbl.SetLP(1,1); // コンボ中の発動だった
 		}
 		
 		BMvTbl.SetLP(3,0);
+		
+		if( !Battle_Std.EnemyDamageFlag_Check(def_DF_CharaFlag1) )
+		{
+			Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_IgnoreDownStatus );
+		}
+			
 	}
 	function FrameUpdate_After()
 	{
@@ -1059,27 +1065,10 @@ t.Mv_Skill_Sousai <-
 			break;
 		}	
 	}
-	function Update_After()
-	{
-		if( BMvTbl.GetLP(3) && Battle_Std.CheckEnemyisCapture() )
-		{
-			BMvEff.ThrowRelease( { type=113, airrecover=0, flags=_ThrowRelease_NoGroundRecover } );
-			Battle_Std.SetEnemyHitStop(10);
-		}
-	}
 	function HitInterrupt_After()
 	{
 		if( Battle_Std.CheckDamageTiming_OnlyDown() )
 		{
-			if( !Battle_Std.EnemyDamageFlag_Check(def_DF_CharaFlag1) )
-			{
-				local enemy = BMvCore.GetEnemyCharaData();
-
-				BMvEff.CapturePlayer( { target = enemy } );
-
-				BMvTbl.SetLP(3,1);
-			}
-			
 			Battle_Std.AddDamageFlagInterrupt(def_DF_CharaFlag1); //otg relaunch flag
 		}
 		
@@ -1092,7 +1081,6 @@ t.Mv_Skill_Sousai <-
 		
 		if( BMvTbl.GetLP(0)==2 && Battle_Std.CheckDamageTiming_ExceptDownFrameID( 350 ) )
 		{
-			
 			local no_sidou = !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_SidouHitSkill );
 			
 			local use_pat = (no_sidou)? "SousaiAtkNoSidou" : 90;

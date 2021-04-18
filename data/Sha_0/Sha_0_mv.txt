@@ -853,6 +853,9 @@ t.Mv_Atk_StdA <-
 {
 	function Init_After() : (bgm_array_array,draw_Effect)
 	{
+		//BSound.BGM_Mute(0);
+		//BMvEff.CreateObject( { mvname="Mv_MvStatusDrawObject_Debug", datatype=1, start_pat=999 } );
+		
 		//Battle_Std.GuardGauge.CreateGaugeObject();
 		
 		//BMvEff.SetPaletteSlot( 1, 0 );
@@ -1205,7 +1208,7 @@ t.Mv_Atk_AirB <-
 			switch( mvs.FrameID )
 			{
 			case 100:
-				func_CreateAirBlade( { x=0, y=0, start_pat=pat_num}, { grp_angle=4500, vec_angle=0.9, vec_speed=250 } );
+				func_CreateAirBlade( { x=0, y=0, start_pat=pat_num }, { grp_angle=4500, vec_angle=0.9, vec_speed=250 } );
 				break;
 			}
 		}
@@ -2614,6 +2617,7 @@ t.Mv_Skill_Sousai <-
 	{
 		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
 		
+		
 		local mvs = BMvTbl.GetMvStatus();
 		
 		//ツールの描画タイミング
@@ -2651,7 +2655,8 @@ t.Mv_Skill_Sousai <-
 				
 				eff.pop();
 			}
-		}		
+		}	
+				
 	}
 	function HitInterrupt_After()
 	{

@@ -1324,10 +1324,10 @@ function Battle_Std::MakeMoveTmpl( t, mvlist )
 				// コンボレート加算
 				if( Def_Rule_AddComboRateFireBallDamage )
 				{
-					local hs = BMvTbl.GetMvHitStatus();
-					if( hs.isFirstUpdate && hs.Type&_HitType_Damage )
+					if( BMvTbl.CalcHitValue(0)==0 && !Battle_Std.CheckFireBallFlags(def_BallFlags_AddComboRate) && Battle_Std.CheckDamageTiming() && !Battle_Std.CheckFireBallFlags( def_BallFlags_NoAddHitComboRate ) )
 					{
 						BMvTbl.AddComboRate();
+						Battle_Std.AddFireBallFlags( def_BallFlags_AddComboRate );
 						// _dp("\n レート加算")
 					}
 				}
@@ -1403,6 +1403,20 @@ function Battle_Std::MakeMoveTmpl( t, mvlist )
 					//_dm("ヒットInit");
 					Battle_Std.ClearFireBallStatus(); //飛び道具属性と弾制限を解除
 					if( Def_Rule_SkillKezuriType ) Battle_Std.SetKezuriDamageMode(); // Mvに削り指定を追加
+				}
+				
+				t[mvhit_name].HitInterrupt_Std <- function()
+				{
+					// コンボレート加算
+					if( Def_Rule_AddComboRateFireBallDamage )
+					{
+						if( BMvTbl.CalcHitValue(0)==0 && !Battle_Std.CheckFireBallFlags(def_BallFlags_AddComboRate) && Battle_Std.CheckDamageTiming() && !Battle_Std.CheckFireBallFlags( def_BallFlags_NoAddHitComboRate ) )
+						{
+							BMvTbl.AddComboRate();
+							Battle_Std.AddFireBallFlags( def_BallFlags_AddComboRate );
+							// _dp("\n レート加算")
+						}
+					}
 				}
 				
 				//Finalize_Std

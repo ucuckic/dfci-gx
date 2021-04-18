@@ -1,18 +1,11 @@
 Battle_Status <-
 {
-	AttackRate = 100, // 最終攻撃力修正係数
-	SeedGaugeCorrectValue_Plus = 100, // seedgaugeプラス方向の変動補正値
-	SeedGaugeCorrectValue_Minus = 100, // seedgaugeマイナス方向の変動補正値
-
-	ScratchDamageVal_Atk = 65, // 削りダメージ、攻撃時
-	ScratchDamageVal_Def = 100, // 削りダメージ、防御時
-	ScratchDamageVal_ExDef = 100, // 削りダメージ、ジャストディフェンス
-
-	// HP分割値と総体力（上位から見る）
-	// HpDivValue = [ 10000 ], //EL
-	// HpDivValue = [ 10600 ], //st3.11
-	// HpDivValue = [ 10700 ], //st3.20
-	HpDivValue = [ 10800 ],
+	// きりふだ
+	Kirifuda_PointMax = 2, // 切り札最大値（基本値３）
+	Kirifuda_Type = 1, // 切り札タイプ（0:攻撃的赤 1:防御的青）	
+	
+	// Jem_0とJem_1は設定済みなのでJem_2とJem_3に設定する
+	Jem_2 = 1,		// 攻撃を１０回当てたら２０秒間攻撃力が１０％アップ
 
 }
 

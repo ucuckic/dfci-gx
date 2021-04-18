@@ -335,7 +335,9 @@ t.Mv_Atk_StdA <-
 	{
 		//BMvEff.SetExist( { level = _Exist_NoWall, mode=_ExistMode_Set } );
 		
-		print("test test big test")
+		//print("test test big test")
+		
+		BMvTbl.SetHitCheckFlag( { type=1, val=0, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function FrameUpdate_After()
 	{
@@ -358,6 +360,7 @@ t.Mv_Atk_StdB <-
 {
 	function Init_After()
 	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=1, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function FrameUpdate_After() : (func_CreateBlade)
 	{
@@ -378,6 +381,10 @@ t.Mv_Atk_StdB <-
 
 t.Mv_Atk_StdC <-
 {
+	function Init_After()
+	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=2, time=255, flag=_ClearFlag_ChangeMv } );
+	}
 	function FrameUpdate_After() : (func_CreateBlade)
 	{
 		local mvs = BMvTbl.GetMvStatus();
