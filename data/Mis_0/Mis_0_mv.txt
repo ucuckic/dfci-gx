@@ -601,9 +601,11 @@ t.Mv_FireBall_236_Hit <-
 	}
 }
 
+/*
 t.Mv_Bound_0900 <- 
 {
 }
+*/
 
 local maketmpl_Skill623 = function( param={} )
 {
