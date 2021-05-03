@@ -587,7 +587,7 @@ BgList <-
 	Bg_032 =
 	{
 		Name = "bggg",
-		DataFile = "bg_suzaku",
+		DataFile = "bg_daigo",
 		
 		Scale = [ 1.5, 1.5, 1.5 ],
 		Position = [ 0, 0, 2 ],
