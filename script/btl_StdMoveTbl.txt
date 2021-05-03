@@ -1028,7 +1028,7 @@ debug_HitMutekiArray[_HitCheckFlag_Head] = "head";
 debug_HitMutekiArray[_HitCheckFlag_Legs] = "legs";
 debug_HitMutekiArray[_HitCheckFlag_FireBall] = "fireball";
 //debug_HitMutekiArray[Def_HitCheckFlag_AirDive] = "dive";
-debug_HitMutekiArray[Def_HitCheckFlag_LightLegs] = "l_legs";
+debug_HitMutekiArray[Def_HitCheckFlag_Blast] = "blast";
 debug_HitMutekiArray[_HitCheckFlag_Throw] = "throw";
 debug_HitMutekiArray[_HitCheckFlag_Body] = "body";
 debug_HitMutekiArray[Def_HitCheckFlag_Ptimer] = "ptimer";
@@ -10252,9 +10252,14 @@ local maketmpl_WallStickBound = function( param={} )
 	{
 		Battle_Std.BoundInit();
 		
+		local pos = BMvTbl.GetPosition(0);
+		
+		
 		BMvTbl.SetLP(0,0);
 		BMvTbl.SetLP(1,0); //force anim
 		BMvTbl.SetLP(2,0); //slide
+		
+		BMvTbl.SetLP(4,pos.x);
 		
 		local bs = BtlMvStd.GetBoundStatus();
 		if( bs.VecCount==0 )
@@ -10324,6 +10329,7 @@ local maketmpl_WallStickBound = function( param={} )
 		{
 			if( bs.VecCount==0 ) //still stuck to the wall
 			{
+				BMvTbl.SetPosition( { x=BMvTbl.GetLP(4) } );
 				if( BMvTbl.GetLP(2)==0 )
 				{	
 					if( mvs.MvCount >= slide_time  ) 
@@ -13521,6 +13527,7 @@ Std_MoveTable.Mv_PowBlastShockwave <-
 {
 	function Init_Std()
 	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=Def_HitCheckFlag_Blast, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function HitInterrupt_Std()
 	{
@@ -13575,6 +13582,8 @@ Std_MoveTable.Mv_ComboBlastShockwave <-
 	function Init_Std()
 	{
 		BMvTbl.SetLP(3,0);
+		
+		BMvTbl.SetHitCheckFlag( { type=1, val=Def_HitCheckFlag_Blast, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function HitInterrupt_Std()
 	{
@@ -13622,6 +13631,7 @@ Std_MoveTable.Mv_EscBlastShockwave <-
 {
 	function Init_Std()
 	{
+		BMvTbl.SetHitCheckFlag( { type=1, val=Def_HitCheckFlag_Blast, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function HitInterrupt_Std()
 	{
@@ -16074,6 +16084,7 @@ Std_MoveTable.Mv_Skill_Sousai4 <-
 		BMvTbl.SetLP(7,0);
 		
 		//Battle_Std.DrawDebugAttackInfo("ss4");
+		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Head, time=255, flag=_ClearFlag_ChangeMv } );
 	}
 	function FrameUpdate_Before()
 	{

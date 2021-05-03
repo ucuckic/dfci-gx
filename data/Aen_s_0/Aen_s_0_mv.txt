@@ -510,10 +510,21 @@ t.Mv_SupportChara2 <- // サポートキャラの行動
 	{
 		BMvTbl.SetPattern( pat_num_Sup10 ); // 表示するパターンを設定
 		
-		Battle_Std.AddXPos_CheckFrontStage( 180, 100 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		Battle_Std.AddXPos_CheckFrontStage( 0, 0 ); // X移動距離, ステージ端とこれ以上近づかない距離
+		Battle_Std.AddXPos_NearEnemy(180,100);
+		
+		//BMvEff.SetExist( { level=_Exist_NoKuraiHantei, mode=_ExistMode_Set } );
+		
+		BMvTbl.SetLP(0,0); //is clash
+		Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_IgnoreDownStatus );
 	}
 	function FrameUpdate_After()
 	{
+		Battle_Std.Sousai.FrameUpdate_NoHitFlag(0,0);
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head|Def_HitCheckFlag_Blast );
+		
+		//Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head);
+		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{
 		case 50: // ける前ため
@@ -528,6 +539,25 @@ t.Mv_SupportChara2 <- // サポートキャラの行動
 	}
 	function HitInterrupt_After() : (pat_num_CriSup10Atk)
 	{
+		local mvhs = Battle_Std.Sousai.HitInterrupt();
+		
+		if( mvhs )
+		{
+			if( mvhs.isFirstUpdate )
+			{
+				local mvs = BMvTbl.GetMvStatus();
+				if( mvs.FrameID==50 ) BMvTbl.JumpFrameID( 51 );
+				local enemy = BMvCore.GetLastHitCharaData(0);
+				if( enemy.push() )
+				{
+					BMvTbl.SetHitStop( 8, _ValAdd );
+					enemy.pop();
+				}
+				
+				BMvTbl.SetLP(0,1);
+			}
+		}
+		
 		if( Battle_Std.CheckDamageTiming_ExceptDownFrameID( 100 ) )
 		{
 			// クリーンヒット処理
@@ -541,7 +571,7 @@ t.Mv_SupportChara2 <- // サポートキャラの行動
 				local pos = BMvTbl.GetPosition( 0 );
 				
 				// クリーンヒット判定
-				if( epos.y == 0 ) // 地上にいる
+				if( epos.y == 0 || BMvTbl.GetLP(0) ) // 地上にいる
 				{
 					// クリーンヒット
 					// BMvEff.SetStopTime( { time=15, stopme=1 } );

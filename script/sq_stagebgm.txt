@@ -51,6 +51,14 @@ stage_bgm.initround <- function()
 	local btlobj = BMvTbl.CBtlInfo();//í“¬î•ñ
 }
 
+stage_bgm.chara_sel <- function()
+{
+	local bgm_array = [99,800,801,802,803,804,805,806,807];
+	local song_rng = BMvEff.Random_Limit(bgm_array.len());
+	
+	BMvEff.BGM_Set({ num=bgm_array[song_rng] }); //bmveff required to clear invalid bgm play from hacky implementation
+}
+
 stage_bgm.loadstage <- function() : (bgm_array_array)
 {
 	local bg_num = BMvEff.BG_GetNum();

@@ -29,7 +29,7 @@
 // CDef_で始まる定数をうっかり定義しないように注意
 
 //hitcheck def
-const Def_HitCheckFlag_LightLegs = 64; // 下段の弱い攻撃（弱）につく
+const Def_HitCheckFlag_Blast = 64; // 下段の弱い攻撃（弱）につく
 
 
 
@@ -1098,10 +1098,11 @@ const Def_GaugeAppear_SP = 21;
 const def_PP_AirGuarded 			= 15; //has airguarded an attack
 const def_PP_ExGuardOK 				= 16; //ex guard will be accepted
 
-	
+//also it turns out 19 is used by ignition type	
 const def_PP_GuardGaugeVal 			= 17; //guard meter value
 const def_PP_GuardGauge_CoolTimer	= 18; //guard cooldown timer tracking
-const def_PP_GuardGauge_Flags		= 19; //guardflags currently set
+
+const def_PP_GuardGauge_Flags		= 14; //guardflags currently set
 	const def_PP_GF_None			= 0;
 	const def_PP_GF_Broken			= 1;
 

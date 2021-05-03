@@ -1262,7 +1262,14 @@ t.Mv_Skill_J236Add_Hit <-
 {
 	function Init_After()
 	{
-		Battle_Std.DrawDebugAttackInfo("x ");
+		//Battle_Std.DrawDebugAttackInfo("x ");
+		
+		local enemy = BMvCore.GetEnemyCharaData();
+		if( enemy.push() )
+		{
+			BMvTbl.SetPattern( 324 );
+			enemy.pop();
+		}
 	}
 	function FrameUpdate_After()
 	{
@@ -2117,7 +2124,8 @@ t.Mv_Skill_Sousai2 <-
 	}
 	function FrameUpdate_After()
 	{
-		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
+		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head|Def_HitCheckFlag_Blast );
 		
 		switch( Battle_Std.GetUpdateFrameID() )
 		{

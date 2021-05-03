@@ -3,140 +3,6 @@ _dp("\n[Krt_0_mv.txt]");
 
 local t = {};
 
-t.Mv_Bound_0900 <- 
-{
-	function Init_Std() // 
-	{
-		Battle_Std.BoundInit();
-		
-		BMvTbl.SetLP(0,0);
-		BMvTbl.SetLP(1,0); //force anim
-		BMvTbl.SetLP(2,0); //slide
-		
-		//AirUkemi
-		
-		local bs = BtlMvStd.GetBoundStatus();
-		if( bs.VecCount==0 )
-		{			
-			BMvTbl.SetPattern( "WallStuck" );
-			BMvEff.CreateObject( { mvname="Mv_Obj_BigWall", datatype=1, start_pat="big_wall" } ); // BIG WALL stop a nigga from running up
-		}
-		
-		//Battle_Std.DrawDebugAttackInfo("char bound ow "+bs.AirUkemi );
-
-	}
-	function Update_Std()
-	{
-		Battle_Std.BoundUpdate();	
-		
-		local mvs = BMvTbl.GetMvStatus();
-		local bs = BtlMvStd.GetBoundStatus();
-				
-		if ( mvs.FrameID==5 ) BMvTbl.SetLP(1,1);
-		
-		local frame_tick_speed = 2;
-		
-		if( mvs.MvCountFrame%frame_tick_speed==0 && mvs.MvCountFrame > 0 && BMvTbl.GetLP(0)==0 && BMvTbl.GetLP(1)==0 && bs.VecCount==0 ) 
-		{
-			BMvTbl.Frame_Proc( 1, _ValAdd );
-			
-					
-			//Battle_Std.DrawDebugAttackInfo("char bound ow "+mvs.MvCountFrame );
-		}
-		
-		local pos = BMvTbl.GetPosition(0);
-		if( abs(pos.x) == def_POS_GamenHajiX ) //set muki to be opposite to the stage side bound
-		{
-			local use_muki = ( pos.x > 0 )? _Direction_Left : _Direction_Right;
-			BMvTbl.SetMuki( use_muki );
-			
-			//Battle_Std.DrawDebugAttackInfo("x "+pos.x+" usem "+use_muki );
-		}
-	}
-	function FrameUpdate_Std()
-	{
-		local mvs = BMvTbl.GetMvStatus();
-		local bs = BtlMvStd.GetBoundStatus();
-		
-		local cp;
-		local enemy = BMvCore.GetEnemyCharaData();
-		
-		if( enemy.push() )
-		{
-			cp = BMvTbl.ComboPoint_Calc( { num=0 } );
-			enemy.pop();
-		}
-		
-		local slide_time = 5;
-		local slide_addy = 10;
-		
-		local stick_time = ( (1 * cp) < slide_time )? slide_time : 1 * cp;
-		
-		if( mvs.CallCount==0 )
-		{
-			if( bs.VecCount==0 ) //still stuck to the wall
-			{
-				if( BMvTbl.GetLP(2)==0 )
-				{	
-					if( mvs.MvCount >= slide_time  ) 
-					{
-						//Battle_Std.DrawDebugAttackInfo("emk "+( stick_time - slide_time )+" s "+stick_time+" d "+slide_time );
-						
-						BMvTbl.SetVector( { y=0, addy=slide_addy, flags=_Vector_Bound } );
-						BMvTbl.SetLP(2,1);
-					}
-				}
-
-					
-				if( BMvTbl.GetLP(0)==0 ) //wall stick duration not elapsed
-				{
-					if( mvs.MvCount >= stick_time ) //wall stick time
-					{
-						local vec = BMvTbl.GetVector( { flags=_Vector_Bound });
-						
-						BMvTbl.SetPattern( 330 );
-						
-						BMvTbl.Frame_Proc( 1, _ValSet );
-						
-						BMvTbl.SetLP(0,1);
-						
-						BMvTbl.SetVector( { y=vec.y, addy=250, flags=_Vector_Bound } );
-					}
-				}
-			}
-			if( mvs.MvCount >= stick_time && bs.VecCount==0 && BMvTbl.GetLP(0)==0 ) 
-			{
-
-			}
-		}
-		
-		if( BMvTbl.GetLP(0) )
-		{
-			mvs = BMvTbl.GetMvStatus();
-			if ( mvs.FrameID==100 ) //落下チェックID中なら
-			{
-				local vec = BMvTbl.GetVector( { flags=_Vector_Bound }); //ベクトル取得
-				if ( vec.y >= 0 )
-				{
-					if ( BMvTbl.JumpFrameID(256) == -1 )
-					{
-						_dem("【警告】飛び先のフレームIDが無い");
-					}
-				}
-			}
-		}
-		
-	}
-	function Finalize_Std() // 
-	{
-		BtlMvStd.SetBoundFinalize();
-	}
-	function LastUpdate_Std() // 
-	{	
-		BtlMvStd.ClearBound(); // 状態解除
-	}
-}
-
 //-----------------------------------------------------------------------------
 // 固有関数
 //-----------------------------------------------------------------------------
@@ -531,6 +397,8 @@ t.Mv_Atk_StdB <-
 }
 
 
+
+
 t.Mv_Atk_StdC <-
 {
 	function Init_After() : (func_JumpDEFrameID_and_NoMask)
@@ -693,6 +561,35 @@ t.Mv_Atk_AirC <-
 		{
 			BMvTbl.AddComboCount( 1 );
 		}
+	}
+}
+
+t.Mv_Atk_Air6C <-
+{
+	function Init_After() : (func_JumpDEFrameID_and_NoMask)
+	{
+		func_JumpDEFrameID_and_NoMask(); // 二刀ならFrameIDジャンプ
+		
+		// 各種補正は最初の１ヒットのみ
+		BMvTbl.SetNoHoseiFlag( { val=1, time=254, flag=_ClearFlag_ChangeMv } );		
+		
+		BMvTbl.SetPattern( 9 );
+		BMvTbl.SetMuki( _Direction_Reverse );
+	}
+	function FrameUpdate_After()
+	{
+	}
+	function HitInterrupt_After()
+	{
+		// 二刀の時ヒット数を１増やして２にする
+		if( Battle_Std.CheckDamageTiming_FrameID( 200 ) )
+		{
+			BMvTbl.AddComboCount( 1 );
+		}
+	}
+	function LastUpdate_After()
+	{
+		BMvTbl.SetMuki( _Direction_Reverse );
 	}
 }
 
@@ -1309,7 +1206,7 @@ t.Mv_Skill_Sousai2 <-
 	{
 		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
 		
-		Battle_Std.SetHitMuteki2_Param1( { [8]=_HitCheckFlag_Head } );
+		Battle_Std.SetHitMuteki2_Param1( { [8]=_HitCheckFlag_Head, [16]=Def_HitCheckFlag_Blast } );
 	}
 	function HitInterrupt_After()
 	{
@@ -1422,7 +1319,7 @@ local set_Kirifuda = function()
 		local time =25*60;
 		tDDC.Kirifuda_TimeAdd( 0, time ); // 最大値になる
 		tDDC.Kirifuda_TimeDamageMinus( 30 ); // 減少値
-		//tDDC.Kirifuda_SetTimeValue( _TimeEffect_Attack, 110 ); // 攻撃力アップ
+		tDDC.Kirifuda_SetTimeValue( _TimeEffect_Attack, 110 ); // 攻撃力アップ
 		// tDDC.Kirifuda_SetTimeValue( _TimeEffect_Defense,110 ); // 防御力ダウン
 	}
 }

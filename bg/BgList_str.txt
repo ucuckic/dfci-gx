@@ -13,4 +13,7 @@
 017 = Hi™sCoool! SeHa Girls Stage
 018 = The World End Eclipse Stage
 029 = Training Stage
+030 = 2hu
+031 = monop
+032 = suzaku
 099 = debug

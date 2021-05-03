@@ -6803,10 +6803,22 @@ Battle_Std.Sousai.Set <- function( _etcHantei=0, _CheckFlags=0 )
 	BMvTbl.SetLP(9,0); // 0:‘ŠE‚Å‚«‚é 1:‘ŠE‚Å‚«‚È‚¢ ¦HitInterrupt‚Å1‚É‚È‚é
 }
 
-Battle_Std.Sousai.Set_NoHitFlag <- function( _etcHantei=0 )
+Battle_Std.Sousai.Set_NoHitFlag <- function( _etcHantei=0, _CheckFlags=0 )
 {
 	BMvTbl.SetAtkCatchFlag( { hantei=_etcHantei, catch_flags=_CatchFlag_AtkAllGuard, success_flags=_CatchSuccess_HitSub|_CatchSuccess_HitSub_Enemy, time=64, flag=_ClearFlag_ChangeMv } );
 	
+	local hitcheck = BMvTbl.GetHitCheckFlag(0);
+	
+	if( _CheckFlags && hitcheck&_CheckFlags ) //if our hitmuteki aligns with the checking muteki
+	{
+		BMvTbl.SetAtkCatchFlag( { hantei=_etcHantei, catch_flags=_CatchFlag_AtkAllGuard|_CatchFlag_HitCheckFlag, success_flags=_CatchSuccess_HitSub|_CatchSuccess_HitSub_Enemy, time=1, flag=_ClearFlag_ChangeMv } );
+	}
+	else
+	{
+		BMvTbl.SetAtkCatchFlag( { hantei=_etcHantei, catch_flags=_CatchFlag_AtkAllGuard, success_flags=_CatchSuccess_HitSub|_CatchSuccess_HitSub_Enemy, time=1, flag=_ClearFlag_ChangeMv } );
+	}
+	
+	BMvTbl.SetLP(8,_CheckFlags); //remember the check flags to determine branching in hitinterrupt
 	BMvTbl.SetLP(9,0); // 0:‘ŠE‚Å‚«‚é 1:‘ŠE‚Å‚«‚È‚¢ ¦HitInterrupt‚Å1‚É‚È‚é
 }
 
@@ -6825,9 +6837,9 @@ Battle_Std.Sousai.FrameUpdate <- function( _etcHantei=0, _CheckFlags=0 )
 	//Battle_Std.DrawDebugAttackInfo("ssfu "+_CheckFlags );
 }
 
-Battle_Std.Sousai.FrameUpdate_NoHitFlag <- function( _etcHantei=0 )
+Battle_Std.Sousai.FrameUpdate_NoHitFlag <- function( _etcHantei=0, _CheckFlags=0 )
 {
-	Set_NoHitFlag( _etcHantei ); // ‘ŠE‚ğƒZƒbƒg
+	Set_NoHitFlag( _etcHantei, _CheckFlags ); // ‘ŠE‚ğƒZƒbƒg
 }
 
 Battle_Std.Sousai.FrameUpdate_BallTarget <- function( _etcHantei=0 )
@@ -7079,8 +7091,13 @@ Battle_Std.CheckObjectHanteiCross <- function( _hantei )
 		// UŒ‚oŒ»ƒ`ƒFƒbƒN
 		local lefthitcount = BMvTbl.CalcHitValue(0);
 		local emv_throw = Battle_Std.MvAction.CheckFlag( def_MC_ThrowRect );
+		local e_hitcheck = BMvTbl.GetHitCheckFlag(1); //attack flag
 	
 		enemy.pop();
+		
+		local hitcheck = BMvTbl.GetHitCheckFlag(0); //muteki
+		
+		if( hitcheck&e_hitcheck ) return 0; //if you are invincible to the opponents flag
 		
 		local hit = 1; // ƒqƒbƒg‚µ‚½‚©
 		if( lefthitcount <= 0 )
@@ -8294,7 +8311,7 @@ Battle_Std.ImpactSkill_FrameUpdate <- function(_CheckFlags=0)
 	
 	Battle_Std.Sousai.FrameUpdate(0, _CheckFlags); // ‘ŠE‰ñ”‚ªc‚Á‚Ä‚¢‚½‚çÄ“x‘ŠE‰Â”\ó‘Ô‚É‚·‚é
 	
-	BMvTbl.SetLP(7,hv);
+	//BMvTbl.SetLP(7,hv);
 }
 
 Battle_Std.ImpactSkill_HitInterrupt <- function( _pride = 0 )

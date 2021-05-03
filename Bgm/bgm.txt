@@ -353,3 +353,45 @@ LoopPos = 1.831701
 File = bgm_2hu\155ichirin1 // 
 IsLoop = 1
 LoopPos = 3.600340
+
+//chrsel
+
+[BGM_800]
+File = bgm_csel\anteroom
+IsLoop = 1
+LoopPos = 5.481
+
+[BGM_801]
+File = bgm_csel\uni_sys_chrselect
+IsLoop = 1
+LoopPos = 04.575
+
+[BGM_802]
+File = bgm_csel\gof2_csel
+IsLoop = 1
+LoopPos = 3.067
+
+[BGM_803]
+File = bgm_csel\gof2_csel
+IsLoop = 1
+LoopPos = 3.067
+
+[BGM_804]
+File = bgm_csel\sally
+IsLoop = 1
+LoopPos = 2.140
+
+[BGM_805]
+File = bgm_csel\kirby_title
+IsLoop = 1
+LoopPos = 19.712
+
+[BGM_806]
+File = bgm_csel\doa
+IsLoop = 1
+LoopPos = 4.551
+
+[BGM_807]
+File = bgm_csel\velvet
+IsLoop = 1
+LoopPos = 3.901

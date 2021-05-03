@@ -597,6 +597,8 @@ local t =
 	Skill_41236SP = {},
 	Skill_63214SP = {},	
 	
+	//Atk_Air6C = {},
+	
 }
 
 local ar =

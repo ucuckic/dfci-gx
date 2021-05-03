@@ -539,7 +539,7 @@ BgList <-
 		ShadowAlpha = 0.7, // ”Z‚³
 
 		StageW = 4096, // 2560
-		MSAA = 16,
+		MSAA = 4,
 	}
 	
 	Bg_030 =
@@ -558,7 +558,7 @@ BgList <-
 		ShadowAlpha = 0.8, // ”Z‚³
 
 		StageW = 4096, // 2560
-		MSAA = 16,
+		MSAA = 4,
 		
 		StageSelTex = 15,
 	}
@@ -579,7 +579,7 @@ BgList <-
 		ShadowAlpha = 0.8, // ”Z‚³
 
 		StageW = 4096, // 2560
-		MSAA = 16,
+		MSAA = 4,
 		
 		StageSelTex = 15,
 	}
@@ -587,20 +587,20 @@ BgList <-
 	Bg_032 =
 	{
 		Name = "bggg",
-		DataFile = "bgsmash",
+		DataFile = "bg_suzaku",
 		
-		Scale = [ 4, 4, 4 ],
-		Position = [ -1, -8.4, -11.3 ],
+		Scale = [ 1.5, 1.5, 1.5 ],
+		Position = [ 0, 0, 2 ],
 
-		ViewGrid = 1,
+		//ViewGrid = 1,
 		FOV = 45.0,
 
-		VanishingPoint = 0.4,
+		VanishingPoint = 0.3,
 		ShadowScale = -1, // ƒ}ƒCƒiƒX‚¾‚ÆŒü‚±‚¤‘¤
 		ShadowAlpha = 0.8, // ”Z‚³
 
 		StageW = 4096, // 2560
-		MSAA = 16,
+		MSAA = 4,
 		
 		StageSelTex = 15,
 	}
@@ -621,7 +621,7 @@ BgList <-
 		ShadowAlpha = 0.8, // ”Z‚³
 
 		StageW = 4096, // 2560
-		MSAA = 16,
+		MSAA = 4,
 		
 		StageSelTex = 15,
 	}

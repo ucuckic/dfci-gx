@@ -796,6 +796,7 @@ t.Mv_Skill_Sousai <-
 	function FrameUpdate_After()
 	{
 		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+		Battle_Std.SetHitMuteki2_Param1( { [8]=Def_HitCheckFlag_Blast } );
 	}
 	function HitInterrupt_After()
 	{
@@ -823,27 +824,13 @@ t.Mv_Skill_Sousai2 <-
 	function FrameUpdate_After()
 	{
 		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
-		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
+		//Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
+		
+		Battle_Std.SetHitMuteki2_Param1( { [8]=_HitCheckFlag_Head, [16]=Def_HitCheckFlag_Blast } );
 	}	
 	function HitInterrupt_After()
 	{
 		local hit = Battle_Std.ImpactSkill_HitInterrupt( def_MC1_AtkLow|def_MC1_AtkJump ); // LP9使用
-		
-		if( hit )
-		{
-			local enemy = BMvCore.GetEnemyCharaData();
-			if( enemy.push() )
-			{
-				// _dp(" -> 攻撃判定が重なっている" );
-				BMvEff.SetPlayerTimer( { muteki_nage=2, muteki_dage=2 } );
-				BMvTbl.SetHitStop( 1, _ValAdd );
-				
-				enemy.pop();
-			}
-			
-			BMvTbl.CalcHitValue( 100 );
-			BMvTbl.SetHitStop( 40, _ValAdd );
-		}
 		
 		if( Battle_Std.CheckGuardTiming_FrameID( 100 ) ) // 攻撃ガード
 		{

@@ -301,7 +301,7 @@ t.Mv_Atk_CroC <-
 	{
 		BMvTbl.SetHitCheckFlag( { type=1, val=_HitCheckFlag_Legs, time=255, flag=_ClearFlag_ChangeMv } );
 		
-		Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_IgnoreDownStatus );
+		//Battle_Std.MoveCodeEx.AddFlag( 2, def_MC2_IgnoreDownStatus );
 	}
 	function FrameUpdate_After()
 	{
@@ -1321,6 +1321,7 @@ t.Mv_Skill_Sousai <-
 	function FrameUpdate_After()
 	{
 		Battle_Std.ImpactSkill_FrameUpdate(); // LP9使用
+		Battle_Std.SetHitMuteki2_Param1( { [8]=Def_HitCheckFlag_Blast } );
 	}
 	function HitInterrupt_After()
 	{
@@ -1345,8 +1346,7 @@ t.Mv_Skill_Sousai2 <-
 	}
 	function FrameUpdate_After()
 	{
-		Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
-		Battle_Std.SetHitMuteki( 1, 8, _HitCheckFlag_Head );
+		Battle_Std.SetHitMuteki2_Param1( { [8]=_HitCheckFlag_Head|Def_HitCheckFlag_Blast, [16]=Def_HitCheckFlag_Blast } );
 		
 		local mvs = BMvTbl.GetMvStatus();
 		local no_sidou = !Battle_Std.MoveCodeEx.CheckFlag( 1, def_MC1_SidouHitSkill );
@@ -1356,8 +1356,27 @@ t.Mv_Skill_Sousai2 <-
 		local enemy = BMvCore.GetNearEnemyCharaData();
 		local mvhs = BMvTbl.GetMvHitStatus();
 		
+		if( enemy.push() )
+		{
+			local e_mvn = BMvTbl.GetMvName();
+			enemy.pop();
+			
+			if( mvs.FrameID==10 && e_mvn!="Mv_BoundBlast" )
+			{
+				BMvEff.SetExist( { level=_Exist_NoEtcHantei, mode=_ExistMode_Set } );
+			}
+			else
+			{
+				BMvEff.SetExist( { level=_Exist_NoEtcHantei, mode=_ExistMode_Erase } );
+			}
+
+			Battle_Std.ImpactSkill_FrameUpdate(_HitCheckFlag_Head); // LP9使用
+		}
+		
 		if( mvhs.Type&_HitType_Damage && mvhs.isCatchFlag == 0 && BMvTbl.GetLP(0)==0 )
 		{
+			//BMvTbl.CalcHitValue(-10000);
+			
 			local epos = Battle_Std.GetEnemyPosition();
 			local pos = BMvTbl.GetPosition( 0 );
 			if( epos.y < pos.y )

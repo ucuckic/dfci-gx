@@ -716,6 +716,10 @@ t.Mv_Atk_StdA <-
 		//BSound.BGM_Mute(100);
 		//BMvTbl.SetMuki( _Direction_Reverse );
 		//GuessPositionBuffer();
+		
+		//Battle_Std.SetCharaMessage({ mess="the real nigga" });
+		//BMvEff.Chara_SetMessage( 500, 400, "@C100", 200, -1 );
+		//BMvEff.SetAllKeyCheck( 1 );
 	}
 }
 
