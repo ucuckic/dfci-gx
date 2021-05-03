@@ -1,0 +1,3 @@
+bgm_array <- [];
+
+bgm_array.append( { num=400 } ); //daigo temple (night)

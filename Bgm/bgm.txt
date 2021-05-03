@@ -354,6 +354,13 @@ File = bgm_2hu\155ichirin1 //
 IsLoop = 1
 LoopPos = 3.600340
 
+//tvc
+
+[BGM_400]
+File = bgm_tvc\daigo_night
+IsLoop = 1
+LoopPos = 1.300
+
 //chrsel
 
 [BGM_800]
