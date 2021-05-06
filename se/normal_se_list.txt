@@ -1,0 +1,207 @@
+
+local new_path = "./se_new/normal_se/";
+local path = "./se/normal_se/";
+local clipath = "./se/normal_se/cli/"; // 管理しやすいようにUNIのSEとは別にしておく
+local clikaripath = "./se/normal_se/"; // UNIパスだけど一応使ってもいいもの
+
+local continuepath = "./se/continue_se/system/"; // continue & gameover
+local charaselectpath = "./se/charaselect_se/system/";//
+
+SeList_Table <-
+{
+	Status = [],
+};
+
+SeList_Table.Status.resize(500); // てきとう
+local st = SeList_Table.Status; // 登録しやすいように
+
+local anopath = "";// アナウンスファイルパス
+// ここの時点で、変数 str_param が勝手に生成され、アナウンスキャラ定義文字列が入っている
+
+
+str_param = "stm";
+
+if( str_param != "" )
+{
+	anopath = "./se/normal_se/announce/" + str_param +"/";
+	continuepath = anopath; // キャラ別のシステムボイスはコンテニューもアナウンスも同じフォルダに入れる
+	charaselectpath = anopath; // 同様にキャラセレ入ってきた時のボイスも同じフォルダで管理する
+
+	print("\n ★★★ ラウンドコールボイス定義あり:"+str_param+" ★★★\n " + anopath );
+}
+else
+{
+	anopath = "./se/normal_se/announce/System/";
+}
+
+/*
+	file= ファイル名、拡張子なし」
+	type= 0-単音  1-多重再生可（ただし任意の停止ができなくなる） -1:prioが同じときcheckの影響を受けない
+*/
+
+st[0] =		{  file=clipath+"Hit_PunchA", type=-1  }; // 弱パンチ
+st[1] =		{  file=clipath+"Hit_PunchB", type=-1  }; // 中パンチ
+st[2] =		{  file=clipath+"Hit_PunchC", type=-1  }; // 強パンチ
+st[3] =		{  file=clipath+"Hit_KickA", type=-1  }; // 弱キック
+st[4] =		{  file=clipath+"Hit_KickB", type=-1  }; // 中キック
+st[5] =		{  file=clipath+"Hit_KickC", type=-1  }; // 強キック
+st[6] =		{  file=clipath+"Hit_PunchD", type=-1  }; // 特大パンチ
+st[7] =		{  file=clipath+"Hit_KickD", type=-1  }; // 特大キック
+
+st[8] =		{  file=clipath+"Hit_SlashC", type=-1  }; // 斬り
+st[9] =		{  file=clipath+"Burning", type=1  }; // （メルブラ効果音改造）燃焼やられ・燃焼スイング★
+st[10] =		{  file=clipath+"Clank", type=-1  }; // チャキン
+st[11] =		{  file=clipath+"Shock", type=-1  }; // （メルブラ効果音）電撃ショック★
+st[12] =		{  file=clipath+"ExtendAction", type=1  }; // エクステンドアクション
+st[13] =		{  file=clipath+"Stars", type=-1  }; // きらきら
+st[14] =		{  file=clipath+"Lightning", type=-1  }; // 電撃
+
+st[18] =		{  file=clipath+"Recover", type=-1  }; // 受け身成功
+st[19] =		{  file=clipath+"Kirifuda", type=-1  }; // 切り札使用
+st[20] =		{  file=clipath+"Guard", type=-1  }; // ガード１
+
+st[23] =		{  file=clipath+"Beam", type=-1  }; // 巨大ビーム発射
+st[24] =		{  file=clipath+"Cutin_SP", type=-1  }; // インフィニットワース発動
+
+st[27] =		{  file=clipath+"DashBrake", type=-1  }; // ダッシュ停止
+st[28] =		{  file=clipath+"RunDash", type=-1  }; // ランダッシュ開始
+st[29] =		{  file=clipath+"DashBrake", type=-1  }; // ランダッシュ停止
+
+st[30] =		{  file=clipath+"ReflectionGuard", type=-1  }; // リフレクションガード（アドバ）
+st[33] =		{  file=clipath+"PowerUp", type=-1  }; // パワーアップ発動音
+
+st[35] =		{  file=clipath+"Cutin_EX", type=-1  }; // ＥＸ必殺技発動
+
+// st[38]
+st[39] =		{  file=clipath+"Move_Rocket", type=-1  }; // 高速移動
+st[40] =		{  file=clipath+"Landing", type=-1  }; // 着地
+
+st[41] =		{  file=clipath+"SwingA", type=-1  }; // スイング弱
+st[42] =		{  file=clipath+"SwingB", type=-1  }; // スイング中
+st[43] =		{  file=clipath+"SwingC", type=-1  }; // スイング強
+st[45] =		{  file=clipath+"SwingD", type=-1  }; // スイング大振り(きりもみ)
+st[46] =		{  file=clipath+"LongSwingA", type=-1  }; // 長いスィング弱
+st[47] =		{  file=clipath+"LongSwingB", type=-1  }; // 長いスィング中
+st[48] =		{  file=clipath+"LongSwingC", type=-1  }; // 長いスィング強
+
+st[50] =		{  file=clipath+"Move_Slide", type=-1  }; // スライド移動
+// st[51]
+
+st[55] =		{  file=clipath+"Shot_Stab", type=-1  }; // 突き刺す発射
+st[56] =		{  file=clipath+"Shot_Heavy", type=-1  }; // 重たい発射
+
+// st[70]
+// st[71]
+
+st[74] =		{  file=clipath+"Sparking", type=-1  }; //火花ちりちり
+
+st[77] =		{  file=anopath+"Sys1500", type=0  }; // Round1
+st[78] =		{  file=anopath+"Sys1501", type=0  }; // Round2
+st[79] =		{  file=anopath+"Sys1502", type=0  }; // Round3
+st[80] =		{  file=anopath+"Sys1503", type=0  }; // Round4
+st[81] =		{  file=anopath+"Sys1504", type=0  }; // Round5
+st[82] =		{  file=anopath+"Sys1505", type=0  }; // Round6
+st[83] =		{  file=anopath+"Sys1506", type=0  }; // Round7
+st[84] =		{  file=anopath+"Sys1507", type=0  }; // Round8
+st[85] =		{  file=anopath+"Sys1508", type=0  }; // Round9
+st[86] =		{  file=anopath+"Sys1510", type=0  }; // FinalRound
+
+st[89] =		{  file=anopath+"Sys1600", type=0  }; // Fight!
+st[90] =		{  file=anopath+"Sys1602", type=0  }; // Down!
+st[91] =		{  file=anopath+"Sys1603", type=0  }; // DoubleKO!
+st[92] =		{  file=anopath+"Sys1640", type=0  }; // Parfect!
+st[93] =		{  file=anopath+"Sys1602", type=0  }; // KO!(２回目)
+st[94] =		{  file=anopath+"Sys1610", type=0  }; // Draw...
+st[95] =		{  file=anopath+"Sys1601", type=0  }; // TimeUp
+
+st[100] =	{  file=anopath+"Sys1620", type=0  }; // YouWin
+st[101] =	{  file=anopath+"Sys1621", type=0  }; // YouLose
+
+// st[102] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+// st[103] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+// st[104] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+// st[105] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+// st[106] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+// st[107] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+// st[108] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+// st[109] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+// st[110] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+// st[111] =	{  file=anopath+"Call_YouWin", type=0  }; // 
+
+st[140] =	{  file=clipath+"System_AddCredit", type=0, nomute=1 }; // クレジットSE（アドバタイズ制限から除外
+st[143] =	{  file=clipath+"System_Cansel", type=1  }; // キャンセル（★無音）
+st[150] =	{  file=clipath+"System_MoveCursor", type=1  }; // カーソル移動
+st[151] =	{  file=clipath+"System_OK", type=1  }; // 決定音
+st[152] =	{  file=clipath+"System_MoveCursor", type=1  }; // キャラセレクトカーソル移動音
+st[153] =	{  file=clipath+"System_Encounter", type=0  }; // 乱入
+
+st[156] =	{  file=clipath+"System_OK", type=0, nomute=1  }; // 軽い決定音 ※CLIは現状151と同じにしてある
+
+//st[160] =	{  file=anopath+"Sys1700", type=0  }; // コンテニュー ※プログラムから直接ファイルを呼び出すようになった
+//st[161] =	{  file=anopath+"Sys1710", type=0  }; // ゲームオーバー ※プログラムから直接ファイルを呼び出すようになった
+
+//---------------
+// 1.04で追加
+st[165] =	{  file="./se/aime_se/aime_success", type=0, nomute=1 }; // aimeカード読み込み成功SE（アドバタイズ制限から除外
+st[166] =	{  file="./se/aime_se/aime_error", type=0, nomute=1 }; // aimeカード読み込み失敗SE（アドバタイズ制限から除外
+st[167] =	{  file="./se/aime_se/aime_access_code", type=0, nomute=1 }; // aimeカードアクセスコード表示SE（アドバタイズ制限から除外
+// 2.00で追加
+st[168] =	{  file=clipath+"System_GameStart", type=0  }; // スタート音、個別に設定
+//---------------
+
+st[170] =	{  file=clipath+"FootStep", type=-1  }; // 歩き
+
+st[171] =	{  file=new_path+"SE170_FootStep_ShoesA", type=-1  }; // 歩き
+st[172] =	{  file=new_path+"SE171_FootStep_ShoesB", type=-1  }; // 歩き
+st[173] =	{  file=new_path+"SE172_FootStep_BootsA", type=-1  }; // 歩き
+st[174] =	{  file=new_path+"SE173_FootStep_BootsB", type=-1  }; // 歩き
+st[175] =	{  file=new_path+"SE174_FootStep_HeelsA", type=-1  }; // 歩き
+st[176] =	{  file=new_path+"SE175_FootStep_HeelsB", type=-1  }; // 歩き
+
+// st[180] =		{  file=clipath+"PowerUp", type=-1  }; // イグニッション決定時
+
+
+st[195] =	{  file=clipath+"CounterBalance", type=-1  }; // 飛び道具相殺
+st[196] =	{  file=clipath+"Hit_ThrustA", type=-1  }; // 突き弱
+st[197] =	{  file=clipath+"Hit_ThrustB", type=-1  }; // 突き中
+st[198] =	{  file=clipath+"Hit_ThrustC", type=-1  }; // 突き強
+
+st[199] =	{  file=clipath+"Hit_PunchA", type=-1  }; // 投げ掴み
+st[200] =	{  file=clipath+"Hit_SlashA", type=-1  }; // 斬り弱
+st[201] =	{  file=clipath+"Hit_SlashB", type=-1  }; // 斬り中
+st[202] =	{  file=clipath+"Hit_SlashC", type=-1  }; // 斬り強
+
+st[205] =	{  file=clipath+"Hit_PunchD",	type=-1 }; // パンチとどめ
+st[206] =	{  file=clipath+"Hit_KickD",	type=-1 }; // キックとどめ
+st[207] =	{  file=clipath+"Hit_SlashD",	type=-1 }; // 斬りとどめ
+st[208] =	{  file=clipath+"Hit_ThrustD",	type=-1 }; // 突きとどめ
+
+st[209] =	{  file=clipath+"Hit_Finish", type=-1  }; // フィニッシュ攻撃
+
+st[210] =	{  file=clipath+"BoundGroundA", type=-1  }; // 叩きつけ弱
+st[211] =	{  file=clipath+"BoundGroundB", type=-1  }; // 叩きつけ中（壁バウンド）
+st[212] =	{  file=clipath+"BoundGroundB", type=-1  }; // 叩きつけ強（地面バウンド）
+
+st[220] =	{  file=clipath+"Bomb", type=-1  }; // 爆発１
+st[221] =	{  file=clipath+"Bomb_Short", type=-1  }; // 爆発（短）
+// st[222]
+st[223] =	{  file=clipath+"Bomb_VeryShort", type=-1  }; // 爆発（極短）
+
+st[230] =	{  file=clipath+"SaberSwing", type=-1  }; // シュウィン
+st[240] =	{  file=clipath+"CancelSupport", type=-1  }; // キャンセルサポート発動
+st[250] =	{  file=clipath+"Potential", type=-1  }; // ポテンシャル発動
+st[255] =	{  file=clipath+"CounterBalance", type=-1  }; // インパクト相殺
+
+st[260] =	{  file=continuepath+"Sys2010", type=0  }; // 0
+st[261] =	{  file=continuepath+"Sys2009", type=0  }; // 1
+st[262] =	{  file=continuepath+"Sys2008", type=0  }; // 2
+st[263] =	{  file=continuepath+"Sys2007", type=0  }; // 3
+st[264] =	{  file=continuepath+"Sys2006", type=0  }; // 4
+st[265] =	{  file=continuepath+"Sys2005", type=0  }; // 5
+st[266] =	{  file=continuepath+"Sys2004", type=0  }; // 6
+st[267] =	{  file=continuepath+"Sys2003", type=0  }; // 7
+st[268] =	{  file=continuepath+"Sys2002", type=0  }; // 8
+st[269] =	{  file=continuepath+"Sys2001", type=0  }; // 9
+st[271] =	{  file=continuepath+"Sys1700", type=0  }; // continue
+st[272] =	{  file=continuepath+"Sys1710", type=0  }; // gameover
+st[273] =	{  file=charaselectpath+"Sys1850", type=0  }; // character select start
